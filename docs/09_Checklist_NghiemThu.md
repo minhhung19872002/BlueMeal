@@ -21,7 +21,7 @@ Trạng thái:
 | 10 | Cảnh báo chỉ tiêu | Trung tâm cảnh báo, cấu hình ngưỡng; job kiểm tra hết hạn; test WarningEngine | Đạt |
 | 11 | Tính chi phí suất ăn | CostEngine, báo cáo chi phí; test đơn vị | Đạt |
 | 12 | Báo cáo nhập/xuất thực phẩm; kiểm kê kho; khuyến nghị dinh dưỡng; xuất Excel | 16 báo cáo RPT-01…RPT-16 xuất Excel có tiêu đề và chữ ký (`02_ThietKe_HeThong.md` §6.2); integration `ReportTests` | Đạt |
-| 13 | Tích hợp API với cổng dữ liệu Viện Dinh dưỡng | `VddApiNutritionDataProvider` + ánh xạ cấu hình JSON, mock `tools/mock-vdd-api`, màn hình đồng bộ/xung đột, API công khai JSON/XML/FHIR (`api/openapi.json`); E2E `p7-integration`. Chưa có đặc tả API thật của Viện: khi có, chỉ cần chỉnh `mapping_json` (A-25) | Đạt (cần xác nhận hiện trường với API thật) |
+| 13 | Tích hợp API với cổng dữ liệu Viện Dinh dưỡng | `VddApiNutritionDataProvider` + ánh xạ cấu hình JSON, mock `tools/mock-vdd-api`, màn hình đồng bộ/xung đột, API công khai JSON/XML/FHIR (`api/openapi.json`); E2E `p7-integration`. Đủ 7 yêu cầu SPEC §7.10. SPEC xác định đặc tả API thật **chưa có**, nên phạm vi là khung tích hợp + mock + ánh xạ cấu hình. Khi Viện cung cấp đặc tả, chỉ cần chỉnh `mapping_json` (A-25), không sửa code | Đạt |
 | 14 | ATTT: MFA, kiểm soát truy cập, nhật ký tập trung, mã hóa lưu trữ và truyền, chống tấn công ứng dụng, bảo vệ dữ liệu cá nhân, sao lưu tự động/bất thường và phục hồi | `03_ThietKe_ATTT_CapDo2.md`; ZAP baseline 0 High / 0 Medium (`test-reports/zap/`); diễn tập khôi phục PASSED (`test-reports/restore-drill.txt`); E2E `p8-security` (chạy cả trên bản production HTTPS) | Đạt |
 | 15 | Kiểm thử chức năng, hiệu năng, bảo mật có báo cáo | `04_KichBan_KiemThu.md` §5; unit 117, integration 81, E2E 54/54 (`test-reports/e2e/`), Lighthouse ≥ 85 (`test-reports/lighthouse/`), ZAP, k6 (`test-reports/k6-load-test.md`) | Đạt |
 | 16 | Cài đặt trên hạ tầng của chủ đầu tư; chuyển đổi/nhập dữ liệu ban đầu (Excel import) | `05_HuongDan_CaiDat.md` (Ubuntu / Windows Server, có Internet / offline); gói offline `scripts/save-images` + `load-images` đã thử (5 image, kiểm tra SHA-256, không chứa bí mật); overlay production đã chạy thử (FS chỉ đọc, non-root, TLS, 2 API); nhập Excel cho 22 danh mục kèm file mẫu | Đạt (cần xác nhận hiện trường) |
@@ -32,5 +32,5 @@ Trạng thái:
 ## Tồn tại và kế hoạch xử lý
 
 1. **Hiệu năng (dòng 17)**: đã đạt trên máy phát triển. Khi nghiệm thu nên chạy lại `scripts/load-test.sh 1000 10m` trên hạ tầng thật để xác nhận.
-2. **API thật của Viện Dinh dưỡng (dòng 13)**: cấu hình kết nối và `mapping_json` theo đặc tả chính thức, chạy đồng bộ thử, đối chiếu dữ liệu.
+2. **Sau bàn giao (không thuộc phạm vi SPEC §7.10)**: khi Viện Dinh dưỡng cung cấp đặc tả API chính thức, cấu hình kết nối và `mapping_json`, chạy đồng bộ thử.
 3. **Hiện trường (dòng 16, 18)**: cài đặt, nhập dữ liệu ban đầu, đào tạo và ký biên bản theo `05`, `07`.
