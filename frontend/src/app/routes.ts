@@ -66,4 +66,5 @@ export const appRoutes: AppRoute[] = [
   { path: 'analysis/nutrition', page: () => import('@/features/reports/AnalysisPages').then((m) => ({ default: m.NutritionAnalysisPage })), perms: ['nutrition.view'] },
   { path: 'alerts', page: () => import('@/features/reports/AnalysisPages').then((m) => ({ default: m.AlertsPage })), perms: ['alert.view'] },
   { path: 'cost-sheet', page: () => import('@/features/reports/AnalysisPages').then((m) => ({ default: m.CostSheetPage })), perms: ['cost.view'] },
+  { path: 'admin/integration', page: () => import('@/features/admin/IntegrationPage'), perms: ['integration.view'] },
 ];

@@ -31,11 +31,12 @@ public class EndpointPermissionTests
         var missing = Endpoints()
             .Where(e => e.Action.GetCustomAttribute<AllowAnonymousAttribute>(true) is null
                         && e.Controller.GetCustomAttribute<AllowAnonymousAttribute>(true) is null
+                        && e.Action.GetCustomAttribute<BlueMeal.Api.Controllers.PublicApi.PublicScopeAttribute>(true) is null
                         && !e.Action.GetCustomAttributes<HasPermissionAttribute>(true).Any()
                         && !e.Controller.GetCustomAttributes<HasPermissionAttribute>(true).Any())
             .Select(e => $"{e.Controller.Name}.{e.Action.Name}")
             .ToList();
-        missing.Should().BeEmpty("all endpoints must be protected by [HasPermission] or explicitly [AllowAnonymous]");
+        missing.Should().BeEmpty("all endpoints must be protected by [HasPermission], [PublicScope] or explicitly [AllowAnonymous]");
     }
 
     [Fact]

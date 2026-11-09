@@ -384,6 +384,7 @@ public sealed class RecommendationsController : CatalogControllerBase<Recommenda
 
     protected override async Task BeforeSaveAsync(Recommendation e, RecommendationUpsert input, bool isNew, CancellationToken ct)
     {
+        if (!isNew && e.Source == DataSource.VddApi) e.LocallyModified = true;
         if (input.Nutrients is null) return;
         if (!isNew) await Db.Entry(e).Collection(x => x.Nutrients).LoadAsync(ct);
         Db.Set<RecommendationNutrient>().RemoveRange(e.Nutrients);

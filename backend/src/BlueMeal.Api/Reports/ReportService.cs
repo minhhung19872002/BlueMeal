@@ -47,6 +47,9 @@ public sealed class ReportService(AppDbContext db, IEnumerable<IReport> reports,
         return (def, await r.RunAsync(filter, ct));
     }
 
+    /// <summary>Runs a report without the user permission check — only for callers that authorized the request themselves (public API scope, integration push).</summary>
+    public Task<ReportResult> RunTrustedAsync(string code, ReportFilter filter, CancellationToken ct) => Find(code).RunAsync(filter, ct);
+
     private static string PeriodText(ReportFilter f, string lang)
         => f.From is null && f.To is null ? "" : $"{f.From:dd/MM/yyyy} – {f.To:dd/MM/yyyy}";
 

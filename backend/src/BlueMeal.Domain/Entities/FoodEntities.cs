@@ -186,6 +186,13 @@ public class Recommendation : CatalogEntity
     public decimal AnimalProteinPctMax { get; set; } = 50m;
     public decimal? BudgetPerServing { get; set; }
     public string? Note { get; set; }
+    /// <summary>Manual / import / synchronized from the VDD portal (SPEC §7.10.5).</summary>
+    public DataSource Source { get; set; } = DataSource.Manual;
+    public DateTimeOffset? LastSyncedAt { get; set; }
+    /// <summary>Hash of last remote payload — used for conflict detection on sync.</summary>
+    public string? RemoteHash { get; set; }
+    /// <summary>True when a user edited a synchronized record locally.</summary>
+    public bool LocallyModified { get; set; }
     public ICollection<RecommendationNutrient> Nutrients { get; set; } = new List<RecommendationNutrient>();
 }
 

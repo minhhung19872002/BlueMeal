@@ -122,3 +122,8 @@ body {
     display: block;
   }
 }
+
+/* sync conflict diff */
+.bm-diff-row > td {
+  background: rgba(250, 178, 25, 0.12) !important;
+}

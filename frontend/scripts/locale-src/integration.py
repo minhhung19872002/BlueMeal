@@ -1,0 +1,38 @@
+L = {
+    "title": ("Tích hợp dữ liệu dinh dưỡng", "Nutrition data integration"),
+    "tabs": {"endpoints": ("Kết nối", "Endpoints"), "logs": ("Lịch sử đồng bộ", "Sync history"), "conflicts": ("Xung đột", "Conflicts"), "clients": ("API cho hệ thống khác", "Public API clients")},
+    "ep": {
+        "code": ("Mã", "Code"), "name": ("Tên kết nối", "Name"), "baseUrl": ("Địa chỉ API (Base URL)", "Base URL"), "authType": ("Kiểu xác thực", "Authentication"),
+        "timeout": ("Thời gian chờ (giây)", "Timeout (seconds)"), "cron": ("Lịch đồng bộ (cron)", "Sync schedule (cron)"), "enabled": ("Bật đồng bộ", "Sync enabled"),
+        "mapping": ("Ánh xạ trường (mapping JSON)", "Field mapping (JSON)"), "mappingHint": ("Khi có đặc tả API thật của Viện Dinh dưỡng chỉ cần sửa phần này.", "When the real VDD specification is published only this needs to change."),
+        "invalidJson": ("JSON không hợp lệ", "Invalid JSON"), "lastSync": ("Đồng bộ gần nhất", "Last sync"), "lastSuccess": ("Thành công gần nhất", "Last success"),
+        "add": ("Thêm kết nối", "Add endpoint"), "test": ("Kiểm tra kết nối", "Test connection"), "sync": ("Đồng bộ ngay", "Sync now"), "fullSync": ("Đồng bộ toàn bộ", "Full sync"),
+        "push": ("Gửi báo cáo tổng hợp", "Push aggregated report"), "testOk": ("Kết nối tốt — {{n}} chất dinh dưỡng, {{ms}} ms", "Connected — {{n}} nutrients, {{ms}} ms"),
+        "testFail": ("Kết nối lỗi: {{error}}", "Connection failed: {{error}}"),
+        "synced": ("Nhận {{received}} · tạo {{created}} · cập nhật {{updated}} · xung đột {{conflicts}}", "Received {{received}} · created {{created}} · updated {{updated}} · conflicts {{conflicts}}"),
+        "pushed": ("Đã gửi — mã tiếp nhận {{id}}", "Pushed — receipt {{id}}"), "stored": ("đã lưu, nhập để thay", "stored, type to replace"),
+        "auth": {"None": ("Không xác thực", "None"), "ApiKey": ("API key", "API key"), "Basic": ("Basic (tên/mật khẩu)", "Basic (user/password)"), "OAuth2ClientCredentials": ("OAuth2 client credentials", "OAuth2 client credentials")},
+        "cred": {"apiKey": ("API key", "API key"), "apiKeyHeader": ("Tên header", "Header name"), "username": ("Tên đăng nhập", "Username"), "password": ("Mật khẩu", "Password"),
+                 "tokenUrl": ("Địa chỉ cấp token", "Token URL"), "clientId": ("Client ID", "Client ID"), "clientSecret": ("Client secret", "Client secret"), "scope": ("Scope", "Scope")},
+    },
+    "log": {
+        "at": ("Thời điểm", "Started"), "operation": ("Thao tác", "Operation"), "endpoint": ("Kết nối", "Endpoint"), "duration": ("Thời lượng (ms)", "Duration (ms)"),
+        "result": ("Kết quả", "Result"), "ok": ("Thành công", "Success"), "fail": ("Lỗi", "Failed"), "received": ("Nhận", "Received"), "created": ("Tạo", "Created"),
+        "updated": ("Cập nhật", "Updated"), "conflicts": ("Xung đột", "Conflicts"), "by": ("Người chạy", "By"), "detail": ("Chi tiết request", "Request detail"), "error": ("Lỗi", "Error"),
+        "scheduled": ("Lịch tự động", "Scheduled"),
+    },
+    "conflict": {
+        "entity": ("Đối tượng", "Entity"), "code": ("Mã", "Code"), "detected": ("Phát hiện lúc", "Detected"), "field": ("Trường", "Field"), "local": ("Đang dùng (đã sửa tay)", "Local (edited)"),
+        "remote": ("Dữ liệu nguồn mới", "New source data"), "keepLocal": ("Giữ bản đang dùng", "Keep local"), "acceptRemote": ("Lấy dữ liệu nguồn", "Accept source"),
+        "hint": ("Bản ghi đã được sửa tay trong BlueMeal nhưng nguồn Viện Dinh dưỡng cũng thay đổi. Chọn giữ bản nào; các trường khác nhau được tô màu.", "The record was edited in BlueMeal and also changed at the source. Choose which version to keep; differing fields are highlighted."),
+        "none": ("Không có xung đột cần xử lý", "No pending conflicts"), "diffCount": ("{{n}} trường khác nhau", "{{n}} differing fields"),
+        "Food": ("Thực phẩm", "Food"), "Recommendation": ("Khuyến nghị", "Recommendation"),
+    },
+    "client": {
+        "name": ("Tên hệ thống", "System name"), "clientId": ("Client ID", "Client ID"), "scopes": ("Quyền (scope)", "Scopes"), "active": ("Hoạt động", "Active"), "lastUsed": ("Dùng gần nhất", "Last used"),
+        "add": ("Tạo client", "New client"), "rotate": ("Đổi secret", "Rotate secret"), "toggle": ("Bật/tắt", "Enable/disable"),
+        "secretOnce": ("Lưu lại client secret ngay — hệ thống chỉ hiển thị một lần.", "Save the client secret now — it is shown only once."),
+        "doc": ("Lấy token: POST /api/v1/public/token (grant_type=client_credentials). Tài liệu: docs/api/openapi.json. Trả XML khi gửi Accept: application/xml.", "Token: POST /api/v1/public/token (grant_type=client_credentials). Docs: docs/api/openapi.json. XML with Accept: application/xml."),
+        "scope": {"menu.read": ("Đọc thực đơn công bố", "Read published menus"), "nutrition.read": ("Đọc số liệu dinh dưỡng", "Read nutrition data"), "food.read": ("Đọc bảng thành phần thực phẩm", "Read food composition")},
+    },
+}

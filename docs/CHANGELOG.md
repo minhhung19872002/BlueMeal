@@ -3,6 +3,15 @@
 Định dạng theo [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/); phiên bản theo [SemVer](https://semver.org/).
 Mỗi mục `## [x.y.z] - YYYY-MM-DD` được nạp vào màn hình **Phiên bản hệ thống** (bảng `system_version`).
 
+## [0.8.0] - 2026-11-09
+### P7 – Tích hợp dữ liệu Viện Dinh dưỡng và API công khai (SPEC §7.10)
+- `INutritionDataProvider` + `VddApiNutritionDataProvider`: HttpClient, Polly (retry lũy thừa có jitter, circuit breaker, timeout theo kết nối), xác thực API key / Basic / OAuth2 client credentials (token được cache); credential lưu mã hóa, chỉ ghi (API không trả lại secret).
+- Tầng ánh xạ cấu hình bằng `mapping_json`: đường dẫn API, tham số truy vấn, tên trường, bảng mã chất (INFOODS → mã nội bộ), mã nhóm, hệ số quy đổi đơn vị, tiền tố mã — đổi đặc tả chỉ cần sửa JSON.
+- Mock cổng VDD `tools/mock-vdd-api` (docker dev cổng 5090, README mô tả hợp đồng giả định), tự cấu hình kết nối `VDD-MOCK` trong môi trường dev.
+- Đồng bộ tăng dần theo `modifiedSince`, upsert theo mã cho chất dinh dưỡng, nhóm thực phẩm, thực phẩm (khóa sửa mặc định), khuyến nghị; bản ghi sửa tay mà nguồn cũng đổi tạo `sync_conflict`; màn hình xung đột so sánh song song từng trường, giữ bản đang dùng / lấy dữ liệu nguồn; lịch sử đồng bộ chi tiết từng request; job Quartz 02:00 + nút đồng bộ ngay; đẩy báo cáo tổng hợp (tùy chọn).
+- API công khai `/api/v1/public/*`: token OAuth2 client credentials do BlueMeal phát hành (audience riêng), scope `menu.read` / `nutrition.read` / `food.read`, JSON hoặc XML theo `Accept`, FHIR R4 tối giản; quản lý client (secret hiển thị một lần, đổi secret, bật/tắt); tài liệu `docs/api/openapi.json` sinh tự động từ API.
+- Kiểm thử: unit 111 (6 test mapping), integration 72 (4 test tích hợp: đồng bộ mock, xung đột và xử lý, retry, các kiểu xác thực, API công khai JSON/XML/FHIR, xuất OpenAPI), E2E P7.
+
 ## [0.7.0] - 2026-11-09
 ### P6 – Phân tích, cảnh báo, chi phí, báo cáo, dashboard (SPEC §7.5–7.7, §7.9)
 - Phân tích dinh dưỡng cho 1 món / 1 thực đơn / khoảng ngày: bảng đầy đủ chất dinh dưỡng, % đáp ứng (thanh màu + biểu tượng), P:L:G, biểu đồ vi chất, xu hướng năng lượng theo ngày, trung bình tuần/tháng, so sánh 2 phương án, xuất Excel.

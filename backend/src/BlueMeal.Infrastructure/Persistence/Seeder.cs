@@ -30,6 +30,19 @@ public sealed partial class Seeder(AppDbContext db, UserManager<AppUser> users, 
         await SeedReportsAsync(ct);
         await SeedMenuReferenceAsync(ct);
         if (config.GetValue("Seed:SampleData", true)) await sample.SeedAsync(ct);
+        await SeedVddMockEndpointAsync(ct);
+    }
+
+    /// <summary>Dev/demo convenience: an integration endpoint pointing at tools/mock-vdd-api when Seed:VddMockUrl is set (never in production compose).</summary>
+    private async Task SeedVddMockEndpointAsync(CancellationToken ct)
+    {
+        if (config["Seed:VddMockUrl"] is not { Length: > 0 } url || await db.Set<IntegrationEndpoint>().IgnoreQueryFilters().AnyAsync(ct)) return;
+        db.Add(new IntegrationEndpoint
+        {
+            Code = "VDD-MOCK", NameVi = "Cổng dữ liệu Viện Dinh dưỡng (mock)", NameEn = "Nutrition institute portal (mock)", BaseUrl = url, AuthType = IntegrationAuthType.OAuth2ClientCredentials,
+            Credentials = JsonSerializer.Serialize(new { clientId = "bluemeal", clientSecret = config["Seed:VddMockSecret"] ?? "demo-vdd-secret" }, Json), TimeoutSeconds = 15, SyncCron = "0 2 * * *", IsEnabled = true,
+        });
+        await db.SaveChangesAsync(ct);
     }
 
     private async Task SeedPermissionsAndRolesAsync(CancellationToken ct)

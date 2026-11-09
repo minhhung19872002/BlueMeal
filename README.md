@@ -37,6 +37,7 @@ Script sẽ tự sinh `deploy/.env` với secret ngẫu nhiên, build image, kh�
 | Ứng dụng web (qua WAF) | http://localhost:8080 (https://localhost:8443 — chứng chỉ tự ký) |
 | API + Swagger | http://localhost:5080/swagger |
 | Mailpit (hộp thư thử nghiệm) | http://localhost:8025 |
+| Mock cổng Viện Dinh dưỡng (`tools/mock-vdd-api`) | http://localhost:5090 |
 
 Tài khoản mặc định: **`admin` / `BlueMeal@2026!`** (dev). Lần đăng nhập đầu **bắt buộc đổi mật khẩu và bật xác thực 2 lớp** (Google/Microsoft Authenticator).
 

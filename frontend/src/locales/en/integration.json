@@ -1,0 +1,98 @@
+{
+  "title": "Nutrition data integration",
+  "tabs": {
+    "endpoints": "Endpoints",
+    "logs": "Sync history",
+    "conflicts": "Conflicts",
+    "clients": "Public API clients"
+  },
+  "ep": {
+    "code": "Code",
+    "name": "Name",
+    "baseUrl": "Base URL",
+    "authType": "Authentication",
+    "timeout": "Timeout (seconds)",
+    "cron": "Sync schedule (cron)",
+    "enabled": "Sync enabled",
+    "mapping": "Field mapping (JSON)",
+    "mappingHint": "When the real VDD specification is published only this needs to change.",
+    "invalidJson": "Invalid JSON",
+    "lastSync": "Last sync",
+    "lastSuccess": "Last success",
+    "add": "Add endpoint",
+    "test": "Test connection",
+    "sync": "Sync now",
+    "fullSync": "Full sync",
+    "push": "Push aggregated report",
+    "testOk": "Connected — {{n}} nutrients, {{ms}} ms",
+    "testFail": "Connection failed: {{error}}",
+    "synced": "Received {{received}} · created {{created}} · updated {{updated}} · conflicts {{conflicts}}",
+    "pushed": "Pushed — receipt {{id}}",
+    "stored": "stored, type to replace",
+    "auth": {
+      "None": "None",
+      "ApiKey": "API key",
+      "Basic": "Basic (user/password)",
+      "OAuth2ClientCredentials": "OAuth2 client credentials"
+    },
+    "cred": {
+      "apiKey": "API key",
+      "apiKeyHeader": "Header name",
+      "username": "Username",
+      "password": "Password",
+      "tokenUrl": "Token URL",
+      "clientId": "Client ID",
+      "clientSecret": "Client secret",
+      "scope": "Scope"
+    }
+  },
+  "log": {
+    "at": "Started",
+    "operation": "Operation",
+    "endpoint": "Endpoint",
+    "duration": "Duration (ms)",
+    "result": "Result",
+    "ok": "Success",
+    "fail": "Failed",
+    "received": "Received",
+    "created": "Created",
+    "updated": "Updated",
+    "conflicts": "Conflicts",
+    "by": "By",
+    "detail": "Request detail",
+    "error": "Error",
+    "scheduled": "Scheduled"
+  },
+  "conflict": {
+    "entity": "Entity",
+    "code": "Code",
+    "detected": "Detected",
+    "field": "Field",
+    "local": "Local (edited)",
+    "remote": "New source data",
+    "keepLocal": "Keep local",
+    "acceptRemote": "Accept source",
+    "hint": "The record was edited in BlueMeal and also changed at the source. Choose which version to keep; differing fields are highlighted.",
+    "none": "No pending conflicts",
+    "diffCount": "{{n}} differing fields",
+    "Food": "Food",
+    "Recommendation": "Recommendation"
+  },
+  "client": {
+    "name": "System name",
+    "clientId": "Client ID",
+    "scopes": "Scopes",
+    "active": "Active",
+    "lastUsed": "Last used",
+    "add": "New client",
+    "rotate": "Rotate secret",
+    "toggle": "Enable/disable",
+    "secretOnce": "Save the client secret now — it is shown only once.",
+    "doc": "Token: POST /api/v1/public/token (grant_type=client_credentials). Docs: docs/api/openapi.json. XML with Accept: application/xml.",
+    "scope": {
+      "menu.read": "Read published menus",
+      "nutrition.read": "Read nutrition data",
+      "food.read": "Read food composition"
+    }
+  }
+}

@@ -4,7 +4,9 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using BlueMeal.Domain.Entities;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -59,12 +61,26 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
             ALTER DEFAULT PRIVILEGES FOR ROLE bluemeal_owner IN SCHEMA app GRANT EXECUTE ON FUNCTIONS TO bluemeal_app;
             """;
         await cmd.ExecuteNonQueryAsync();
+
+        // VDD portal mock (tools/mock-vdd-api) on an in-memory TestServer
+        var mb = WebApplication.CreateBuilder();
+        mb.WebHost.UseTestServer();
+        MockVddApi.MockServer.Configure(mb.Services, mb.Configuration);
+        MockVdd = mb.Build();
+        MockVddApi.MockServer.Map(MockVdd);
+        await MockVdd.StartAsync();
+
         _ = Services; // build host → migrations + seed
     }
+
+    /// <summary>In-process mock of the VDD portal; use <see cref="MockVddClient"/> for its admin endpoints.</summary>
+    public WebApplication? MockVdd { get; private set; }
+    public HttpClient MockVddClient() => MockVdd!.GetTestClient();
 
     async Task IAsyncLifetime.DisposeAsync()
     {
         await base.DisposeAsync();
+        if (MockVdd is not null) await MockVdd.DisposeAsync();
         await _pg.DisposeAsync();
     }
 
@@ -89,6 +105,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         {
             s.RemoveAll<BlueMeal.Application.Abstractions.IEmailSender>();
             s.AddSingleton<BlueMeal.Application.Abstractions.IEmailSender>(Emails);
+            s.AddHttpClient(BlueMeal.Infrastructure.Integration.VddApiNutritionDataProvider.HttpClientName).ConfigurePrimaryHttpMessageHandler(() => MockVdd!.GetTestServer().CreateHandler());
         });
     }
 

@@ -1,0 +1,98 @@
+{
+  "title": "Tích hợp dữ liệu dinh dưỡng",
+  "tabs": {
+    "endpoints": "Kết nối",
+    "logs": "Lịch sử đồng bộ",
+    "conflicts": "Xung đột",
+    "clients": "API cho hệ thống khác"
+  },
+  "ep": {
+    "code": "Mã",
+    "name": "Tên kết nối",
+    "baseUrl": "Địa chỉ API (Base URL)",
+    "authType": "Kiểu xác thực",
+    "timeout": "Thời gian chờ (giây)",
+    "cron": "Lịch đồng bộ (cron)",
+    "enabled": "Bật đồng bộ",
+    "mapping": "Ánh xạ trường (mapping JSON)",
+    "mappingHint": "Khi có đặc tả API thật của Viện Dinh dưỡng chỉ cần sửa phần này.",
+    "invalidJson": "JSON không hợp lệ",
+    "lastSync": "Đồng bộ gần nhất",
+    "lastSuccess": "Thành công gần nhất",
+    "add": "Thêm kết nối",
+    "test": "Kiểm tra kết nối",
+    "sync": "Đồng bộ ngay",
+    "fullSync": "Đồng bộ toàn bộ",
+    "push": "Gửi báo cáo tổng hợp",
+    "testOk": "Kết nối tốt — {{n}} chất dinh dưỡng, {{ms}} ms",
+    "testFail": "Kết nối lỗi: {{error}}",
+    "synced": "Nhận {{received}} · tạo {{created}} · cập nhật {{updated}} · xung đột {{conflicts}}",
+    "pushed": "Đã gửi — mã tiếp nhận {{id}}",
+    "stored": "đã lưu, nhập để thay",
+    "auth": {
+      "None": "Không xác thực",
+      "ApiKey": "API key",
+      "Basic": "Basic (tên/mật khẩu)",
+      "OAuth2ClientCredentials": "OAuth2 client credentials"
+    },
+    "cred": {
+      "apiKey": "API key",
+      "apiKeyHeader": "Tên header",
+      "username": "Tên đăng nhập",
+      "password": "Mật khẩu",
+      "tokenUrl": "Địa chỉ cấp token",
+      "clientId": "Client ID",
+      "clientSecret": "Client secret",
+      "scope": "Scope"
+    }
+  },
+  "log": {
+    "at": "Thời điểm",
+    "operation": "Thao tác",
+    "endpoint": "Kết nối",
+    "duration": "Thời lượng (ms)",
+    "result": "Kết quả",
+    "ok": "Thành công",
+    "fail": "Lỗi",
+    "received": "Nhận",
+    "created": "Tạo",
+    "updated": "Cập nhật",
+    "conflicts": "Xung đột",
+    "by": "Người chạy",
+    "detail": "Chi tiết request",
+    "error": "Lỗi",
+    "scheduled": "Lịch tự động"
+  },
+  "conflict": {
+    "entity": "Đối tượng",
+    "code": "Mã",
+    "detected": "Phát hiện lúc",
+    "field": "Trường",
+    "local": "Đang dùng (đã sửa tay)",
+    "remote": "Dữ liệu nguồn mới",
+    "keepLocal": "Giữ bản đang dùng",
+    "acceptRemote": "Lấy dữ liệu nguồn",
+    "hint": "Bản ghi đã được sửa tay trong BlueMeal nhưng nguồn Viện Dinh dưỡng cũng thay đổi. Chọn giữ bản nào; các trường khác nhau được tô màu.",
+    "none": "Không có xung đột cần xử lý",
+    "diffCount": "{{n}} trường khác nhau",
+    "Food": "Thực phẩm",
+    "Recommendation": "Khuyến nghị"
+  },
+  "client": {
+    "name": "Tên hệ thống",
+    "clientId": "Client ID",
+    "scopes": "Quyền (scope)",
+    "active": "Hoạt động",
+    "lastUsed": "Dùng gần nhất",
+    "add": "Tạo client",
+    "rotate": "Đổi secret",
+    "toggle": "Bật/tắt",
+    "secretOnce": "Lưu lại client secret ngay — hệ thống chỉ hiển thị một lần.",
+    "doc": "Lấy token: POST /api/v1/public/token (grant_type=client_credentials). Tài liệu: docs/api/openapi.json. Trả XML khi gửi Accept: application/xml.",
+    "scope": {
+      "menu.read": "Đọc thực đơn công bố",
+      "nutrition.read": "Đọc số liệu dinh dưỡng",
+      "food.read": "Đọc bảng thành phần thực phẩm"
+    }
+  }
+}

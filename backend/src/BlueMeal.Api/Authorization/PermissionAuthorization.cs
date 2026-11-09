@@ -61,6 +61,20 @@ public sealed class PermissionEnforcementMiddleware(RequestDelegate next)
         var md = endpoint.Metadata;
         if (md.GetMetadata<IAllowAnonymous>() is not null) { await next(ctx); return; }
 
+        // public API (client credentials token with scope) — SPEC §7.10.6, A-26
+        if (md.GetMetadata<Controllers.PublicApi.PublicScopeAttribute>() is { } publicScope)
+        {
+            var auth = ctx.Request.Headers.Authorization.ToString();
+            var principal = auth.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+                ? ctx.RequestServices.GetRequiredService<Controllers.PublicApi.PublicTokenService>().Validate(auth[7..].Trim()) : null;
+            if (principal is null) { await Problem(ctx, StatusCodes.Status401Unauthorized, "error.unauthorized"); return; }
+            var scopes = (principal.FindFirst("scope")?.Value ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (!scopes.Contains(publicScope.Scope)) { await Problem(ctx, StatusCodes.Status403Forbidden, "error.forbidden"); return; }
+            ctx.Items["bm.publicClient"] = principal.FindFirst("client_id")?.Value;
+            await next(ctx);
+            return;
+        }
+
         var perms = md.GetOrderedMetadata<HasPermissionAttribute>();
         var controllerType = md.GetMetadata<Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor>()?.ControllerTypeInfo.AsType();
         if (perms.Count == 0)

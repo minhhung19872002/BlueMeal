@@ -51,6 +51,9 @@ public static class ApiServiceCollectionExtensions
         services.AddScoped<Reports.CostSheetService>();
         services.AddScoped<Reports.ReportService>();
         services.AddScoped<Services.AnalysisService>();
+        services.AddScoped<Services.IntegrationService>();
+        services.AddSingleton<Controllers.PublicApi.PublicTokenService>();
+        services.AddHttpClient(BlueMeal.Infrastructure.Integration.VddApiNutritionDataProvider.HttpClientName);
         foreach (var t in typeof(ApiServiceCollectionExtensions).Assembly.GetTypes().Where(t => t is { IsClass: true, IsAbstract: false } && typeof(Reports.IReport).IsAssignableFrom(t)))
             services.AddScoped(typeof(Reports.IReport), t);
         // background jobs (resolved by name by the Quartz/inline runner)

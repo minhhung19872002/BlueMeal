@@ -9,6 +9,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       Auth__CookieSecure: "false"
       Seed__SmtpHost: mailpit
+      Seed__VddMockUrl: http://mock-vdd:8080
     ports: ["${DEV_API_PORT:-5080}:8080"]
   worker:
     environment:
@@ -19,6 +20,20 @@ services:
     image: axllent/mailpit:v1.27
     ports: ["8025:8025", "1025:1025"]
     networks: [backend]
+  # Mock of the Viện Dinh dưỡng data portal (tools/mock-vdd-api, contract in its README — A-25)
+  mock-vdd:
+    build:
+      context: ../tools/mock-vdd-api
+    image: bluemeal/mock-vdd:${BLUEMEAL_VERSION:-dev}
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+    ports: ["${DEV_MOCK_VDD_PORT:-5090}:8080"]
+    networks: [backend]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
   pgadmin:
     image: dpage/pgadmin4:9
     profiles: [tools]

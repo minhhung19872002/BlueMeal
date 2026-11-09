@@ -4570,6 +4570,10 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
 
+                    b.Property<DateTimeOffset?>("LastSyncedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_synced_at");
+
                     b.Property<decimal>("LipidPctMax")
                         .HasPrecision(18, 4)
                         .HasColumnType("numeric(18,4)")
@@ -4579,6 +4583,10 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
                         .HasPrecision(18, 4)
                         .HasColumnType("numeric(18,4)")
                         .HasColumnName("lipid_pct_min");
+
+                    b.Property<bool>("LocallyModified")
+                        .HasColumnType("boolean")
+                        .HasColumnName("locally_modified");
 
                     b.Property<decimal>("MealSharePercent")
                         .HasPrecision(18, 4)
@@ -4618,6 +4626,10 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("reference_year");
 
+                    b.Property<string>("RemoteHash")
+                        .HasColumnType("text")
+                        .HasColumnName("remote_hash");
+
                     b.Property<string>("SearchText")
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)")
@@ -4626,6 +4638,10 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
                     b.Property<int>("SortOrder")
                         .HasColumnType("integer")
                         .HasColumnName("sort_order");
+
+                    b.Property<int>("Source")
+                        .HasColumnType("integer")
+                        .HasColumnName("source");
 
                     b.Property<Guid?>("SubjectGroupId")
                         .HasColumnType("uuid")

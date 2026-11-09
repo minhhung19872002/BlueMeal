@@ -15,6 +15,10 @@
     <ProjectReference Include="..\..\src\BlueMeal.Api\BlueMeal.Api.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <!-- the VDD mock server (tools/mock-vdd-api) hosted in-process on a TestServer -->
+    <Compile Include="..\..\..\tools\mock-vdd-api\MockServer.cs" Link="Mock\MockServer.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <Using Include="Xunit" />
     <Using Include="FluentAssertions" />
   </ItemGroup>

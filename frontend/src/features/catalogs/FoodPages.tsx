@@ -251,7 +251,7 @@ function FoodList() {
           { name: 'source', label: 'catalog:f.source', type: 'enum', enumName: 'DataSource', enumValues: [...ENUMS.DataSource] },
         ],
         toolbar: () => has('integration.sync') && (
-          <Button icon={<CloudSyncOutlined />} onClick={async () => { try { await http.post('/integration/sync'); message.success(t('common:saved')); } catch (e) { message.error(problemMessage(e)); } }}>
+          <Button icon={<CloudSyncOutlined />} onClick={async () => { try { const r = await http.post<{ success: boolean; received: number; created: number; updated: number; conflicts: number; error?: string }[]>('/integration/sync', {}); r.data.forEach((x) => (x.success ? message.success(t('integration:ep.synced', x)) : message.error(x.error))); } catch (e) { message.error(problemMessage(e)); } }}>
             {t('foods.sync')}
           </Button>
         ),
