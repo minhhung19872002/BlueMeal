@@ -16,9 +16,10 @@ Ngưỡng theo SPEC §11: p95 của các request đọc < 1 000 ms, tỷ lệ l�
 | 2026-11-09 | 1 000 | 5 phút, ramp 4 phút | 18,2 s | 22 % | 30 | **Không đạt**: PostgreSQL báo `53300 too many clients`. 2 API và worker dùng pool mặc định 100 kết nối mỗi tiến trình, vượt `max_connections=100`. Đã sửa (mục 3.6). |
 | 2026-11-09 | 1 000 | 5 phút, ramp 4 phút | 5,0 s | **0 %** | 188 | **Không đạt p95**: bão hòa CPU. |
 | 2026-11-09 | 400 | 2 phút, ramp 1 phút | **516 ms** | **0 %** | 119 | **Đạt** |
-| 2026-11-09 | 1 000 | **10 phút, ramp 5 phút** | 4,2 s | **0 %** (185 413 request, checks 100 %) | 189 | **Không đạt p95**: máy phát triển bão hòa CPU (100 %), đồng thời có 8–11 tiến trình build (rustc/cl) của dự án khác chạy song song. Báo cáo `k6-load-test.html`, `k6-summary.json`. |
+| 2026-11-09 | 1 000 | **10 phút, ramp 5 phút** | 4,2 s | **0 %** (185 413 request, checks 100 %) | 189 | **Không đạt p95**: máy phát triển bão hòa CPU (100 %), đồng thời có 8–11 tiến trình build (rustc/cl) của dự án khác chạy song song. |
+| 2026-11-09 | **1 000** | **10 phút, ramp 5 phút** | **628 ms** | **0 %** (317 423 request, checks 100 %) | **324** | **ĐẠT** (k6 thoát mã 0). Có đủ các sửa ở mục 3. Máy đỡ tải hơn (các build khác đã dừng). Từng endpoint p95: dashboard 668 ms, thực đơn 583–589 ms, món ăn 90–740 ms, tìm thực phẩm 608 ms, xuất Excel 776 ms, đăng nhập 1 054 ms. Báo cáo `k6-load-test.html`, `k6-summary.json`. |
 
-**Kết luận trên máy phát triển**: đạt ngưỡng tới **400 VU** (p95 516 ms). Ở 1 000 VU hệ thống không lỗi (0 %) nhưng p95 đọc 4,2 s vì máy bão hòa CPU. Ở lần chạy này k6, 2 API, PostgreSQL, WAF và các dự án khác cùng chạy trên một máy 16 luồng. **Cần đo lại trên hạ tầng thật** (12–16 vCPU, k6 chạy từ máy khác) để nghiệm thu ngưỡng 1 000 người dùng.
+**Kết luận**: đạt ngưỡng SPEC §11 ở **1 000 người dùng đồng thời giữ 10 phút**: p95 đọc 628 ms < 1 s, lỗi 0 % < 1 %, checks 100 % > 99 %. Đo trên máy phát triển 16 luồng chạy chung k6, 2 API, PostgreSQL, WAF. Các lần không đạt trước đó là do lỗi pool kết nối, luồng Redis quay vòng chờ, và máy bị dự án khác chiếm CPU. Nên đo lại một lần trên hạ tầng thật khi nghiệm thu.
 
 ## 2. Đo chi phí từng loại request (`tools/k6/cost-probe.js`, `tools/k6/one-endpoint.js`; thời gian CPU lấy từ cgroup `cpu.stat`)
 

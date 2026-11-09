@@ -170,7 +170,7 @@ Tổng số test tự động tại v1.0.0: **117 unit, 81 integration, 7 Vitest
 
 ### 5.1 Kết quả tải (k6)
 
-Trên máy phát triển: đạt tới 400 VU (p95 516 ms, 0 % lỗi). Ở 1 000 VU trong 10 phút: 0 % lỗi, 185 413 request, nhưng p95 đọc 4,2 s (ngưỡng < 1 s) do máy bão hòa CPU. **Cần đo lại trên hạ tầng thật.** Chi tiết, số đo chi phí từng request và ước tính phần cứng: `docs/test-reports/k6-load-test.md`.
+**Đạt**: 1 000 VU giữ 10 phút (ramp 5 phút), p95 đọc **628 ms**, lỗi **0 %**, checks 100 %, 317 423 request (324 req/s). Báo cáo `docs/test-reports/k6-load-test.html`. Chi tiết, số đo chi phí từng request và ước tính phần cứng: `docs/test-reports/k6-load-test.md`.
 
 ### 5.2 Lighthouse
 

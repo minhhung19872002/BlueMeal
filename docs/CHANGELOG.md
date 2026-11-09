@@ -3,6 +3,11 @@
 Định dạng theo [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/); phiên bản theo [SemVer](https://semver.org/).
 Mỗi mục `## [x.y.z] - YYYY-MM-DD` được nạp vào màn hình **Phiên bản hệ thống** (bảng `system_version`).
 
+## [1.0.0] - 2026-11-09
+### Phát hành chính thức
+- Kiểm thử tải đạt ngưỡng SPEC §11: **1 000 VU giữ 10 phút, p95 đọc 628 ms, lỗi 0 %**, 317 423 request (`docs/test-reports/k6-load-test.md`).
+- Checklist nghiệm thu `docs/09_Checklist_NghiemThu.md`: các hạng mục phần mềm đều đạt. Còn các việc làm tại hiện trường: cài đặt, đào tạo, kết nối API thật của Viện Dinh dưỡng.
+
 ## [1.0.0-rc.1] - 2026-11-09
 ### P10 – Tài liệu, đóng gói, bản phát hành ứng viên
 - Checklist nghiệm thu `docs/09_Checklist_NghiemThu.md`: đối chiếu từng mục SPEC §15 với bằng chứng và trạng thái. Còn tồn tại: hiệu năng 1 000 người dùng đồng thời cần đo trên hạ tầng thật; API thật của Viện Dinh dưỡng; các việc tại hiện trường (A-48).
