@@ -409,7 +409,8 @@ public sealed class AuthService(
     {
         var user = await users.FindByIdAsync(userId.ToString());
         if (user is null || !await users.CheckPasswordAsync(user, password)) return false;
-        if (user.TwoFactorEnabled) return VerifyTotp(user.MfaSecret, code ?? "") || await UseRecoveryCodeAsync(userId, code ?? "", ct);
+        if (user.TwoFactorEnabled)
+            return (VerifyTotp(user.MfaSecret, code ?? "") && await ConsumeTotpAsync(userId, code!, ct)) || await UseRecoveryCodeAsync(userId, code ?? "", ct);
         return true;
     }
 

@@ -1,4 +1,35 @@
 {
+  "backups": {
+    "title": "Backups",
+    "manual": "Back up now",
+    "note": "Note",
+    "type": "Type",
+    "Scheduled": "Scheduled",
+    "Manual": "Manual",
+    "requestedAt": "Requested",
+    "finishedAt": "Finished",
+    "size": "Size",
+    "sha": "SHA-256",
+    "file": "File",
+    "status": "Status",
+    "by": "Requested by",
+    "download": "Download",
+    "notAvailable": "No longer on server",
+    "queued": "Backup requested",
+    "reauth": "Re-authenticate to download",
+    "password": "Password",
+    "code": "MFA code or recovery code",
+    "reauthHint": "Backups are AES-256 encrypted; the BACKUP_PASSPHRASE is needed to decrypt when restoring with restore.ps1/.sh.",
+    "policy": "Policy: schedule {{cron}}, keep {{d}} daily, {{w}} weekly, {{m}} monthly",
+    "restoreHint": "Restore: run deploy/backup/restore.ps1 (Windows) or restore-host.sh (Linux) on the server — see the operations guide.",
+    "jobStatus": {
+      "Queued": "Queued",
+      "Running": "Running",
+      "Succeeded": "Succeeded",
+      "Failed": "Failed",
+      "Expired": "Expired"
+    }
+  },
   "version": {
     "title": "System version",
     "server": "Server version",

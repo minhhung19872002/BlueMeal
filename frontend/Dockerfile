@@ -15,6 +15,7 @@ FROM owasp/modsecurity-crs:4.25.2-nginx-202610180210-lts
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY deploy/nginx/default.conf.template /etc/nginx/templates/conf.d/default.conf.template
 COPY deploy/nginx/app.conf /etc/nginx/bluemeal/app.conf
+COPY deploy/nginx/security-headers.conf /etc/nginx/bluemeal/security-headers.conf
 COPY deploy/nginx/modsecurity/ /opt/modsecurity/rules/before-crs/
 ENV BM_API_UPSTREAM=api:8080 \
     BM_EDGE_RATE=50r/s \

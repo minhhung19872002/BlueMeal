@@ -99,6 +99,8 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting("Seed:SampleData", "true");
         builder.UseSetting("RateLimit:AuthPerMinute", "100000");
         builder.UseSetting("RateLimit:PerMinute", "100000");
+        builder.UseSetting("Storage:BackupPath", BackupPath);
+        builder.UseSetting("Backup:TimeoutMinutes", "1");
         builder.UseSetting("Storage:FilesPath", Path.Combine(Path.GetTempPath(), "bluemeal-it-files-" + Guid.NewGuid().ToString("N")));
         builder.UseSetting("Logging:FilePath", Path.Combine(Path.GetTempPath(), "bluemeal-it-logs", "log-.json"));
         builder.ConfigureServices(s =>
@@ -108,6 +110,9 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
             s.AddHttpClient(BlueMeal.Infrastructure.Integration.VddApiNutritionDataProvider.HttpClientName).ConfigurePrimaryHttpMessageHandler(() => MockVdd!.GetTestServer().CreateHandler());
         });
     }
+
+    /// <summary>Shared backup volume (the test plays the backup sidecar).</summary>
+    public string BackupPath { get; } = Path.Combine(Path.GetTempPath(), "bluemeal-it-backups-" + Guid.NewGuid().ToString("N"));
 
     /// <summary>Captures outgoing emails (stands in for Mailpit in tests).</summary>
     public CapturingEmailSender Emails { get; } = new();

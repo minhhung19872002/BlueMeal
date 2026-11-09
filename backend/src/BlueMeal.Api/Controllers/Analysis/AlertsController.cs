@@ -62,7 +62,7 @@ public sealed class AlertsController(AppDbContext db, AlertService alerts, BlueM
         await ValidateAsync(value, ct);
         var old = await settings.GetAsync<BlueMeal.Application.Settings.WarningSettings>(BlueMeal.Application.Settings.SettingKeys.Warning, ct);
         await settings.SetAsync(BlueMeal.Application.Settings.SettingKeys.Warning, value, ct);
-        await audit.WriteAsync(AuditAction.Update, "Setting", BlueMeal.Application.Settings.SettingKeys.Warning, old, value, ct: ct);
+        await audit.WriteAsync(AuditAction.ConfigChange, "Setting", BlueMeal.Application.Settings.SettingKeys.Warning, old, value, ct: ct);
         return NoContent();
     }
 }

@@ -1,0 +1,14 @@
+BlueMeal restore drill 2026-11-09T16:33:27.4752567+07:00 - archive bluemeal-20261109-163320-manual.tar.enc
+table source restored
+app.app_user 7 7
+app.audit_log 2448 2448
+app.dish 30 30
+app.food 98 98
+app.food_nutrient 1054 1054
+app.ingredient 42 42
+app.menu 10 10
+app.menu_item 60 60
+app.recipe 30 30
+app.recipe_item 100 100
+app.stock_balance 1 1
+app.stock_ledger 4 4

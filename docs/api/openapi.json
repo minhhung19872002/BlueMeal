@@ -840,6 +840,167 @@
         }
       }
     },
+    "/api/v1/backups": {
+      "get": {
+        "tags": [
+          "Backups"
+        ],
+        "parameters": [
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "IsActive",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "IncludeDeleted",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Backups"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Api.Controllers.Admin.BackupsController.ManualInput"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Api.Controllers.Admin.BackupsController.ManualInput"
+              }
+            },
+            "application/*\u002Bjson": {
+              "schema": {
+                "$ref": "#/components/schemas/Api.Controllers.Admin.BackupsController.ManualInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/backups/{id}/download-token": {
+      "post": {
+        "tags": [
+          "Backups"
+        ],
+        "summary": "Step 1 of a download: re-enter password \u002B MFA code; returns a single-use token valid for 2 minutes.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Api.Controllers.Admin.BackupsController.ReauthInput"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Api.Controllers.Admin.BackupsController.ReauthInput"
+              }
+            },
+            "application/*\u002Bjson": {
+              "schema": {
+                "$ref": "#/components/schemas/Api.Controllers.Admin.BackupsController.ReauthInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/backups/{id}/download": {
+      "get": {
+        "tags": [
+          "Backups"
+        ],
+        "summary": "Step 2: streams the encrypted archive (the passphrase is never handled by the application).",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/v1/countries": {
       "get": {
         "tags": [
@@ -18983,6 +19144,30 @@
           },
           "skipErrors": {
             "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Api.Controllers.Admin.BackupsController.ManualInput": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Api.Controllers.Admin.BackupsController.ReauthInput": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string",
+            "nullable": true
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false

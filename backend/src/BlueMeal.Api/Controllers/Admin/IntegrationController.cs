@@ -128,7 +128,7 @@ public sealed class IntegrationController(AppDbContext db, IntegrationService in
     {
         IReadOnlyList<SyncSummary> result = input?.EndpointId is { } id ? [await integration.SyncAsync(id, input.Full, ct)] : await integration.SyncAllAsync(input?.Full ?? false, ct);
         if (result.Count == 0) throw new BusinessRuleException("integration.noEndpoint");
-        await audit.WriteAsync(AuditAction.Update, "IntegrationSync", input?.EndpointId?.ToString(), null, result, result.All(r => r.Success), ct: ct);
+        await audit.WriteAsync(AuditAction.SyncRun, "IntegrationSync", input?.EndpointId?.ToString(), null, result, result.All(r => r.Success), ct: ct);
         return Ok(result);
     }
 

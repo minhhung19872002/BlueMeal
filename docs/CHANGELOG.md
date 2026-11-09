@@ -3,6 +3,18 @@
 Định dạng theo [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/); phiên bản theo [SemVer](https://semver.org/).
 Mỗi mục `## [x.y.z] - YYYY-MM-DD` được nạp vào màn hình **Phiên bản hệ thống** (bảng `system_version`).
 
+## [0.9.0] - 2026-11-09
+### P8 – Gia cố an toàn thông tin cấp độ 2 (SPEC §10)
+- Tài liệu `docs/03_ThietKe_ATTT_CapDo2.md`: ánh xạ từng yêu cầu → biện pháp kỹ thuật → vị trí mã nguồn → cách kiểm thử.
+- Sao lưu: màn hình lịch sử (định kỳ + bất thường), nút sao lưu bất thường chạy qua Quartz (worker → sidecar backup), tải bản sao lưu sau khi xác thực lại bằng mật khẩu + MFA (token tải dùng một lần, 2 phút), ghi audit `Backup`.
+- Diễn tập khôi phục tự động `scripts/test-backup-restore.(sh|ps1)`: backup → restore vào DB tạm → so số bản ghi 12 bảng chính (báo cáo `docs/test-reports/restore-drill.txt` — PASSED).
+- OWASP ZAP baseline `scripts/zap-baseline.(sh|ps1)` (quy tắc bỏ qua có lý do trong `deploy/zap/baseline-rules.tsv`): **0 High, 0 Medium** (báo cáo `docs/test-reports/zap/`).
+- Header bảo mật gom vào `deploy/nginx/security-headers.conf`, áp cho mọi `location` (trước đây file tĩnh thiếu Permissions-Policy); thêm COEP `require-corp`, CORP `same-origin`; nginx ẩn bản header trùng từ API.
+- Job housekeeping 03:30 (trước đây chỉ có lịch, chưa có cài đặt): xóa file xuất báo cáo hết hạn, thông báo > 180 ngày, token một lần hết hạn; tạo trước / xóa phân vùng `audit_log` quá hạn lưu (≥ 12 tháng) bằng kết nối owner — role ứng dụng vẫn không có quyền xóa nhật ký.
+- Xác thực lại (`ReauthenticateAsync`) chống dùng lại mã TOTP; audit đúng loại hành động: `Export` khi xuất báo cáo, `SyncRun` khi đồng bộ VDD, `ConfigChange` khi đổi ngưỡng cảnh báo.
+- Sửa: thư mục `requests` của sidecar backup dùng `0777` thay `1777` (sticky bit khiến sidecar không nhận được yêu cầu do worker tạo).
+- Kiểm thử bổ sung: giới hạn phiên đồng thời, hết phiên khi không hoạt động, mật khẩu hết hạn → phiên hạn chế, chống replay TOTP khi đăng nhập, upload sai chữ ký nội dung bị từ chối, xuất/ẩn danh dữ liệu cá nhân có ghi nhật ký; E2E P8 (header, WAF chặn SQLi, sao lưu bất thường). Tổng: unit 111, integration 80.
+
 ## [0.8.0] - 2026-11-09
 ### P7 – Tích hợp dữ liệu Viện Dinh dưỡng và API công khai (SPEC §7.10)
 - `INutritionDataProvider` + `VddApiNutritionDataProvider`: HttpClient, Polly (retry lũy thừa có jitter, circuit breaker, timeout theo kết nối), xác thực API key / Basic / OAuth2 client credentials (token được cache); credential lưu mã hóa, chỉ ghi (API không trả lại secret).

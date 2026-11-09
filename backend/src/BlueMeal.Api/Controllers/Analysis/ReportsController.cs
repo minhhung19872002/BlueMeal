@@ -14,7 +14,7 @@ namespace BlueMeal.Api.Controllers.Analysis;
 
 /// <summary>Reports RPT-01…RPT-16 (SPEC §7.9): web view, Excel export (background for large ones), favorite filters.</summary>
 [Route("api/v1/reports")]
-public sealed class ReportsController(AppDbContext db, ReportService reports, IFileStorage files, TimeProvider clock) : ApiControllerBase
+public sealed class ReportsController(AppDbContext db, ReportService reports, IFileStorage files, IAuditWriter audit, TimeProvider clock) : ApiControllerBase
 {
     private const int WebMaxRows = 2000;
 
@@ -45,10 +45,12 @@ public sealed class ReportsController(AppDbContext db, ReportService reports, IF
             if (r.Rows.Count <= ReportService.SyncExportMaxRows)
             {
                 var (content, name) = await reports.ExcelAsync(code, filter, ct);
+                await audit.WriteAsync(AuditAction.Export, "Report", code, null, filter, message: $"{r.Rows.Count} rows", ct: ct);
                 return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", name);
             }
         }
         var job = await reports.QueueAsync(code, filter, ct);
+        await audit.WriteAsync(AuditAction.Export, "Report", code, null, filter, message: "background", ct: ct);
         return Accepted(new { jobId = job.Id, status = job.Status.ToString() });
     }
 

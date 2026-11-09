@@ -25,8 +25,9 @@ mkdir -p /backups/archive /backups/manifests /backups/requests /backups/restore-
 chown -R postgres:postgres /backups/archive /backups/manifests /backups/restore-tests
 chown postgres:postgres /backups
 touch /backups/backup.log && chown postgres:postgres /backups/backup.log
-# the worker (uid 1654) drops request files here
-chmod 1777 /backups/requests
+# the worker (uid 1654) drops request files here and the watcher (postgres) must be able to rename/delete them:
+# no sticky bit (with 1777 only the file owner could rename). The volume is private to the backup and worker containers.
+chmod 0777 /backups/requests
 
 # Environment needed by cron jobs (crond does not inherit the container env)
 ENV_FILE=/tmp/backup.env

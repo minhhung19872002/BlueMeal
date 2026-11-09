@@ -1,4 +1,35 @@
 {
+  "backups": {
+    "title": "Sao lưu dữ liệu",
+    "manual": "Sao lưu ngay (bất thường)",
+    "note": "Ghi chú",
+    "type": "Loại",
+    "Scheduled": "Định kỳ",
+    "Manual": "Bất thường",
+    "requestedAt": "Yêu cầu lúc",
+    "finishedAt": "Hoàn thành",
+    "size": "Dung lượng",
+    "sha": "SHA-256",
+    "file": "Tệp",
+    "status": "Trạng thái",
+    "by": "Người yêu cầu",
+    "download": "Tải về",
+    "notAvailable": "Không còn trên máy chủ",
+    "queued": "Đã gửi yêu cầu sao lưu",
+    "reauth": "Xác thực lại để tải bản sao lưu",
+    "password": "Mật khẩu",
+    "code": "Mã xác thực (MFA) hoặc mã khôi phục",
+    "reauthHint": "Bản sao lưu được mã hóa AES-256; cần mật khẩu khôi phục (BACKUP_PASSPHRASE) để giải mã khi phục hồi bằng restore.ps1/.sh.",
+    "policy": "Chính sách: lịch {{cron}}, giữ {{d}} bản ngày, {{w}} bản tuần, {{m}} bản tháng",
+    "restoreHint": "Khôi phục: chạy deploy/backup/restore.ps1 (Windows) hoặc restore-host.sh (Linux) trên máy chủ — xem tài liệu vận hành.",
+    "jobStatus": {
+      "Queued": "Đang chờ",
+      "Running": "Đang chạy",
+      "Succeeded": "Thành công",
+      "Failed": "Lỗi",
+      "Expired": "Hết hạn"
+    }
+  },
   "version": {
     "title": "Phiên bản hệ thống",
     "server": "Phiên bản máy chủ",

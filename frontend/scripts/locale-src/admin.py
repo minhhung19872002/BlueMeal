@@ -1,4 +1,15 @@
 L = {
+    "backups": {
+        "title": ("Sao lưu dữ liệu", "Backups"), "manual": ("Sao lưu ngay (bất thường)", "Back up now"), "note": ("Ghi chú", "Note"), "type": ("Loại", "Type"),
+        "Scheduled": ("Định kỳ", "Scheduled"), "Manual": ("Bất thường", "Manual"), "requestedAt": ("Yêu cầu lúc", "Requested"), "finishedAt": ("Hoàn thành", "Finished"),
+        "size": ("Dung lượng", "Size"), "sha": ("SHA-256", "SHA-256"), "file": ("Tệp", "File"), "status": ("Trạng thái", "Status"), "by": ("Người yêu cầu", "Requested by"),
+        "download": ("Tải về", "Download"), "notAvailable": ("Không còn trên máy chủ", "No longer on server"), "queued": ("Đã gửi yêu cầu sao lưu", "Backup requested"),
+        "reauth": ("Xác thực lại để tải bản sao lưu", "Re-authenticate to download"), "password": ("Mật khẩu", "Password"), "code": ("Mã xác thực (MFA) hoặc mã khôi phục", "MFA code or recovery code"),
+        "reauthHint": ("Bản sao lưu được mã hóa AES-256; cần mật khẩu khôi phục (BACKUP_PASSPHRASE) để giải mã khi phục hồi bằng restore.ps1/.sh.", "Backups are AES-256 encrypted; the BACKUP_PASSPHRASE is needed to decrypt when restoring with restore.ps1/.sh."),
+        "policy": ("Chính sách: lịch {{cron}}, giữ {{d}} bản ngày, {{w}} bản tuần, {{m}} bản tháng", "Policy: schedule {{cron}}, keep {{d}} daily, {{w}} weekly, {{m}} monthly"),
+        "restoreHint": ("Khôi phục: chạy deploy/backup/restore.ps1 (Windows) hoặc restore-host.sh (Linux) trên máy chủ — xem tài liệu vận hành.", "Restore: run deploy/backup/restore.ps1 (Windows) or restore-host.sh (Linux) on the server — see the operations guide."),
+        "jobStatus": {"Queued": ("Đang chờ", "Queued"), "Running": ("Đang chạy", "Running"), "Succeeded": ("Thành công", "Succeeded"), "Failed": ("Lỗi", "Failed"), "Expired": ("Hết hạn", "Expired")},
+    },
     "version": {
         "title": ("Phiên bản hệ thống", "System version"), "server": ("Phiên bản máy chủ", "Server version"), "commit": ("Mã commit", "Commit"),
         "buildTime": ("Thời điểm build", "Build time"), "runtime": (".NET runtime", ".NET runtime"), "web": ("Phiên bản giao diện", "Web version"),

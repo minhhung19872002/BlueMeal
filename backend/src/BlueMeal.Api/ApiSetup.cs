@@ -52,6 +52,7 @@ public static class ApiServiceCollectionExtensions
         services.AddScoped<Reports.ReportService>();
         services.AddScoped<Services.AnalysisService>();
         services.AddScoped<Services.IntegrationService>();
+        services.AddScoped<Services.BackupService>();
         services.AddSingleton<Controllers.PublicApi.PublicTokenService>();
         services.AddHttpClient(BlueMeal.Infrastructure.Integration.VddApiNutritionDataProvider.HttpClientName);
         foreach (var t in typeof(ApiServiceCollectionExtensions).Assembly.GetTypes().Where(t => t is { IsClass: true, IsAbstract: false } && typeof(Reports.IReport).IsAssignableFrom(t)))
