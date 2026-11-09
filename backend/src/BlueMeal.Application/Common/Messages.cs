@@ -22,6 +22,12 @@ public static partial class L
         ["error.fileType"] = ("Loại tệp không được phép.", "File type is not allowed."),
         ["error.fileSize"] = ("Tệp vượt quá dung lượng cho phép ({0} MB).", "File exceeds the size limit ({0} MB)."),
         ["error.maintenance"] = ("Hệ thống đang bảo trì.", "The system is under maintenance."),
+        ["validation.code"] = ("Mã chỉ gồm chữ không dấu, số và các ký tự _ . - /", "Code may only contain letters, digits and _ . - /"),
+        ["validation.roleCode"] = ("Mã nhóm quyền chỉ gồm chữ in hoa, số và dấu _", "Role code may only contain upper-case letters, digits and _"),
+        ["validation.userName"] = ("Tên đăng nhập chỉ gồm chữ không dấu, số và . _ @ -", "Username may only contain letters, digits and . _ @ -"),
+        ["validation.systemRole"] = ("Không thể xóa/sửa quyền của nhóm quyền hệ thống này.", "This system role cannot be deleted or have its permissions changed."),
+        ["validation.lastAdmin"] = ("Phải còn ít nhất 1 quản trị hệ thống đang hoạt động.", "At least one active system administrator is required."),
+        ["validation.selfLock"] = ("Không thể tự khóa tài khoản của chính mình.", "You cannot lock your own account."),
         // auth
         ["auth.invalidCredentials"] = ("Tên đăng nhập hoặc mật khẩu không đúng.", "Invalid username or password."),
         ["auth.locked"] = ("Tài khoản tạm khóa do đăng nhập sai nhiều lần. Thử lại sau {0} phút.", "Account temporarily locked due to failed attempts. Try again in {0} minutes."),

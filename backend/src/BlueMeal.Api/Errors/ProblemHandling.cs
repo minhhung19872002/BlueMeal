@@ -44,8 +44,29 @@ public static class ProblemWriter
     }
 }
 
+/// <summary>
+/// Converts expected business/validation exceptions to problem responses before they reach the framework
+/// exception handler (which would log them as unhandled errors). Unexpected exceptions are re-thrown.
+/// </summary>
+public sealed class ExpectedExceptionMiddleware(RequestDelegate next)
+{
+    public async Task InvokeAsync(HttpContext ctx)
+    {
+        try { await next(ctx); }
+        catch (Exception ex) when (GlobalExceptionHandler.IsExpected(ex) && !ctx.Response.HasStarted)
+        {
+            await GlobalExceptionHandler.HandleKnownAsync(ctx, ex);
+        }
+    }
+}
+
 public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> log) : IExceptionHandler
 {
+    public static bool IsExpected(Exception ex) => ex is ValidationException or AppException or DbUpdateConcurrencyException or BadHttpRequestException
+        || ex is DbUpdateException { InnerException: PostgresException { SqlState: PostgresErrorCodes.UniqueViolation or PostgresErrorCodes.ForeignKeyViolation } };
+
+    public static Task HandleKnownAsync(HttpContext ctx, Exception ex) => new GlobalExceptionHandler(Microsoft.Extensions.Logging.Abstractions.NullLogger<GlobalExceptionHandler>.Instance).TryHandleAsync(ctx, ex, ctx.RequestAborted).AsTask();
+
     public async ValueTask<bool> TryHandleAsync(HttpContext ctx, Exception ex, CancellationToken ct)
     {
         switch (ex)

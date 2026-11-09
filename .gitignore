@@ -27,3 +27,6 @@ backups/
 offline-images/
 .idea/
 .DS_Store
+
+# E2E credentials (generated)
+frontend/e2e/.auth/

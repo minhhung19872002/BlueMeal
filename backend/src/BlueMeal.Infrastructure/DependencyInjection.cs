@@ -35,7 +35,6 @@ public static class DependencyInjection
             o.UseNpgsql(cs, npg =>
             {
                 npg.MigrationsHistoryTable("__ef_migrations_history", AppDbContext.Schema);
-                npg.EnableRetryOnFailure(3);
                 npg.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });
             o.UseSnakeCaseNamingConvention();

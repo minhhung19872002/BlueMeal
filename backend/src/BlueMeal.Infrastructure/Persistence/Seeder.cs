@@ -91,6 +91,19 @@ public sealed partial class Seeder(AppDbContext db, UserManager<AppUser> users, 
             if (!keys.Contains(key))
                 db.Add(new AppSetting { Key = key, Value = JsonSerializer.Serialize(Activator.CreateInstance(type), type, Json), UpdatedAt = clock.GetUtcNow() });
         await db.SaveChangesAsync(ct);
+
+        // Dev/test convenience: point SMTP at Mailpit when Seed:SmtpHost is configured (never in production compose).
+        if (config["Seed:SmtpHost"] is { Length: > 0 } smtpHost)
+        {
+            var row = await db.Set<AppSetting>().FirstAsync(s => s.Key == SettingKeys.Smtp, ct);
+            var smtp = JsonSerializer.Deserialize<SmtpSettings>(row.Value, Json) ?? new SmtpSettings();
+            if (!smtp.Enabled)
+            {
+                smtp.Enabled = true; smtp.Host = smtpHost; smtp.Port = config.GetValue("Seed:SmtpPort", 1025); smtp.UseSsl = false;
+                row.Value = JsonSerializer.Serialize(smtp, Json);
+                await db.SaveChangesAsync(ct);
+            }
+        }
     }
 
     private async Task SeedOrganizationAsync(CancellationToken ct)

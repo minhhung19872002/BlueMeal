@@ -50,7 +50,8 @@ public sealed class AuthService(
         var policy = await settings.GetAsync<PasswordPolicySettings>(SettingKeys.PasswordPolicy, ct);
         var byUser = await cache.GetAsync<long?>(FailKey("u", userName), ct) ?? 0;
         var byIp = await cache.GetAsync<long?>(FailKey("ip", ip ?? ""), ct) ?? 0;
-        return Math.Max(byUser, byIp) >= policy.CaptchaAfterFailures;
+        // Per-account threshold; per-IP threshold is higher because many workers share one NAT address.
+        return byUser >= policy.CaptchaAfterFailures || byIp >= policy.CaptchaAfterFailures * policy.CaptchaIpMultiplier;
     }
 
     public async Task<SessionTokens?> LoginAsync(LoginRequest req, string? ip, string? userAgent, CancellationToken ct)

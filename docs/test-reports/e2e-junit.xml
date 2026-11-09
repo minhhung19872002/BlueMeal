@@ -1,0 +1,98 @@
+<testsuites id="" name="" tests="4" failures="2" skipped="0" errors="0" time="188.39478100000002">
+<testsuite name="p1-admin.spec.ts" timestamp="2026-11-09T05:47:12.378Z" hostname="desktop-chrome" tests="4" failures="2" skipped="0" time="183.247" errors="0">
+<testcase name="P1 — authentication &amp; administration › login page is bilingual and switches language instantly" classname="p1-admin.spec.ts" time="1.335">
+</testcase>
+<testcase name="P1 — authentication &amp; administration › wrong password shows a neutral bilingual error" classname="p1-admin.spec.ts" time="1.128">
+</testcase>
+<testcase name="P1 — authentication &amp; administration › admin signs in with TOTP and manages users, roles and sessions" classname="p1-admin.spec.ts" time="90.459">
+<failure message="p1-admin.spec.ts:23:3 admin signs in with TOTP and manages users, roles and sessions" type="FAILURE">
+<![CDATA[  [desktop-chrome] › p1-admin.spec.ts:23:3 › P1 — authentication & administration › admin signs in with TOTP and manages users, roles and sessions 
+
+    Test timeout of 90000ms exceeded.
+
+    Error: locator.click: Test timeout of 90000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: 'OK' })
+
+
+      37 |     await page.getByRole('button', { name: 'Lưu' }).click();
+      38 |     await expect(page.getByText('Mật khẩu tạm thời')).toBeVisible();
+    > 39 |     await page.getByRole('button', { name: 'OK' }).click();
+         |                                                    ^
+      40 |
+      41 |     await page.goto('/admin/roles');
+      42 |     await page.getByText('Thủ kho').first().click();
+        at D:\Source\BlueMeal\frontend\e2e\p1-admin.spec.ts:39:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\p1-admin-P1-—-authenticati-6d5e7-es-users-roles-and-sessions-desktop-chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\p1-admin-P1-—-authenticati-6d5e7-es-users-roles-and-sessions-desktop-chrome\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\test-results\p1-admin-P1-—-authenticati-6d5e7-es-users-roles-and-sessions-desktop-chrome\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\test-results\p1-admin-P1-—-authenticati-6d5e7-es-users-roles-and-sessions-desktop-chrome\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\..\frontend\test-results\p1-admin-P1-—-authenticati-6d5e7-es-users-roles-and-sessions-desktop-chrome\test-failed-1.png]]
+
+[[ATTACHMENT|..\..\frontend\test-results\p1-admin-P1-—-authenticati-6d5e7-es-users-roles-and-sessions-desktop-chrome\error-context.md]]
+
+[[ATTACHMENT|..\..\frontend\test-results\p1-admin-P1-—-authenticati-6d5e7-es-users-roles-and-sessions-desktop-chrome\trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="P1 — authentication &amp; administration › catalog screen: search without accents and Excel buttons @mobile" classname="p1-admin.spec.ts" time="90.325">
+<failure message="p1-admin.spec.ts:55:3 catalog screen: search without accents and Excel buttons @mobile" type="FAILURE">
+<![CDATA[  [desktop-chrome] › p1-admin.spec.ts:55:3 › P1 — authentication & administration › catalog screen: search without accents and Excel buttons @mobile 
+
+    Test timeout of 90000ms exceeded.
+
+    Error: locator.fill: Test timeout of 90000ms exceeded.
+    Call log:
+      - waiting for getByTestId('catalog-search').locator('input')
+
+
+      56 |     await loginUi(page, loadAdmin());
+      57 |     await page.goto('/catalog/provinces');
+    > 58 |     await page.getByTestId('catalog-search').locator('input').fill('ho chi minh');
+         |                                                               ^
+      59 |     await page.getByTestId('catalog-search').locator('input').press('Enter');
+      60 |     await expect(page.getByText('Thành phố Hồ Chí Minh')).toBeVisible();
+      61 |     await shot(page, 'catalog-provinces');
+        at D:\Source\BlueMeal\frontend\e2e\p1-admin.spec.ts:58:63
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\p1-admin-P1-—-authenticati-8438a-ts-and-Excel-buttons-mobile-desktop-chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\p1-admin-P1-—-authenticati-8438a-ts-and-Excel-buttons-mobile-desktop-chrome\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\test-results\p1-admin-P1-—-authenticati-8438a-ts-and-Excel-buttons-mobile-desktop-chrome\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\test-results\p1-admin-P1-—-authenticati-8438a-ts-and-Excel-buttons-mobile-desktop-chrome\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\..\frontend\test-results\p1-admin-P1-—-authenticati-8438a-ts-and-Excel-buttons-mobile-desktop-chrome\test-failed-1.png]]
+
+[[ATTACHMENT|..\..\frontend\test-results\p1-admin-P1-—-authenticati-8438a-ts-and-Excel-buttons-mobile-desktop-chrome\error-context.md]]
+
+[[ATTACHMENT|..\..\frontend\test-results\p1-admin-P1-—-authenticati-8438a-ts-and-Excel-buttons-mobile-desktop-chrome\trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+</testsuites>

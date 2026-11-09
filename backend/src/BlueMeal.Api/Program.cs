@@ -198,6 +198,7 @@ app.UseSwaggerGate();
 app.UseSwagger();
 app.UseSwaggerUI(o => { o.SwaggerEndpoint("/swagger/v1/swagger.json", "BlueMeal API v1"); o.DocumentTitle = "BlueMeal API"; });
 
+app.UseMiddleware<ExpectedExceptionMiddleware>();
 app.UseRouting();
 app.UseAuthentication();
 app.UseMiddleware<SessionValidationMiddleware>();

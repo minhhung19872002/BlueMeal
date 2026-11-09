@@ -18,8 +18,8 @@ export default tseslint.config(
       'i18next/no-literal-string': ['error', {
         mode: 'jsx-only',
         'jsx-attributes': { include: ['title', 'placeholder', 'label', 'alt', 'aria-label', 'okText', 'cancelText', 'tooltip', 'description', 'message'] },
-        callees: { exclude: ['t', 'i18n.t', '*.includes', 'includes', '*.startsWith', '*.endsWith', 'set*', '*.get', '*.set', '*.has', 'navigate', 'Number', 'String', 'console.*', 'Error', 'require', 'useTranslation', 'navigate', 'dayjs', 'fmt.*'] },
-        words: { exclude: ['[0-9!-/:-@[-`{-~ ]+', '—', '·', '•', '→', '/', '₫', '%', 'kcal', 'g', 'P', 'L', 'G', 'VI', 'EN', 'BlueMeal', 'OK', 'Excel', 'MFA', 'TOTP', 'QR', 'API', 'P:L:G'] },
+        callees: { exclude: ['t', 'i18n.t', 'has', 'hasAny', 'can', 'enumLabel', 'lookupLabel', '*.includes', 'includes', '*.startsWith', '*.endsWith', 'set*', '*.get', '*.set', '*.has', 'navigate', 'Number', 'String', 'console.*', 'Error', 'require', 'useTranslation', 'navigate', 'dayjs', 'fmt.*'] },
+        words: { exclude: ['[0-9!-/:-@[-`{-~ ]+', '—', '∅', '✓', '✗', '·', '•', '→', '/', '₫', '%', 'kcal', 'g', 'P', 'L', 'G', 'VI', 'EN', 'BlueMeal', 'OK', 'Excel', 'MFA', 'TOTP', 'QR', 'API', 'P:L:G'] },
       }],
       // SPEC §10.5: XSS hardening
       'no-restricted-syntax': ['error', { selector: "JSXAttribute[name.name='dangerouslySetInnerHTML']", message: 'dangerouslySetInnerHTML is forbidden (SPEC §10.5).' }],

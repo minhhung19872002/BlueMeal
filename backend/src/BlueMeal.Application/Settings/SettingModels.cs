@@ -44,6 +44,8 @@ public class PasswordPolicySettings
     public int MaxFailedAttempts { get; set; } = 5;
     public int LockoutMinutes { get; set; } = 15;
     public int CaptchaAfterFailures { get; set; } = 3;
+    /// <summary>Per-IP captcha threshold = CaptchaAfterFailures × this multiplier (shared NAT addresses).</summary>
+    public int CaptchaIpMultiplier { get; set; } = 10;
 }
 
 public class SessionPolicySettings

@@ -41,6 +41,8 @@ public static class ApiServiceCollectionExtensions
 {
     public static IServiceCollection AddBlueMealApi(this IServiceCollection services, IConfiguration config)
     {
+        Catalog.MapsterSetup.Configure();
+        services.AddScoped<Controllers.Admin.FileService>();
         return services;
     }
 

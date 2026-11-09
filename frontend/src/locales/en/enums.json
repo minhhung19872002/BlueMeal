@@ -1,0 +1,242 @@
+{
+  "Gender": {
+    "Common": "Any",
+    "Male": "Male",
+    "Female": "Female"
+  },
+  "LaborIntensity": {
+    "Light": "Light work",
+    "Moderate": "Moderate work",
+    "Heavy": "Heavy work",
+    "VeryHeavy": "Very heavy work"
+  },
+  "UomType": {
+    "Mass": "Mass",
+    "Volume": "Volume",
+    "Count": "Count",
+    "Energy": "Energy"
+  },
+  "WarehouseType": {
+    "Dry": "Dry",
+    "Chilled": "Chilled",
+    "Frozen": "Frozen",
+    "Other": "Other"
+  },
+  "NutrientGroup": {
+    "Energy": "Energy",
+    "Macro": "Macronutrients",
+    "Mineral": "Minerals",
+    "Vitamin": "Vitamins",
+    "Other": "Other"
+  },
+  "DataSource": {
+    "Manual": "Manual",
+    "Import": "Excel import",
+    "VddApi": "NIN API"
+  },
+  "DishType": {
+    "MainProtein": "Main (protein)",
+    "StirFry": "Stir-fry",
+    "Soup": "Soup",
+    "Vegetable": "Vegetable",
+    "Staple": "Staple",
+    "Dessert": "Dessert",
+    "Drink": "Drink",
+    "Other": "Other"
+  },
+  "CookingMethod": {
+    "None": "None",
+    "Boil": "Boil",
+    "Steam": "Steam",
+    "StirFry": "Stir-fry",
+    "DeepFry": "Deep-fry",
+    "Braise": "Braise",
+    "Grill": "Grill",
+    "Simmer": "Simmer",
+    "Raw": "Raw",
+    "Bake": "Bake",
+    "Other": "Other"
+  },
+  "RecipeStatus": {
+    "Draft": "Draft",
+    "Active": "Active",
+    "Archived": "Archived"
+  },
+  "WarningLevel": {
+    "Info": "Info",
+    "Warning": "Warning",
+    "Critical": "Critical"
+  },
+  "PlanPeriod": {
+    "Week": "Week",
+    "Month": "Month",
+    "Custom": "Custom"
+  },
+  "PlanStatus": {
+    "Draft": "Draft",
+    "InProgress": "In progress",
+    "Completed": "Completed",
+    "Cancelled": "Cancelled"
+  },
+  "MenuCreationMode": {
+    "Manual": "Manual",
+    "Auto": "Automatic",
+    "Copied": "Copied"
+  },
+  "MenuStatus": {
+    "Draft": "Draft",
+    "Submitted": "Submitted",
+    "Approved": "Approved",
+    "Rejected": "Rejected",
+    "Returned": "Returned",
+    "Published": "Published",
+    "Cancelled": "Cancelled"
+  },
+  "ApprovalAction": {
+    "Submit": "Submit",
+    "Approve": "Approve",
+    "Reject": "Reject",
+    "Return": "Return",
+    "Publish": "Publish",
+    "Cancel": "Cancel",
+    "Recall": "Recall",
+    "OverrideCritical": "Override critical"
+  },
+  "MealOrderStatus": {
+    "Draft": "Draft",
+    "Confirmed": "Confirmed",
+    "Adjusted": "Adjusted",
+    "Closed": "Closed",
+    "Cancelled": "Cancelled"
+  },
+  "QualityResult": {
+    "Pass": "Pass",
+    "Fail": "Fail",
+    "ConditionalPass": "Conditional pass"
+  },
+  "IssueReason": {
+    "ForMenu": "For menu",
+    "Disposal": "Disposal",
+    "Return": "Return to supplier",
+    "Transfer": "Transfer",
+    "Adjustment": "Stock-take adjustment",
+    "Other": "Other"
+  },
+  "StockDocStatus": {
+    "Draft": "Draft",
+    "Posted": "Posted",
+    "Cancelled": "Cancelled"
+  },
+  "StockTakeStatus": {
+    "Draft": "Draft",
+    "Counting": "Counting",
+    "Approved": "Approved",
+    "Cancelled": "Cancelled"
+  },
+  "LedgerType": {
+    "In": "In",
+    "Out": "Out",
+    "AdjustIn": "Adjust in",
+    "AdjustOut": "Adjust out"
+  },
+  "PriceSource": {
+    "Receipt": "Receipt",
+    "Manual": "Manual",
+    "Contract": "Contract"
+  },
+  "CostPriceMode": {
+    "ReferencePrice": "Reference price",
+    "LastReceipt": "Last receipt price",
+    "WeightedAverage": "Weighted average",
+    "Contract": "Contract price"
+  },
+  "InventoryCostMethod": {
+    "MovingAverage": "Moving average",
+    "Fifo": "FIFO"
+  },
+  "OverheadMode": {
+    "PercentOfFood": "% of food cost",
+    "FixedPerServing": "Fixed per serving"
+  },
+  "ContractStatus": {
+    "Draft": "Draft",
+    "Active": "Active",
+    "Expired": "Expired",
+    "Terminated": "Terminated"
+  },
+  "PurchaseRequestStatus": {
+    "Draft": "Draft",
+    "Submitted": "Submitted",
+    "Approved": "Approved",
+    "Ordered": "Ordered",
+    "Received": "Received",
+    "Cancelled": "Cancelled"
+  },
+  "AlertStatus": {
+    "Open": "Open",
+    "Acknowledged": "Acknowledged",
+    "Resolved": "Resolved"
+  },
+  "AuditAction": {
+    "Login": "Login",
+    "Logout": "Logout",
+    "LoginFailed": "LoginFailed",
+    "Create": "Create",
+    "Update": "Update",
+    "Delete": "Delete",
+    "Approve": "Approve",
+    "Reject": "Reject",
+    "Export": "Export",
+    "Import": "Import",
+    "PermissionChange": "PermissionChange",
+    "ConfigChange": "ConfigChange",
+    "Backup": "Backup",
+    "Restore": "Restore",
+    "SyncRun": "SyncRun",
+    "View": "View",
+    "PasswordChange": "PasswordChange",
+    "MfaChange": "MfaChange",
+    "SessionRevoke": "SessionRevoke",
+    "PiiAccess": "PiiAccess",
+    "Submit": "Submit",
+    "Publish": "Publish",
+    "Recall": "Recall",
+    "Lock": "Lock",
+    "Unlock": "Unlock",
+    "Post": "Post",
+    "Other": "Other"
+  },
+  "BackupType": {
+    "Scheduled": "Scheduled",
+    "Manual": "Manual"
+  },
+  "JobStatus": {
+    "Queued": "Queued",
+    "Running": "Running",
+    "Succeeded": "Succeeded",
+    "Failed": "Failed",
+    "Expired": "Expired"
+  },
+  "IntegrationAuthType": {
+    "None": "None",
+    "ApiKey": "API key",
+    "Basic": "Basic",
+    "OAuth2ClientCredentials": "OAuth2 client credentials"
+  },
+  "SyncConflictStatus": {
+    "Pending": "Pending",
+    "KeptLocal": "Kept local",
+    "AcceptedRemote": "Accepted remote"
+  },
+  "DataScopeType": {
+    "Warehouse": "Warehouse",
+    "Customer": "Customer"
+  },
+  "CertificateType": {
+    "FoodSafetyFacility": "Food safety facility certificate",
+    "HealthCheck": "Health check certificate",
+    "LabTest": "Lab test result",
+    "BusinessLicense": "Business license",
+    "Other": "Other"
+  }
+}

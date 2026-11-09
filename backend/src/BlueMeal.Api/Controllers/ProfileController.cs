@@ -76,7 +76,7 @@ public sealed class ProfileController(AuthService auth, AppDbContext db, UserMan
     }
 
     [HttpGet("login-history")]
-    public async Task<IActionResult> LoginHistory([FromQuery] PageQuery q, CancellationToken ct)
+    public async Task<IActionResult> LoginHistory([FromQuery(Name = "")] PageQuery q, CancellationToken ct)
     {
         var query = db.Set<LoginHistory>().AsNoTracking().Where(h => h.UserId == UserId).OrderByDescending(h => h.At);
         var total = await query.LongCountAsync(ct);

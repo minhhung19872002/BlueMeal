@@ -68,18 +68,25 @@ public abstract class CatalogControllerBase<TEntity, TDto, TUpsert> : ApiControl
     /// <summary>Maps an entity query to DTOs (override when Mapster projection is not enough).</summary>
     protected virtual IQueryable<TDto> Project(IQueryable<TEntity> q) => q.ProjectToType<TDto>();
 
+    /// <summary>Post-processing of read DTOs (e.g. PII masking for users without pii.view — SPEC §10.6).</summary>
+    protected virtual Task PostProcessAsync(IList<TDto> items, bool single, CancellationToken ct) => Task.CompletedTask;
+
+    /// <summary>Post-processing of exported rows (masking).</summary>
+    protected virtual void PostProcessExportRow(IDictionary<string, object?> row) { }
+
     /// <summary>Applies upsert values to the entity (override for child collections).</summary>
     protected virtual void Apply(TUpsert input, TEntity entity) => input.Adapt(entity);
 
     // ------------------------------------------------------------------ endpoints
 
     [HttpGet, HasPermission(PermissionAction.View)]
-    public virtual async Task<ActionResult<PagedResult<TDto>>> List([FromQuery] PageQuery q, CancellationToken ct)
+    public virtual async Task<ActionResult<PagedResult<TDto>>> List([FromQuery(Name = "")] PageQuery q, CancellationToken ct)
     {
         var query = Filtered(q);
         var total = await query.LongCountAsync(ct);
         query = Sort(query, q.Sort);
         var items = await Project(query.Skip((q.Page - 1) * q.PageSize).Take(q.PageSize)).ToListAsync(ct);
+        await PostProcessAsync(items, false, ct);
         return new PagedResult<TDto>(items, q.Page, q.PageSize, total);
     }
 
@@ -109,8 +116,10 @@ public abstract class CatalogControllerBase<TEntity, TDto, TUpsert> : ApiControl
     [HttpGet("{id:guid}"), HasPermission(PermissionAction.View)]
     public virtual async Task<ActionResult<TDto>> Get(Guid id, CancellationToken ct)
     {
-        var dto = await Project(BaseQuery(Db.Set<TEntity>().AsNoTracking()).Where(e => e.Id == id)).FirstOrDefaultAsync(ct);
-        return dto is null ? throw new NotFoundException(typeof(TEntity).Name) : dto;
+        var dto = await Project(BaseQuery(Db.Set<TEntity>().AsNoTracking()).Where(e => e.Id == id)).FirstOrDefaultAsync(ct)
+                  ?? throw new NotFoundException(typeof(TEntity).Name);
+        await PostProcessAsync([dto], true, ct);
+        return dto;
     }
 
     [HttpPost, HasPermission(PermissionAction.Create)]
@@ -164,12 +173,13 @@ public abstract class CatalogControllerBase<TEntity, TDto, TUpsert> : ApiControl
     // ------------------------------------------------------------------ Excel
 
     [HttpGet("export"), HasPermission(PermissionAction.Export)]
-    public virtual async Task<IActionResult> Export([FromQuery] PageQuery q, CancellationToken ct)
+    public virtual async Task<IActionResult> Export([FromQuery(Name = "")] PageQuery q, CancellationToken ct)
     {
         var entities = await Sort(Filtered(q), q.Sort).Take(100_000).ToListAsync(ct);
         var cols = ExcelColumns();
         var refMaps = await LoadRefMaps(cols, toCode: true, ct);
         var rows = entities.Select(e => ToRow(e.Adapt<TUpsert>(), e, cols, refMaps)).ToList();
+        foreach (var r in rows) PostProcessExportRow(r);
         var bytes = Excel.Write(new ExcelSheet
         {
             Name = ExportTitle,
@@ -299,7 +309,11 @@ public abstract class CatalogControllerBase<TEntity, TDto, TUpsert> : ApiControl
     }
 
     private async Task<TDto> LoadDto(Guid id, CancellationToken ct)
-        => await Project(Db.Set<TEntity>().AsNoTracking().Where(e => e.Id == id)).FirstAsync(ct);
+    {
+        var dto = await Project(Db.Set<TEntity>().AsNoTracking().Where(e => e.Id == id)).FirstAsync(ct);
+        await PostProcessAsync([dto], false, ct);
+        return dto;
+    }
 
     private async Task SetActiveCore(Guid id, bool active, CancellationToken ct)
     {

@@ -1,0 +1,242 @@
+{
+  "Gender": {
+    "Common": "Chung",
+    "Male": "Nam",
+    "Female": "Nữ"
+  },
+  "LaborIntensity": {
+    "Light": "Lao động nhẹ",
+    "Moderate": "Lao động vừa",
+    "Heavy": "Lao động nặng",
+    "VeryHeavy": "Lao động rất nặng"
+  },
+  "UomType": {
+    "Mass": "Khối lượng",
+    "Volume": "Thể tích",
+    "Count": "Đếm (cái, quả…)",
+    "Energy": "Năng lượng"
+  },
+  "WarehouseType": {
+    "Dry": "Kho khô",
+    "Chilled": "Kho mát",
+    "Frozen": "Kho đông lạnh",
+    "Other": "Khác"
+  },
+  "NutrientGroup": {
+    "Energy": "Năng lượng",
+    "Macro": "Đa lượng",
+    "Mineral": "Khoáng chất",
+    "Vitamin": "Vitamin",
+    "Other": "Khác"
+  },
+  "DataSource": {
+    "Manual": "Nhập tay",
+    "Import": "Nhập Excel",
+    "VddApi": "API Viện Dinh dưỡng"
+  },
+  "DishType": {
+    "MainProtein": "Món mặn",
+    "StirFry": "Món xào",
+    "Soup": "Canh",
+    "Vegetable": "Rau",
+    "Staple": "Cơm/tinh bột",
+    "Dessert": "Tráng miệng",
+    "Drink": "Đồ uống",
+    "Other": "Khác"
+  },
+  "CookingMethod": {
+    "None": "Không chế biến",
+    "Boil": "Luộc",
+    "Steam": "Hấp",
+    "StirFry": "Xào",
+    "DeepFry": "Chiên/rán",
+    "Braise": "Kho",
+    "Grill": "Nướng",
+    "Simmer": "Rim/ninh",
+    "Raw": "Ăn sống/trộn",
+    "Bake": "Nướng lò",
+    "Other": "Khác"
+  },
+  "RecipeStatus": {
+    "Draft": "Nháp",
+    "Active": "Đang áp dụng",
+    "Archived": "Lưu trữ"
+  },
+  "WarningLevel": {
+    "Info": "Thông tin",
+    "Warning": "Cảnh báo",
+    "Critical": "Nghiêm trọng"
+  },
+  "PlanPeriod": {
+    "Week": "Tuần",
+    "Month": "Tháng",
+    "Custom": "Tùy chọn"
+  },
+  "PlanStatus": {
+    "Draft": "Nháp",
+    "InProgress": "Đang lập",
+    "Completed": "Hoàn thành",
+    "Cancelled": "Đã hủy"
+  },
+  "MenuCreationMode": {
+    "Manual": "Thủ công",
+    "Auto": "Tự động",
+    "Copied": "Sao chép"
+  },
+  "MenuStatus": {
+    "Draft": "Nháp",
+    "Submitted": "Chờ duyệt",
+    "Approved": "Đã duyệt",
+    "Rejected": "Từ chối",
+    "Returned": "Trả lại",
+    "Published": "Đã công bố",
+    "Cancelled": "Đã hủy"
+  },
+  "ApprovalAction": {
+    "Submit": "Gửi duyệt",
+    "Approve": "Duyệt",
+    "Reject": "Từ chối",
+    "Return": "Trả lại",
+    "Publish": "Công bố",
+    "Cancel": "Hủy",
+    "Recall": "Thu hồi",
+    "OverrideCritical": "Chấp nhận cảnh báo nghiêm trọng"
+  },
+  "MealOrderStatus": {
+    "Draft": "Nháp",
+    "Confirmed": "Đã xác nhận",
+    "Adjusted": "Đã điều chỉnh",
+    "Closed": "Đã chốt",
+    "Cancelled": "Đã hủy"
+  },
+  "QualityResult": {
+    "Pass": "Đạt",
+    "Fail": "Không đạt",
+    "ConditionalPass": "Đạt có điều kiện"
+  },
+  "IssueReason": {
+    "ForMenu": "Xuất chế biến theo thực đơn",
+    "Disposal": "Xuất hủy",
+    "Return": "Trả nhà cung cấp",
+    "Transfer": "Điều chuyển kho",
+    "Adjustment": "Điều chỉnh kiểm kê",
+    "Other": "Khác"
+  },
+  "StockDocStatus": {
+    "Draft": "Nháp",
+    "Posted": "Đã ghi sổ",
+    "Cancelled": "Đã hủy"
+  },
+  "StockTakeStatus": {
+    "Draft": "Nháp",
+    "Counting": "Đang kiểm",
+    "Approved": "Đã duyệt",
+    "Cancelled": "Đã hủy"
+  },
+  "LedgerType": {
+    "In": "Nhập",
+    "Out": "Xuất",
+    "AdjustIn": "Điều chỉnh tăng",
+    "AdjustOut": "Điều chỉnh giảm"
+  },
+  "PriceSource": {
+    "Receipt": "Phiếu nhập",
+    "Manual": "Nhập tay",
+    "Contract": "Hợp đồng"
+  },
+  "CostPriceMode": {
+    "ReferencePrice": "Giá tham chiếu hiện hành",
+    "LastReceipt": "Giá nhập gần nhất",
+    "WeightedAverage": "Giá bình quân gia quyền",
+    "Contract": "Giá theo hợp đồng"
+  },
+  "InventoryCostMethod": {
+    "MovingAverage": "Bình quân gia quyền di động",
+    "Fifo": "Nhập trước xuất trước (FIFO)"
+  },
+  "OverheadMode": {
+    "PercentOfFood": "% giá thực phẩm",
+    "FixedPerServing": "Số tiền cố định/suất"
+  },
+  "ContractStatus": {
+    "Draft": "Nháp",
+    "Active": "Đang hiệu lực",
+    "Expired": "Hết hạn",
+    "Terminated": "Đã chấm dứt"
+  },
+  "PurchaseRequestStatus": {
+    "Draft": "Nháp",
+    "Submitted": "Đã gửi",
+    "Approved": "Đã duyệt",
+    "Ordered": "Đã đặt hàng",
+    "Received": "Đã nhận",
+    "Cancelled": "Đã hủy"
+  },
+  "AlertStatus": {
+    "Open": "Chưa xử lý",
+    "Acknowledged": "Đã ghi nhận",
+    "Resolved": "Đã xử lý"
+  },
+  "AuditAction": {
+    "Login": "Đăng nhập",
+    "Logout": "Đăng xuất",
+    "LoginFailed": "Đăng nhập thất bại",
+    "Create": "Thêm",
+    "Update": "Sửa",
+    "Delete": "Xóa",
+    "Approve": "Duyệt",
+    "Reject": "Từ chối",
+    "Export": "Xuất dữ liệu",
+    "Import": "Nhập dữ liệu",
+    "PermissionChange": "Thay đổi phân quyền",
+    "ConfigChange": "Thay đổi cấu hình",
+    "Backup": "Sao lưu",
+    "Restore": "Khôi phục",
+    "SyncRun": "Đồng bộ",
+    "View": "Xem",
+    "PasswordChange": "Đổi mật khẩu",
+    "MfaChange": "Thay đổi MFA",
+    "SessionRevoke": "Thu hồi phiên",
+    "PiiAccess": "Truy cập dữ liệu cá nhân",
+    "Submit": "Gửi duyệt",
+    "Publish": "Công bố",
+    "Recall": "Thu hồi",
+    "Lock": "Khóa",
+    "Unlock": "Mở khóa",
+    "Post": "Ghi sổ",
+    "Other": "Khác"
+  },
+  "BackupType": {
+    "Scheduled": "Định kỳ",
+    "Manual": "Bất thường (thủ công)"
+  },
+  "JobStatus": {
+    "Queued": "Chờ chạy",
+    "Running": "Đang chạy",
+    "Succeeded": "Thành công",
+    "Failed": "Thất bại",
+    "Expired": "Hết hạn"
+  },
+  "IntegrationAuthType": {
+    "None": "Không xác thực",
+    "ApiKey": "API Key",
+    "Basic": "Basic",
+    "OAuth2ClientCredentials": "OAuth2 client credentials"
+  },
+  "SyncConflictStatus": {
+    "Pending": "Chờ xử lý",
+    "KeptLocal": "Giữ dữ liệu nội bộ",
+    "AcceptedRemote": "Nhận dữ liệu từ nguồn"
+  },
+  "DataScopeType": {
+    "Warehouse": "Kho",
+    "Customer": "Khách hàng"
+  },
+  "CertificateType": {
+    "FoodSafetyFacility": "GCN cơ sở đủ điều kiện ATTP",
+    "HealthCheck": "Giấy khám sức khỏe",
+    "LabTest": "Kết quả xét nghiệm",
+    "BusinessLicense": "Giấy phép kinh doanh",
+    "Other": "Khác"
+  }
+}

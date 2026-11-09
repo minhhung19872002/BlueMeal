@@ -8,6 +8,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       Auth__CookieSecure: "false"
+      Seed__SmtpHost: mailpit
     ports: ["${DEV_API_PORT:-5080}:8080"]
   worker:
     environment:
