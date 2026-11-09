@@ -1,0 +1,44 @@
+# GIẢ ĐỊNH THIẾT KẾ (ASSUMPTIONS)
+
+Tài liệu ghi lại các quyết định khi yêu cầu trong `SPEC.md` mơ hồ hoặc chưa có thông tin. Mỗi giả định có mã `A-xx` để tham chiếu từ code và tài liệu khác.
+
+| Mã | Phase | Giả định | Lý do / Ảnh hưởng |
+|---|---|---|---|
+| A-01 | P0 | Repo gốc là thư mục `BlueMeal/` (tương đương `bluemeal/` trong SPEC). | Tên thư mục do chủ đầu tư đặt; không ảnh hưởng chức năng. |
+| A-02 | P0 | Backend nhắm `net8.0` (LTS). Máy dev có thể dùng SDK 9/10 để build `net8.0`; `global.json` cho phép roll-forward. Image Docker build bằng `mcr.microsoft.com/dotnet/sdk:8.0`. | Đúng stack cố định mục 2, không ép máy dev cài thêm SDK. |
+| A-03 | P0 | Các danh mục đơn giản dùng chung một khung CRUD generic (`CatalogControllerBase`) và một màn hình generic phía frontend (`CatalogPage`) cấu hình bằng metadata. Màn hình nghiệp vụ phức tạp (công thức, thực đơn, kho, kiểm thực) viết riêng. | Đảm bảo mọi danh mục có đủ bộ chức năng chung mục 7 (phân trang, tìm không dấu, lọc, sắp xếp, xóa mềm, khóa/mở, lịch sử, nhập/xuất Excel) một cách nhất quán, giảm lỗi. |
+| A-04 | P0 | Tìm kiếm không dấu: cột `search_text` (lower + unaccent, sinh ở tầng ứng dụng bằng hàm bỏ dấu tiếng Việt) + index `gin_trgm_ops`. Extension `unaccent` vẫn bật để dùng trong SQL báo cáo. | `unaccent()` không phải IMMUTABLE nên không index trực tiếp được; sinh ở ứng dụng cho kết quả ổn định trên mọi DB. |
+| A-05 | P0 | Phân quyền: permission code `module.action`. Danh sách permission sinh từ lớp tĩnh `Permissions` trong code và đồng bộ vào bảng `permission` khi khởi động. | Mục 7.1.8 "sinh từ code, chỉ đọc". |
+| A-06 | P0 | Mặc định **deny**: endpoint không có `[HasPermission]` hoặc `[AllowAnonymous]` sẽ bị chặn bởi fallback policy; có unit test quét controller. | Mục 8. |
+| A-07 | P1 | Access token JWT HS256 (khóa đối xứng từ secret), hiệu lực 15 phút. Refresh token 256-bit ngẫu nhiên, chỉ lưu SHA-256 trong `user_session`, xoay vòng mỗi lần refresh; phát hiện dùng lại refresh token cũ thì thu hồi toàn bộ phiên đó. | Mục 2 + 10.1. |
+| A-08 | P1 | Cookie refresh token: `HttpOnly; Secure; SameSite=Strict; Path=/api/v1/auth`. Endpoint refresh/logout yêu cầu thêm header `X-BlueMeal-CSRF` khớp cookie `bm_csrf` (double-submit). Ở môi trường dev chạy HTTP, cờ `Secure` tắt qua cấu hình `Auth:CookieSecure=false`. | Mục 9 + 10.5. |
+| A-09 | P1 | CAPTCHA tự host: câu đố số học dạng ảnh SVG sinh phía server, đáp án lưu hash trong Redis/bộ nhớ 5 phút. Bật sau 3 lần đăng nhập sai liên tiếp của tài khoản hoặc IP. | Mục 10.1 "CAPTCHA tự host". |
+| A-10 | P1 | MFA bắt buộc với SYS_ADMIN, MANAGER, MENU_APPROVER, ACCOUNTANT: lần đăng nhập đầu nếu chưa có MFA thì token chỉ có scope `mfa_setup` và chỉ được gọi API thiết lập MFA/đổi mật khẩu. | Mục 10.1 + 12. |
+| A-11 | P1 | OTP qua email (dự phòng) chỉ khả dụng khi đã cấu hình SMTP; mã 6 số, hết hạn 5 phút. | Mục 10.1. |
+| A-12 | P1 | Lịch sử mật khẩu lưu hash Identity trong bảng `password_history` (5 bản gần nhất). | Mục 10.1. |
+| A-13 | P2 | Danh mục hành chính 2 cấp sau sắp xếp 2025: seed 34 tỉnh/thành phố theo Nghị quyết 202/2025/QH15; danh sách xã/phường nhập bằng Excel (có file mẫu). Mã tỉnh dùng mã 2 chữ số theo danh mục mới; nếu sai, admin sửa được. | Mục 5.1. |
+| A-14 | P2 | Dữ liệu mẫu (thực phẩm, nguyên liệu, món, khuyến nghị) **không phải số liệu chính thức**: tên có tiền tố `[DỮ LIỆU MẪU]` ở trường ghi chú/nguồn (`source_version = SAMPLE`), giá trị dinh dưỡng là số làm tròn mang tính minh họa. Cờ `app_setting.sample_data` lưu danh sách id để xóa nhanh qua API `POST /api/v1/system/sample-data/purge`. | Mục 5.3 "Lưu ý seed". |
+| A-15 | P3 | Hệ số giữ lại vitamin (`nutrient_retention_factor`) mặc định = 1 cho mọi chất; seed vài hệ số minh họa cho Vit C/B1 theo phương pháp luộc/xào (gắn nhãn mẫu). | Mục 5.3. |
+| A-16 | P3 | Hệ số hao hụt khi chế biến (`recipe.cooking_loss_rate`) chỉ ảnh hưởng **khối lượng thành phẩm** hiển thị, không ảnh hưởng dinh dưỡng (dinh dưỡng tính theo khối lượng sạch sống × hệ số giữ lại). | Tránh trừ 2 lần; phù hợp cách tính phổ biến của bảng thành phần thực phẩm. |
+| A-17 | P3 | Quy đổi gram/đơn vị mua (`ingredient.grams_per_unit`): công thức nhập khối lượng sống theo gram; chi phí = gross_g / grams_per_unit × đơn giá. | Mục 6.3. |
+| A-18 | P4 | Thực đơn được lập cho 1 ngày × 1 ca × 1 đối tượng (± khách hàng). Khóa duy nhất mềm (cảnh báo, không chặn) khi trùng ngày/ca/đối tượng/khách hàng. | Mục 5.4. |
+| A-19 | P4 | Duyệt 2 cấp: cấp 1 `menu.approve` (MENU_APPROVER), cấp 2 `menu.approve_final` (MANAGER). Cấu hình `menu.approval_levels` = 1 hoặc 2 (mặc định 1). | Mục 7.4.5. |
+| A-20 | P4 | MenuGenerator dùng `System.Random(seed)` để tái lập; seed mặc định suy ra từ ngày + id kế hoạch nếu người dùng không nhập. | Mục 6.4. |
+| A-21 | P5 | Phương pháp giá kho mặc định: bình quân gia quyền di động theo nguyên liệu × kho. FIFO theo lô là tùy chọn. Gợi ý lô xuất luôn theo FEFO. | Mục 6.5. |
+| A-22 | P5 | Phiếu kho có trạng thái Draft → Posted. Chỉ khi Posted mới ghi `stock_ledger`/`stock_balance`. Posted thì khóa sửa. | Mục 6.5 "Phiếu đã duyệt thì khóa sửa". |
+| A-23 | P5 | Kiểm thực 3 bước: biểu mẫu cấu hình được bằng JSON (`app_setting.inspection.forms`) – các tiêu chí kiểm tra là danh sách động; kết quả lưu JSON theo dòng. Mặc định bám theo Quyết định 1246/QĐ-BYT (2017) về kiểm thực 3 bước và lưu mẫu. | Mục 5.6. |
+| A-24 | P6 | Báo cáo nặng (> 5.000 dòng hoặc người dùng chọn "chạy nền") chạy qua `export_job` (job nền Quartz.NET), file lưu volume `exports`, link tải hết hạn sau 24 giờ. | Mục 7.9. |
+| A-25 | P7 | Hợp đồng API giả định của cổng Viện Dinh dưỡng (VDD) được mô tả trong `tools/mock-vdd-api/README.md`. Khi có đặc tả thật chỉ cần sửa `mapping_json`. | Mục 7.10. |
+| A-26 | P7 | Public API `/api/v1/public/*` xác thực bằng OAuth2 client credentials do chính BlueMeal phát hành (`/api/v1/public/token`), client lưu trong bảng `api_client` (secret hash), scope: `menu.read`, `nutrition.read`, `food.read`. | Mục 7.10.6. |
+| A-27 | P7 | FHIR R4 tối giản: chỉ xuất `NutritionProduct` (món ăn) và `Bundle` thực đơn ngày, đọc-only, endpoint `/api/v1/public/fhir/*`. Không cam kết đạt hồ sơ FHIR VN. | Mục 7.10.7 (tùy chọn). |
+| A-28 | P8 | Khóa mã hóa cột: biến `BLUEMEAL_ENC_KEYS` dạng `kid1:base64key;kid2:base64key`, khóa đầu tiên là khóa hiện hành; ciphertext định dạng `v1:{kid}:{base64(nonce|cipher|tag)}`. HMAC tìm kiếm dùng khóa riêng `BLUEMEAL_HMAC_KEY`. | Mục 10.4. |
+| A-29 | P8 | Mã hóa backup bằng `openssl enc -aes-256-cbc -pbkdf2 -iter 200000` (có sẵn trong image alpine), checksum SHA-256 lưu kèm. | Mục 10.4/10.7 (`age` không có sẵn trên mọi máy chủ offline). |
+| A-30 | P9 | Kiểm thử tải 1.000 VU chạy trên máy chủ đích hoặc máy tải riêng; kết quả trên máy dev (laptop) chỉ mang tính tham khảo và được ghi rõ cấu hình máy trong báo cáo. | Mục 11. |
+| A-31 | P0 | Múi giờ lưu trữ: `timestamptz` (UTC trong DB), API trả ISO-8601 có offset `+07:00` (Asia/Ho_Chi_Minh). Các trường "ngày" nghiệp vụ (ngày thực đơn, ngày phiếu) dùng kiểu `date`. | Mục 8. |
+| A-32 | P1 | `xmin` dùng làm concurrency token: DTO trả `version` (uint); client gửi lại khi sửa; lệch → 409 ProblemDetails. | Mục 5 + 8. |
+| A-33 | P1 | Audit log partition theo tháng bằng PostgreSQL declarative partitioning; partition được tạo trước 3 tháng bởi job hằng ngày. Bảng audit_log không dùng soft delete/xmin. | Mục 5.1 + 10.3. |
+| A-34 | P0 | **Thay Hangfire bằng Quartz.NET 3.x (Apache-2.0)** cho job nền (đồng bộ VDD, sao lưu, cảnh báo hết hạn, tổng hợp/xuất báo cáo). Hangfire/Hangfire.PostgreSql dùng LGPL-3.0, không thuộc danh sách giấy phép cho phép ở SPEC mục 0.4 (MIT/Apache/BSD/PostgreSQL). Quartz dùng AdoJobStore trên PostgreSQL (schema `quartz`), chế độ clustered: service `worker` chạy scheduler; `api` chỉ đưa job vào store (không chạy job). Màn hình theo dõi job dùng chính các bảng `backup_job`, `export_job`, `integration_log`. Nếu chủ đầu tư yêu cầu giữ Hangfire thì chỉ cần thay implementation `IBackgroundJobs`. | Tuân thủ điều kiện giấy phép của hồ sơ thầu. |
+| A-35 | P0 | Redis dùng image `redis:7.2-alpine` (BSD-3-Clause). Redis ≥ 7.4 chuyển sang RSALv2/SSPL, Redis 8 là AGPL — không dùng. | SPEC mục 0.4. |
+| A-36 | P9 | k6 (AGPL-3.0) chỉ dùng làm **công cụ kiểm thử nội bộ**, không đóng gói/phân phối cùng phần mềm bàn giao; ghi rõ trong `THIRD_PARTY_LICENSES.md`. | SPEC mục 2 chỉ định k6. |
+| A-37 | P0 | Frontend dùng **React Router 7** (`react-router` 7.18) thay cho v6 và **zod 4** (+ `@hookform/resolvers` 5) vì mọi bản React Router 6.x và zod < 4.6.6 có lỗ hổng đã công bố (GHSA, `npm audit`), không có bản vá ở nhánh cũ. React Router 7 tương thích API v6 (data router `createBrowserRouter`); dùng ở chế độ SPA thuần, không dùng tính năng framework/SSR. | SPEC mục 10.5 (dependency scan sạch) được ưu tiên hơn việc ghim major ở mục 2. |
+| A-38 | P0 | Biểu đồ dùng Recharts 3.x (nhánh 2.x đã ngừng hỗ trợ). ESLint 9 là công cụ phát triển, không phân phối. | Bảo trì lâu dài. |

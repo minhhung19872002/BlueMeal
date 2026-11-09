@@ -1,0 +1,5 @@
+{
+  "validation": {
+    "code": "Code may only contain letters, digits and _ . - /"
+  }
+}

@@ -1,0 +1,146 @@
+# BlueMeal — base compose (SPEC §12). Use with docker-compose.dev.yml or docker-compose.prod.yml.
+name: bluemeal
+
+x-api-env: &api-env
+  ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+  BLUEMEAL_DB: "Host=postgres;Port=5432;Database=bluemeal;Username=bluemeal_app;Password=${BLUEMEAL_APP_PASSWORD:?};Maximum Pool Size=${DB_POOL_SIZE:-100};Timeout=15;Command Timeout=60"
+  ConnectionStrings__Migration: "Host=postgres;Port=5432;Database=bluemeal;Username=bluemeal_owner;Password=${BLUEMEAL_OWNER_PASSWORD:?}"
+  BLUEMEAL_REDIS: "redis:6379,password=${REDIS_PASSWORD:?}"
+  BLUEMEAL_JWT_KEY: ${BLUEMEAL_JWT_KEY:?}
+  BLUEMEAL_ENC_KEYS: ${BLUEMEAL_ENC_KEYS:?}
+  BLUEMEAL_HMAC_KEY: ${BLUEMEAL_HMAC_KEY:?}
+  BLUEMEAL_PUBLIC_URL: ${BLUEMEAL_PUBLIC_URL:-https://localhost}
+  BLUEMEAL_ADMIN_PASSWORD: ${BLUEMEAL_ADMIN_PASSWORD:-}
+  BLUEMEAL_FILES_PATH: /data/files
+  BLUEMEAL_EXPORT_PATH: /data/exports
+  BLUEMEAL_BACKUP_PATH: /backups
+  Logging__FilePath: /app/logs/bluemeal-.json
+  Auth__CookieSecure: ${AUTH_COOKIE_SECURE:-true}
+  Seed__SampleData: ${SEED_SAMPLE_DATA:-true}
+  Integration__VddBaseUrl: ${VDD_BASE_URL:-}
+  TZ: Asia/Ho_Chi_Minh
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: bluemeal
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      BLUEMEAL_OWNER_PASSWORD: ${BLUEMEAL_OWNER_PASSWORD:?}
+      BLUEMEAL_APP_PASSWORD: ${BLUEMEAL_APP_PASSWORD:?}
+      TZ: Asia/Ho_Chi_Minh
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/00-init.sh:/docker-entrypoint-initdb.d/00-init.sh:ro
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/sql/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d bluemeal"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [backend]
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.2-alpine
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:?}", "--appendonly", "yes", "--maxmemory", "512mb", "--maxmemory-policy", "allkeys-lru"]
+    volumes: [redisdata:/data]
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [backend]
+    restart: unless-stopped
+
+  api:
+    image: bluemeal/api:${BLUEMEAL_VERSION:-1.0.0}
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+      args:
+        BUILD_VERSION: ${BLUEMEAL_VERSION:-1.0.0}
+        GIT_COMMIT: ${GIT_COMMIT:-unknown}
+        BUILD_TIME: ${BUILD_TIME:-unknown}
+    environment:
+      <<: *api-env
+    volumes:
+      - files:/data/files
+      - exports:/data/exports
+      - backups:/backups:ro
+      - logs:/app/logs
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    networks: [backend]
+    restart: unless-stopped
+
+  worker:
+    image: bluemeal/api:${BLUEMEAL_VERSION:-1.0.0}
+    environment:
+      <<: *api-env
+      BLUEMEAL_ROLE: worker
+    volumes:
+      - files:/data/files
+      - exports:/data/exports
+      - backups:/backups
+      - logs:/app/logs
+    depends_on:
+      api: { condition: service_healthy }
+    networks: [backend]
+    restart: unless-stopped
+
+  web:
+    image: bluemeal/web:${BLUEMEAL_VERSION:-1.0.0}
+    build:
+      context: ..
+      dockerfile: frontend/Dockerfile
+      args:
+        BUILD_VERSION: ${BLUEMEAL_VERSION:-1.0.0}
+        GIT_COMMIT: ${GIT_COMMIT:-unknown}
+    environment:
+      BM_API_UPSTREAM: api:8080
+      SERVER_NAME: ${SERVER_NAME:-_}
+      NGINX_ALWAYS_TLS_REDIRECT: ${TLS_REDIRECT:-off}
+    depends_on:
+      api: { condition: service_healthy }
+    networks: [backend, frontend]
+    restart: unless-stopped
+
+  backup:
+    image: bluemeal/backup:${BLUEMEAL_VERSION:-1.0.0}
+    build:
+      context: ./backup
+    environment:
+      PGHOST: postgres
+      PGUSER: bluemeal_owner
+      PGPASSWORD: ${BLUEMEAL_OWNER_PASSWORD:?}
+      PGDATABASE: bluemeal
+      BACKUP_PASSPHRASE: ${BACKUP_PASSPHRASE:?}
+      BACKUP_CRON: ${BACKUP_CRON:-0 1 * * *}
+      KEEP_DAILY: ${BACKUP_KEEP_DAILY:-7}
+      KEEP_WEEKLY: ${BACKUP_KEEP_WEEKLY:-4}
+      KEEP_MONTHLY: ${BACKUP_KEEP_MONTHLY:-6}
+      BACKUP_MIRROR_PATH: ${BACKUP_MIRROR_PATH:-}
+    volumes:
+      - backups:/backups
+      - files:/data/files
+    depends_on:
+      postgres: { condition: service_healthy }
+    networks: [backend]
+    restart: unless-stopped
+
+networks:
+  backend: {}
+  frontend: {}
+
+volumes:
+  pgdata: {}
+  redisdata: {}
+  files: {}
+  exports: {}
+  backups: {}
+  logs: {}

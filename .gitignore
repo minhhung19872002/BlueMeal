@@ -1,0 +1,29 @@
+# .NET
+bin/
+obj/
+*.user
+.vs/
+TestResults/
+*.trx
+coverage*/
+# Node
+node_modules/
+dist/
+.vite/
+playwright-report/
+test-results/
+# Env / secrets
+.env
+deploy/.env
+deploy/secrets/
+deploy/nginx/ssl/*.key
+deploy/nginx/ssl/*.crt
+*.pfx
+# Runtime
+logs/
+data/
+backups/
+*.log
+offline-images/
+.idea/
+.DS_Store

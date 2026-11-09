@@ -1,0 +1,12 @@
+{
+  "version": {
+    "title": "Phiên bản hệ thống",
+    "server": "Phiên bản máy chủ",
+    "commit": "Mã commit",
+    "buildTime": "Thời điểm build",
+    "runtime": ".NET runtime",
+    "web": "Phiên bản giao diện",
+    "webCommit": "Commit giao diện",
+    "changelog": "Nhật ký thay đổi"
+  }
+}

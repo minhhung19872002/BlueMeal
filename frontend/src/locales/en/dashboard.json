@@ -1,0 +1,4 @@
+{
+  "welcome": "Hello, {{name}}",
+  "intro": "Welcome to BlueMeal – smart shift meal management."
+}

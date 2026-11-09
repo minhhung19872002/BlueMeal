@@ -1,0 +1,52 @@
+# BlueMeal reverse proxy — nginx + ModSecurity v3 + OWASP CRS (SPEC §2, §10.5, §12)
+# Rendered by envsubst at container start (only variables defined in the environment are substituted).
+
+server_tokens off;
+more_set_headers 'Server: BlueMeal';
+
+map $http_upgrade $connection_upgrade { default upgrade; '' close; }
+
+# Per-IP request limit at the edge (application limits per user are enforced by the API).
+limit_req_zone $binary_remote_addr zone=bm_api:20m rate=${BM_EDGE_RATE};
+limit_req_status 429;
+
+upstream bluemeal_api {
+    least_conn;
+    # "api" resolves to every replica on the private docker network.
+    server ${BM_API_UPSTREAM} max_fails=3 fail_timeout=10s;
+    keepalive 64;
+}
+
+# Strip nonce placeholder from cached copies and inject a per-request CSP nonce (antd CSS-in-JS uses it).
+map $request_id $csp_nonce { default $request_id; }
+
+server {
+    listen ${PORT} default_server;
+    server_name ${SERVER_NAME};
+    set $always_redirect ${NGINX_ALWAYS_TLS_REDIRECT};
+    set $bm_hsts "";
+
+    location = /healthz { access_log off; add_header Content-Type text/plain; return 200 "OK"; }
+
+    if ($always_redirect = on) { return 301 https://$host$request_uri; }
+    include /etc/nginx/bluemeal/app.conf;
+}
+
+server {
+    listen ${SSL_PORT} ssl;
+    server_name ${SERVER_NAME};
+
+    ssl_certificate ${SSL_CERT_FILE};
+    ssl_certificate_key ${SSL_CERT_KEY_FILE};
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305;
+    ssl_prefer_server_ciphers off;
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:BlueMealTLS:10m;
+    ssl_session_tickets off;
+
+    set $bm_hsts "max-age=31536000; includeSubDomains";
+
+    location = /healthz { access_log off; add_header Content-Type text/plain; return 200 "OK"; }
+    include /etc/nginx/bluemeal/app.conf;
+}

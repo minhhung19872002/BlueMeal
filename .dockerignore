@@ -1,0 +1,14 @@
+**/bin
+**/obj
+**/node_modules
+**/dist
+**/.vs
+**/TestResults
+**/playwright-report
+**/test-results
+.git
+deploy/.env
+deploy/secrets
+backups
+offline-images
+docs/test-reports

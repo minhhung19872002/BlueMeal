@@ -1,0 +1,5 @@
+{
+  "validation": {
+    "code": "Mã chỉ gồm chữ không dấu, số và các ký tự _ . - /"
+  }
+}

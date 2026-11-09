@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>BlueMeal.Domain</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Abstractions only (IdentityUser/IdentityRole POCOs), no infrastructure dependency -->
+    <PackageReference Include="Microsoft.Extensions.Identity.Stores" />
+  </ItemGroup>
+</Project>

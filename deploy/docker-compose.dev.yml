@@ -1,0 +1,28 @@
+# Development overlay: exposes ports, adds Mailpit (test SMTP) and pgAdmin (profile "tools").
+services:
+  postgres:
+    ports: ["${DEV_PG_PORT:-5442}:5432"]
+  redis:
+    ports: ["${DEV_REDIS_PORT:-6395}:6379"]
+  api:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      Auth__CookieSecure: "false"
+    ports: ["${DEV_API_PORT:-5080}:8080"]
+  worker:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+  web:
+    ports: ["8080:8080", "8443:8443"]
+  mailpit:
+    image: axllent/mailpit:v1.27
+    ports: ["8025:8025", "1025:1025"]
+    networks: [backend]
+  pgadmin:
+    image: dpage/pgadmin4:9
+    profiles: [tools]
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@bluemeal.local
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+    ports: ["5050:80"]
+    networks: [backend]

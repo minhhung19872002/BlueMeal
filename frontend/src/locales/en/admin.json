@@ -1,0 +1,12 @@
+{
+  "version": {
+    "title": "System version",
+    "server": "Server version",
+    "commit": "Commit",
+    "buildTime": "Build time",
+    "runtime": ".NET runtime",
+    "web": "Web version",
+    "webCommit": "Web commit",
+    "changelog": "Changelog"
+  }
+}
