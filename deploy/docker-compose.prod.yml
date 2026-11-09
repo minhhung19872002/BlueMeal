@@ -27,7 +27,7 @@ services:
     deploy:
       replicas: 2
       resources:
-        limits: { cpus: "3", memory: 3g }
+        limits: { cpus: "5", memory: 3g }   # 2 replicas on a 12–16 vCPU host (docs/test-reports/k6-load-test.md)
     restart: always
 
   worker:

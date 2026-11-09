@@ -25,6 +25,7 @@ Cột **Phân phối** cho biết thành phần có nằm trong sản phẩm bà
 | Swashbuckle.AspNetCore | 6.9.0 | MIT | ✔ | OpenAPI/Swagger |
 | AspNetCore.HealthChecks.NpgSql / .Redis | 8.0.2 / 8.0.1 | Apache-2.0 | ✔ | Health check |
 | Microsoft.Extensions.Http.Resilience (Polly) | 8.10.0 | MIT (Polly: BSD-3-Clause) | ✔ | Retry/circuit breaker gọi API VDD |
+| Polly | 8.5.2 | BSD-3-Clause | ✔ | Pipeline retry + circuit breaker + timeout của `VddApiNutritionDataProvider` |
 | MailKit / MimeKit | 4.18.2 | MIT | ✔ | Gửi email |
 | xunit / xunit.runner.visualstudio | 2.9.3 / 2.8.2 | Apache-2.0 | dev | Unit test |
 | FluentAssertions | **7.2.2** | Apache-2.0 | dev | Assertion (**không dùng bản 8.x** vì giấy phép thương mại Xceed) |
@@ -56,6 +57,7 @@ Cột **Phân phối** cho biết thành phần có nằm trong sản phẩm bà
 | Vitest / React Testing Library | MIT | Unit test frontend |
 | k6 | **AGPL-3.0** | Chỉ chạy kiểm thử tải nội bộ; không đóng gói vào sản phẩm (A-36) |
 | OWASP ZAP | Apache-2.0 | Quét bảo mật baseline |
+| Lighthouse | Apache-2.0 | Đo Performance/Accessibility/Best practices (`npm run lighthouse`), công cụ phát triển |
 
 ## 5. Đã cân nhắc và loại bỏ
 

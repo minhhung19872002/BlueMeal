@@ -3,6 +3,20 @@
 Định dạng theo [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/); phiên bản theo [SemVer](https://semver.org/).
 Mỗi mục `## [x.y.z] - YYYY-MM-DD` được nạp vào màn hình **Phiên bản hệ thống** (bảng `system_version`).
 
+## [0.10.0] - 2026-11-09
+### P9 – Hiệu năng, giao diện điện thoại, tài liệu (SPEC §9, §11, §13) — *chưa hoàn tất*
+- Kiểm thử tải k6: `tools/k6/load-test.js`. Mỗi VU là một người dùng đăng nhập một lần, nghỉ 2–5 giây giữa các bước. Thêm sub-metric theo từng endpoint. Đăng nhập lỗi thì chờ lũy thừa trước khi thử lại, và kịch bản tự dừng khi quá 50 % lượt đăng nhập lỗi. Script `scripts/load-test.(sh|ps1)` chạy trên overlay `docker-compose.perf.yml` (2 API). Tài khoản `loadtest*` được tạo bằng `--seed-loadtest=N` và tự xóa sau khi chạy. Thêm công cụ đo chi phí từng request `tools/k6/cost-probe.js` và `one-endpoint.js`.
+- Sửa: giới hạn tần suất theo người dùng dùng claim `sub` (bị JWT đổi tên) nên mọi người dùng chung một hạn mức → chuyển sang `RateLimitKeys.ForRequest`.
+- `PasswordHashGate`: giới hạn số lượt băm PBKDF2 chạy đồng thời trên mỗi API (`Auth:MaxConcurrentPasswordHashes`), để đợt đăng nhập đầu ca không làm chậm người đã đăng nhập (A-46).
+- Seeder tải: đặt lại mật khẩu cho tài khoản còn sót từ lần trước (tránh CAPTCHA theo IP chặn cả lần chạy), xóa phiên của tài khoản thử khi gỡ.
+- Kết quả tải: 300 VU đạt (p95 158 ms, 0 % lỗi). **1 000 VU chưa có kết quả hợp lệ** trên máy phát triển. Khuyến nghị phần cứng cho 1 000 người dùng đồng thời nâng lên 12–16 vCPU, giới hạn CPU mỗi API ở bản production nâng lên 5 (`docs/test-reports/k6-load-test.md`).
+- Lighthouse `npm run lighthouse`: 8 trang chính đều ≥ 85 ở Performance, Accessibility và Best practices (`docs/test-reports/lighthouse/`).
+- E2E `p9-responsive` (@mobile, Pixel 7): các màn kho, kiểm thực, lưu mẫu, thực đơn công bố, phê duyệt không bị cuộn ngang, form lưu mẫu dùng được trên điện thoại. E2E `zz-docs-screenshots`: ảnh cho HDSD.
+- Mẫu nhập Excel cho 22 danh mục `tools/import-templates/mau-nhap-*.xlsx`, sinh bằng integration test.
+- Tài liệu: SRS (01), thiết kế hệ thống bổ sung API/màn hình/báo cáo/job/triển khai (02), kịch bản kiểm thử (04), hướng dẫn cài đặt (05), HDSD chung + 7 vai trò (06), tài liệu đào tạo (07), quy trình vận hành – bảo hành (08).
+- `gen-secrets` ở chế độ production sinh mật khẩu admin ngẫu nhiên thay cho mật khẩu mặc định đã công bố.
+- Kiểm thử: unit 117, integration 81. Bộ E2E đầy đủ (54 test) chưa chạy lại sau P9 vì lần chạy bị ngắt do máy thiếu RAM.
+
 ## [0.9.0] - 2026-11-09
 ### P8 – Gia cố an toàn thông tin cấp độ 2 (SPEC §10)
 - Tài liệu `docs/03_ThietKe_ATTT_CapDo2.md`: ánh xạ từng yêu cầu → biện pháp kỹ thuật → vị trí mã nguồn → cách kiểm thử.

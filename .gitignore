@@ -32,3 +32,4 @@ offline-images/
 frontend/e2e/.auth/
 docs/test-reports/e2e/trace/
 docs/test-reports/e2e/data/
+docs/test-reports/lighthouse/.profile/

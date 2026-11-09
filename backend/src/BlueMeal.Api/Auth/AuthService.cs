@@ -37,6 +37,7 @@ public sealed class AuthService(
     PermissionService permissionService,
     CaptchaService captcha,
     TimeProvider clock,
+    PasswordHashGate hashGate,
     IConfiguration config,
     ILogger<AuthService> log)
 {
@@ -67,7 +68,7 @@ public sealed class AuthService(
         if (user is null)
         {
             // Constant-ish time: hash a dummy password to avoid user enumeration by timing.
-            users.PasswordHasher.HashPassword(new AppUser { FullName = "x" }, req.Password ?? "");
+            await hashGate.RunAsync(() => Task.FromResult(users.PasswordHasher.HashPassword(new AppUser { FullName = "x" }, req.Password ?? "")), ct);
             await RegisterFailure(null, name, ip, userAgent, LoginResult.Failed, "unknown_user", ct);
             throw new AppException("auth.invalidCredentials", 401);
         }
@@ -81,7 +82,7 @@ public sealed class AuthService(
             await RegisterFailure(user, name, ip, userAgent, LoginResult.Locked, "locked", ct);
             throw new AppException("auth.locked", 423, Math.Max(1, (int)Math.Ceiling((le - Now).TotalMinutes)));
         }
-        if (!await users.CheckPasswordAsync(user, req.Password ?? ""))
+        if (!await hashGate.RunAsync(() => users.CheckPasswordAsync(user, req.Password ?? ""), ct))
         {
             var count = await cache.IncrementAsync(FailKey("acct", user.Id.ToString()), TimeSpan.FromMinutes(policy.LockoutMinutes), ct);
             if (count >= policy.MaxFailedAttempts)

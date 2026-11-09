@@ -14,6 +14,7 @@
     "i18n:gen": "python scripts/gen-locales.py",
     "i18n:check": "node scripts/check-i18n.mjs",
     "e2e": "playwright test",
+    "lighthouse": "node scripts/lighthouse.mjs",
     "licenses": "license-checker-rseidelsohn --production --summary"
   },
   "dependencies": {
@@ -51,6 +52,7 @@
     "globals": "16.5.0",
     "jsdom": "26.1.0",
     "license-checker-rseidelsohn": "4.4.2",
+    "lighthouse": "12.8.2",
     "typescript": "5.9.3",
     "typescript-eslint": "8.46.2",
     "vite": "6.4.1",

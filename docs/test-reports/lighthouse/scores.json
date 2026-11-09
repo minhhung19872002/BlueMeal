@@ -1,0 +1,66 @@
+[
+  {
+    "name": "login",
+    "path": "/login",
+    "performance": 98,
+    "accessibility": 96,
+    "best-practices": 100,
+    "finalUrl": "http://localhost:8080/login"
+  },
+  {
+    "name": "dashboard",
+    "path": "/",
+    "performance": 91,
+    "accessibility": 97,
+    "best-practices": 93,
+    "finalUrl": "http://localhost:8080/"
+  },
+  {
+    "name": "menus",
+    "path": "/menus",
+    "performance": 88,
+    "accessibility": 90,
+    "best-practices": 93,
+    "finalUrl": "http://localhost:8080/menus"
+  },
+  {
+    "name": "menu-published",
+    "path": "/menus/published",
+    "performance": 87,
+    "accessibility": 93,
+    "best-practices": 100,
+    "finalUrl": "http://localhost:8080/menus/published"
+  },
+  {
+    "name": "recipes",
+    "path": "/recipes",
+    "performance": 89,
+    "accessibility": 93,
+    "best-practices": 93,
+    "finalUrl": "http://localhost:8080/recipes"
+  },
+  {
+    "name": "foods",
+    "path": "/catalog/foods",
+    "performance": 85,
+    "accessibility": 93,
+    "best-practices": 93,
+    "finalUrl": "http://localhost:8080/catalog/foods"
+  },
+  {
+    "name": "stock-balance",
+    "path": "/stock/balance",
+    "performance": 90,
+    "accessibility": 93,
+    "best-practices": 93,
+    "finalUrl": "http://localhost:8080/stock/balance"
+  },
+  {
+    "name": "reports",
+    "path": "/reports",
+    "performance": 92,
+    "accessibility": 97,
+    "best-practices": 100,
+    "finalUrl": "http://localhost:8080/reports"
+  }
+]

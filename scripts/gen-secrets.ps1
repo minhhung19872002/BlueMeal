@@ -36,6 +36,11 @@ if ($Dev) {
     $content = $content.Replace("TLS_REDIRECT=on", "TLS_REDIRECT=off")
     $content = $content.Replace("AUTH_COOKIE_SECURE=true", "AUTH_COOKIE_SECURE=false")
     $content = $content.Replace("BLUEMEAL_ADMIN_PASSWORD=ChangeMe@2026!", "BLUEMEAL_ADMIN_PASSWORD=BlueMeal@2026!")
+} else {
+    # production: never keep the published default — random password meeting the policy (upper, lower, digit, special)
+    $adminPassword = "Bm@" + (New-Password 16) + "9a"
+    $content = $content.Replace("BLUEMEAL_ADMIN_PASSWORD=ChangeMe@2026!", "BLUEMEAL_ADMIN_PASSWORD=$adminPassword")
 }
 [System.IO.File]::WriteAllText($envFile, $content.Replace("`r`n", "`n"))
 Write-Host "Created deploy/.env with random secrets." -ForegroundColor Green
+if (-not $Dev) { Write-Host "Initial admin password (change it and enable MFA at first login): $adminPassword" -ForegroundColor Yellow }

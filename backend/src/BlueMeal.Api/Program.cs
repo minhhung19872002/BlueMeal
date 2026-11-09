@@ -55,6 +55,7 @@ if (jwt.Key.Length < 32) throw new InvalidOperationException("Auth:JwtKey must b
 builder.Services.AddSingleton(jwt);
 builder.Services.AddSingleton<TokenService>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddSingleton<PasswordHashGate>();
 builder.Services.AddScoped<CaptchaService>();
 builder.Services.AddScoped<PermissionService>();
 
@@ -112,7 +113,7 @@ builder.Services.AddRateLimiter(o =>
     o.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(ctx =>
     {
         if (!ctx.Request.Path.StartsWithSegments("/api")) return RateLimitPartition.GetNoLimiter("static");
-        var key = ctx.User.Identity?.IsAuthenticated == true ? "u:" + ctx.User.FindFirst("sub")?.Value : "ip:" + ctx.Connection.RemoteIpAddress;
+        var key = BlueMeal.Api.Infrastructure.RateLimitKeys.ForRequest(ctx);
         var limit = builder.Configuration.GetValue("RateLimit:PerMinute", 600);
         return RateLimitPartition.GetTokenBucketLimiter(key, _ => new TokenBucketRateLimiterOptions
         {
@@ -162,6 +163,12 @@ builder.Services.AddSwaggerGen(o =>
 var app = builder.Build();
 
 await DatabaseInitializer.InitializeAsync(app.Services, app.Configuration, isWorker);
+if (args.FirstOrDefault(a => a.StartsWith("--seed-loadtest=", StringComparison.Ordinal)) is { } loadTest)
+{
+    await BlueMeal.Api.Infrastructure.LoadTestSeeder.RunAsync(app.Services, int.Parse(loadTest["--seed-loadtest=".Length..], CultureInfo.InvariantCulture),
+        Environment.GetEnvironmentVariable("BLUEMEAL_LOADTEST_PASSWORD"), app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("LoadTest"));
+    return;
+}
 if (args.Contains("--migrate-only") || args.Contains("--seed-only"))
 {
     Log.Information("Database initialization finished ({Mode}); exiting.", args.Contains("--seed-only") ? "seed" : "migrate");

@@ -1,0 +1,18 @@
+# Load-test overlay (SPEC §11): use on top of docker-compose.yml + docker-compose.dev.yml.
+# - 2 API replicas behind nginx least_conn (as in production) — the dev host port of the API is removed;
+# - per-IP limits raised because every virtual user comes from the k6 container's single IP
+#   (per-user API limits and the auth limiter stay active through RateLimit__*).
+services:
+  api:
+    ports: !reset []
+    deploy:
+      replicas: 2
+    environment:
+      RateLimit__AuthPerMinute: "5000"
+      RateLimit__PerMinute: "600"
+      # less idle spinning of thread-pool workers / smaller GC heaps when 2 replicas share one host
+      DOTNET_ThreadPool_UnfairSemaphoreSpinLimit: "0"
+      DOTNET_GCDynamicAdaptationMode: "1"
+  web:
+    environment:
+      BM_EDGE_RATE: 5000r/s

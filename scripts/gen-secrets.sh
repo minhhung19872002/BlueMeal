@@ -26,6 +26,12 @@ if [ "$DEV" = 1 ]; then
       -e 's|TLS_REDIRECT=on|TLS_REDIRECT=off|' -e 's|AUTH_COOKIE_SECURE=true|AUTH_COOKIE_SECURE=false|' \
       -e 's|BLUEMEAL_ADMIN_PASSWORD=ChangeMe@2026!|BLUEMEAL_ADMIN_PASSWORD=BlueMeal@2026!|' "$ENV_FILE"
   rm -f "$ENV_FILE.bak"
+else
+  # production: never keep the published default — random password meeting the policy (upper, lower, digit, special)
+  ADMIN_PASSWORD="Bm@$(pw 16)9a"
+  sed -i.bak -e "s|BLUEMEAL_ADMIN_PASSWORD=ChangeMe@2026!|BLUEMEAL_ADMIN_PASSWORD=$ADMIN_PASSWORD|" "$ENV_FILE"
+  rm -f "$ENV_FILE.bak"
 fi
 chmod 600 "$ENV_FILE"
 echo "Created deploy/.env with random secrets."
+[ "$DEV" = 1 ] || echo "Initial admin password (change it and enable MFA at first login): $ADMIN_PASSWORD"
