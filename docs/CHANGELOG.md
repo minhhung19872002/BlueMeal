@@ -3,6 +3,19 @@
 Định dạng theo [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/); phiên bản theo [SemVer](https://semver.org/).
 Mỗi mục `## [x.y.z] - YYYY-MM-DD` được nạp vào màn hình **Phiên bản hệ thống** (bảng `system_version`).
 
+## [0.6.0] - 2026-11-09
+### P5 – Kho và An toàn thực phẩm (SPEC §5.5, §5.6, §6.5, §7.8)
+- InventoryEngine thuần C#: bình quân gia quyền di động (mặc định) hoặc FIFO theo lô, gợi ý lô FEFO, chặn xuất âm (cấu hình được), chênh lệch kiểm kê, nhu cầu nguyên liệu từ thực đơn, đề xuất mua `max(0, nhu cầu − tồn khả dụng + tồn tối thiểu)`, quy tắc khóa sổ; 19 unit test số liệu tính tay.
+- Phiếu nhập (PN-) có kiểm tra chất lượng đầu vào từng dòng (số lô, NSX, HSD, nhiệt độ), nhập mã vạch, in phiếu; ghi sổ tự lập biên bản kiểm thực bước 1. Dòng Không đạt chặn ghi sổ.
+- Phiếu xuất (PX-): thủ công, chuyển kho, hoặc sinh phiếu xuất dự kiến từ thực đơn đã duyệt (định lượng × số suất, lô FEFO); đơn giá xuất theo phương pháp giá kho.
+- Kiểm kê (KK-): chụp tồn sổ sách theo lô, nhập số thực tế trên mobile, duyệt tự sinh và ghi sổ phiếu điều chỉnh tăng/giảm.
+- Sổ cái kho bất biến + bảng tồn hiện thời cập nhật trong cùng transaction (khóa theo kho); tồn tại thời điểm, thẻ kho, danh sách lô sắp hết hạn; khóa sổ theo tháng.
+- Đề xuất mua hàng (DX-) từ thực đơn đã duyệt, duyệt và tạo phiếu nhập theo nhà cung cấp.
+- Kiểm thực 3 bước với tiêu chí cấu hình được và biểu mẫu in; sổ lưu mẫu thức ăn (LM-) với thời gian lưu tối thiểu và khối lượng tối thiểu cấu hình được.
+- Job cảnh báo hằng ngày 06:00 (Quartz): W-CERT-EXPIRY, W-STOCK-EXPIRY, W-STOCK-MIN, W-SAMPLE-DISPOSE — chống trùng, tự đóng khi hết điều kiện, thông báo cho người có quyền `alert.view`.
+- Header `Idempotency-Key` cho các thao tác tạo/ghi sổ chứng từ.
+- Kiểm thử: unit 105, integration 62 (9 test kho/ATTP), E2E P5 (nhập → ghi sổ → tồn/thẻ kho, kiểm kê → duyệt, lưu mẫu).
+
 ## [0.5.0] - 2026-11-09
 ### P4 – Thực đơn & phê duyệt (SPEC §6.4, §7.4)
 - MenuGenerator: K=200 ứng viên ngẫu nhiên có trọng số + tìm kiếm cục bộ 500 vòng trên top 10, trọng số w1..w7, tối đa 1 món chiên, không lặp món N ngày, seed tái lập, 2 phương án thay thế, giải thích song ngữ; yêu cầu lớn (> 3 ca) chạy nền qua Quartz.

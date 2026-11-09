@@ -1,6 +1,27 @@
 L = {
+    "title": ("Kiểm thực 3 bước", "Three-step food inspection"), "step1": ("Bước 1 – Trước chế biến", "Step 1 – Before processing"),
+    "step2": ("Bước 2 – Trong chế biến", "Step 2 – During processing"), "step3": ("Bước 3 – Trước khi ăn", "Step 3 – Before serving"),
+    "inspectedAt": ("Thời gian kiểm tra", "Inspected at"), "date": ("Ngày", "Date"), "ingredient": ("Nguyên liệu", "Ingredient"), "supplier": ("Nhà cung cấp", "Supplier"),
+    "receipt": ("Phiếu nhập", "Receipt"), "quantity": ("Khối lượng/SL", "Quantity"), "lot": ("Số lô", "Lot"), "expiry": ("HSD", "Expiry"), "temp": ("Nhiệt độ (°C)", "Temp (°C)"),
+    "origin": ("Giấy tờ nguồn gốc", "Origin documents"), "originOk": ("Đủ giấy tờ", "Documents OK"), "sensory": ("Cảm quan", "Sensory"), "result": ("Kết quả", "Result"),
+    "action": ("Biện pháp xử lý", "Action taken"), "inspector": ("Người kiểm tra", "Inspector"), "menu": ("Thực đơn", "Menu"), "dish": ("Món ăn", "Dish"),
+    "hygiene": ("Điều kiện vệ sinh", "Hygiene conditions"), "participants": ("Người tham gia chế biến", "Cooks"), "cookStart": ("Bắt đầu chế biến", "Cooking start"),
+    "cookEnd": ("Kết thúc chế biến", "Cooking end"), "portionTime": ("Thời gian chia món", "Portioning time"), "utensils": ("Dụng cụ chia, chứa đựng", "Utensils"),
+    "criteriaTitle": ("Tiêu chí kiểm tra", "Criteria"), "fromMenus": ("Lấy món từ thực đơn ngày", "Load dishes of the day"), "printForm": ("In biểu mẫu", "Print form"),
+    "form1": ("MẪU SỐ 1: KIỂM TRA TRƯỚC KHI CHẾ BIẾN THỨC ĂN (Bước 1)", "FORM 1: CHECK BEFORE FOOD PROCESSING (Step 1)"),
+    "form2": ("MẪU SỐ 2: KIỂM TRA KHI CHẾ BIẾN THỨC ĂN (Bước 2)", "FORM 2: CHECK DURING FOOD PROCESSING (Step 2)"),
+    "form3": ("MẪU SỐ 3: KIỂM TRA TRƯỚC KHI ĂN (Bước 3)", "FORM 3: CHECK BEFORE SERVING (Step 3)"),
+    "actionRequired": ("Kết quả Không đạt phải ghi biện pháp xử lý", "A failed result requires an action"),
     "criteria": {
         "color": ("Màu sắc", "Color"), "smell": ("Mùi", "Smell"), "state": ("Trạng thái", "State/texture"),
         "documents": ("Giấy tờ nguồn gốc yêu cầu", "Required origin documents"),
+    },
+    "samples": {
+        "title": ("Sổ lưu mẫu thức ăn", "Food sample log"), "code": ("Mã mẫu", "Sample code"), "sampledAt": ("Thời gian lấy mẫu", "Sampled at"), "weight": ("Khối lượng (g)", "Weight (g)"),
+        "storageTemp": ("Nhiệt độ bảo quản (°C)", "Storage temp (°C)"), "sampler": ("Người lấy mẫu", "Sampler"), "plannedDispose": ("Hủy mẫu dự kiến", "Planned disposal"),
+        "disposedAt": ("Thời gian hủy", "Disposed at"), "disposer": ("Người hủy", "Disposer"), "dispose": ("Hủy mẫu", "Dispose"), "state": ("Tình trạng", "State"),
+        "kept": ("Đang lưu", "Kept"), "due": ("Đến hạn hủy", "Due"), "disposed": ("Đã hủy", "Disposed"), "new": ("Lấy mẫu", "New sample"),
+        "rule": ("Mẫu lưu tối thiểu {{h}} giờ, khối lượng tối thiểu {{g}} g (cấu hình trong Thiết lập)", "Samples are kept at least {{h}} hours, minimum {{g}} g (configurable in Settings)"),
+        "printTitle": ("SỔ LƯU MẪU THỨC ĂN", "FOOD SAMPLE LOG"),
     },
 }

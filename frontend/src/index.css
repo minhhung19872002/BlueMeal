@@ -113,3 +113,12 @@ body {
     font-size: 11px;
   }
 }
+
+.bm-print-only {
+  display: none;
+}
+@media print {
+  .bm-print-only {
+    display: block;
+  }
+}
