@@ -30,6 +30,10 @@ export const fmt = {
   dateTime(v: string | Date | null | undefined): string {
     return v ? dayjs(v).format('DD/MM/YYYY HH:mm') : '';
   },
+  /** Localized weekday name (dayjs locale follows the UI language). */
+  weekday(v: string | dayjs.Dayjs, short = false): string {
+    return dayjs(v).format(short ? 'dd' : 'dddd');
+  },
   time(v: string | null | undefined): string {
     return v ? v.slice(0, 5) : '';
   },
@@ -47,3 +51,6 @@ export function parseVnNumber(s: string | undefined): number {
   if (!s) return 0;
   return Number(s.replace(/[^\d,-]/g, '').replace(',', '.')) || 0;
 }
+
+/** Monday of the week containing d, independent of the dayjs locale's week start. */
+export const mondayOf = (d: dayjs.Dayjs) => d.subtract((d.day() + 6) % 7, 'day').startOf('day');

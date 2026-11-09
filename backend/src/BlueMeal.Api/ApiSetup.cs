@@ -44,6 +44,10 @@ public static class ApiServiceCollectionExtensions
         Catalog.MapsterSetup.Configure();
         FluentValidation.ServiceCollectionExtensions.AddValidatorsFromAssembly(services, typeof(ApiServiceCollectionExtensions).Assembly, includeInternalTypes: true);
         services.AddScoped<Controllers.Admin.FileService>();
+        services.AddScoped<Services.MenuService>();
+        // background jobs (resolved by name by the Quartz/inline runner)
+        foreach (var t in typeof(ApiServiceCollectionExtensions).Assembly.GetTypes().Where(t => t is { IsClass: true, IsAbstract: false } && typeof(IAppJob).IsAssignableFrom(t)))
+            services.AddScoped(typeof(IAppJob), t);
         return services;
     }
 

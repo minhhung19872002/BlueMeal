@@ -68,3 +68,48 @@ body {
     margin: 12mm;
   }
 }
+
+/* Menu calendar (plan day × shift grid, published weekly menu) */
+.bm-calendar {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 640px;
+}
+.bm-calendar th,
+.bm-calendar td {
+  border: 1px solid var(--bm-border, rgba(128, 128, 128, 0.25));
+  padding: 6px 8px;
+  vertical-align: top;
+  text-align: left;
+}
+.bm-calendar thead th {
+  background: var(--bm-subtle, rgba(128, 128, 128, 0.08));
+}
+.bm-calendar tbody th {
+  white-space: nowrap;
+  width: 120px;
+}
+.bm-calendar-sunday th {
+  color: #d03b3b;
+}
+.bm-calendar-cell + .bm-calendar-cell {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(128, 128, 128, 0.3);
+}
+.bm-calendar-dish {
+  padding: 2px 6px;
+  margin: 2px 0;
+  border-radius: 4px;
+  background: rgba(42, 120, 214, 0.08);
+  font-size: 13px;
+}
+.bm-calendar-dish[draggable='true'] {
+  cursor: grab;
+}
+@media print {
+  .bm-print-a4 .bm-calendar {
+    min-width: 0;
+    font-size: 11px;
+  }
+}

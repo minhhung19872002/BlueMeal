@@ -152,7 +152,12 @@ public sealed class EngineDataService(AppDbContext db, ISettingsService settings
     public async Task<IReadOnlyDictionary<string, string>> NutrientNamesAsync(bool english, CancellationToken ct)
         => await db.Set<Nutrient>().AsNoTracking().ToDictionaryAsync(n => n.Code, n => english && n.NameEn != null ? n.NameEn : n.NameVi, ct);
 
+    /// <summary>Slots of the given template; without one, the first active template (by sort order) is the default.</summary>
     public async Task<IReadOnlyList<StructureSlot>> StructureAsync(Guid? templateId, CancellationToken ct)
-        => templateId is null ? [] : await db.Set<MealStructureSlot>().AsNoTracking().Where(s => s.TemplateId == templateId)
+    {
+        templateId ??= await db.Set<MealStructureTemplate>().AsNoTracking().Where(t => t.IsActive).OrderBy(t => t.SortOrder).ThenBy(t => t.Code)
+            .Select(t => (Guid?)t.Id).FirstOrDefaultAsync(ct);
+        return templateId is null ? [] : await db.Set<MealStructureSlot>().AsNoTracking().Where(s => s.TemplateId == templateId)
             .Select(s => new StructureSlot(s.DishType, s.Quantity, s.IsRequired)).ToListAsync(ct);
+    }
 }

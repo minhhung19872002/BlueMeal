@@ -110,7 +110,7 @@ public abstract class CatalogControllerBase<TEntity, TDto, TUpsert> : ApiControl
             var norm = "%" + TextNormalizer.Normalize(q) + "%";
             query = query.Where(e => EF.Functions.ILike(EF.Property<string>(e, "SearchText"), norm));
         }
-        query = DefaultOrder(query);
+        query = DefaultOrder(ApplyFilters(query, Request.Query));
         var items = await query.Take(Math.Clamp(take, 1, 500)).Select(LookupSelector()).ToListAsync(ct);
         return Ok(items);
     }

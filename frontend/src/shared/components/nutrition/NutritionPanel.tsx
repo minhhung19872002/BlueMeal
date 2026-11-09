@@ -122,7 +122,7 @@ export function NutritionPanel({ nutrition, cost, warnings, title, compact }: { 
           {n.score != null && <Statistic title={t('score')} value={fmt.number(n.score, 0)} suffix="/100" />}
           {cost && <Statistic title={t('costPerServing')} value={fmt.money(cost.costPerServing)} />}
         </Space>
-        <Descriptions size="small" column={compact ? 1 : 3} bordered>
+        <Descriptions size="small" column={compact ? 1 : { xs: 1, sm: 2, xxl: 3 }} bordered styles={{ content: { whiteSpace: 'nowrap' } }}>
           <Descriptions.Item label={t('protein')}>{fmt.number(n.proteinG, 1)} g</Descriptions.Item>
           <Descriptions.Item label={t('lipid')}>{fmt.number(n.lipidG, 1)} g</Descriptions.Item>
           <Descriptions.Item label={t('glucid')}>{fmt.number(n.glucidG, 1)} g</Descriptions.Item>

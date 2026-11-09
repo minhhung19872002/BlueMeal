@@ -3,6 +3,16 @@
 Định dạng theo [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/); phiên bản theo [SemVer](https://semver.org/).
 Mỗi mục `## [x.y.z] - YYYY-MM-DD` được nạp vào màn hình **Phiên bản hệ thống** (bảng `system_version`).
 
+## [0.5.0] - 2026-11-09
+### P4 – Thực đơn & phê duyệt (SPEC §6.4, §7.4)
+- MenuGenerator: K=200 ứng viên ngẫu nhiên có trọng số + tìm kiếm cục bộ 500 vòng trên top 10, trọng số w1..w7, tối đa 1 món chiên, không lặp món N ngày, seed tái lập, 2 phương án thay thế, giải thích song ngữ; yêu cầu lớn (> 3 ca) chạy nền qua Quartz.
+- Kế hoạch thực đơn tuần/tháng với lịch ngày × ca, kéo-thả món giữa các ngày, nhân bản tuần, áp dụng cho nhiều khách hàng.
+- Soạn thực đơn thủ công: chọn món theo loại, hệ số khẩu phần, dinh dưỡng – chi phí – cảnh báo realtime, gợi ý đổi món cải thiện điểm.
+- Quy trình duyệt 1 hoặc 2 cấp: nháp → chờ duyệt → duyệt → công bố; trả lại/từ chối bắt buộc ý kiến; cảnh báo nghiêm trọng cần lý do + quyền `menu.override_critical`; thu hồi, hủy; chốt phiên bản công thức khi duyệt; duyệt/công bố hàng loạt; thông báo cho người lập.
+- Thực đơn công bố theo tuần (in A4, không hiển thị chi phí); đặt suất ăn theo khách hàng + tổng hợp + cập nhật số suất vào thực đơn.
+- Khi không chọn cơ cấu bữa, bộ sinh dùng cơ cấu đang hoạt động đầu tiên.
+- Kiểm thử: unit 86, integration 53, E2E P4 (tạo tự động → sửa → gửi duyệt → duyệt → công bố).
+
 ## [0.4.0] - 2026-11-09
 ### P3 – Món ăn, công thức, khuyến nghị (SPEC §6.1–6.3, §7.3.6–7.3.9)
 - NutritionEngine, CostEngine, WarningEngine viết thuần C# (decimal, làm tròn khi hiển thị); 57 unit test với số liệu tính tay, độ phủ dòng 98,8%.
