@@ -108,7 +108,18 @@ export function problemCode(err: unknown): string | undefined {
 
 /** Downloads a binary response (Excel export etc.) using the server-provided file name. */
 export async function downloadFile(url: string, params?: Record<string, unknown>, fallbackName = 'export.xlsx') {
-  const r = await http.get(url, { params, responseType: 'blob' });
+  saveBlob(await http.get(url, { params, responseType: 'blob' }), fallbackName);
+}
+
+/** POST variant (report exports with a JSON filter). Returns false when the server queued a background export (202). */
+export async function postDownload(url: string, body: unknown, fallbackName = 'export.xlsx'): Promise<boolean> {
+  const r = await http.post(url, body, { responseType: 'blob', validateStatus: (s) => s === 200 || s === 202 });
+  if (r.status === 202) return false;
+  saveBlob(r, fallbackName);
+  return true;
+}
+
+function saveBlob(r: { headers: Record<string, unknown>; data: unknown }, fallbackName: string) {
   const cd = (r.headers['content-disposition'] as string | undefined) ?? '';
   const m = /filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i.exec(cd);
   const name = m ? decodeURIComponent(m[1] ?? m[2]) : fallbackName;

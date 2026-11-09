@@ -47,6 +47,12 @@ public static class ApiServiceCollectionExtensions
         services.AddScoped<Services.MenuService>();
         services.AddScoped<Services.InventoryService>();
         services.AddScoped<Services.AlertService>();
+        services.AddScoped<Reports.ReportContext>();
+        services.AddScoped<Reports.CostSheetService>();
+        services.AddScoped<Reports.ReportService>();
+        services.AddScoped<Services.AnalysisService>();
+        foreach (var t in typeof(ApiServiceCollectionExtensions).Assembly.GetTypes().Where(t => t is { IsClass: true, IsAbstract: false } && typeof(Reports.IReport).IsAssignableFrom(t)))
+            services.AddScoped(typeof(Reports.IReport), t);
         // background jobs (resolved by name by the Quartz/inline runner)
         foreach (var t in typeof(ApiServiceCollectionExtensions).Assembly.GetTypes().Where(t => t is { IsClass: true, IsAbstract: false } && typeof(IAppJob).IsAssignableFrom(t)))
             services.AddScoped(typeof(IAppJob), t);

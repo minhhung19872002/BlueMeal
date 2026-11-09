@@ -11,7 +11,12 @@ public sealed class HttpCurrentUser(IHttpContextAccessor accessor) : ICurrentUse
 {
     internal const string AccessItemKey = "bm.access";
     private HttpContext? Ctx => accessor.HttpContext;
-    private UserAccess? Access => Ctx?.Items[AccessItemKey] as UserAccess;
+    private UserAccess? Access => OverrideAccess ?? Ctx?.Items[AccessItemKey] as UserAccess;
+
+    /// <summary>Permissions and data scopes of <see cref="OverrideUserId"/> for background jobs acting on behalf of a user.</summary>
+    public UserAccess? OverrideAccess { get; set; }
+    /// <summary>UI language of the requesting user for background jobs ("vi"/"en").</summary>
+    public string? OverrideLanguage { get; set; }
 
     /// <summary>Set by background jobs / seeding to act as a system user.</summary>
     public Guid? OverrideUserId { get; set; }
@@ -23,7 +28,7 @@ public sealed class HttpCurrentUser(IHttpContextAccessor accessor) : ICurrentUse
     public string? Ip => Ctx?.Connection.RemoteIpAddress?.ToString();
     public string? UserAgent => Ctx?.Request.Headers.UserAgent.ToString();
     public string? TraceId => Activity.Current?.Id ?? Ctx?.TraceIdentifier;
-    public string Language => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en" ? "en" : "vi";
+    public string Language => OverrideLanguage ?? (CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en" ? "en" : "vi");
 
     private HashSet<string>? _perms;
     public IReadOnlySet<string> Permissions => _perms ??= Access is null ? [] : new HashSet<string>(Access.Permissions, StringComparer.Ordinal);

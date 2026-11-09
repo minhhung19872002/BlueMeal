@@ -71,8 +71,8 @@ public sealed class InspectionsController(AppDbContext db, ISettingsService sett
     public async Task<IActionResult> Step1List([FromQuery(Name = "")] PageQuery q, [FromQuery] DateOnly? from, [FromQuery] DateOnly? to, [FromQuery] QualityResult? result, [FromQuery] Guid? receiptId, CancellationToken ct)
     {
         var query = db.Set<FoodInspectionStep1>().AsNoTracking();
-        if (from is { } f) { var start = new DateTimeOffset(f.ToDateTime(TimeOnly.MinValue), TimeSpan.FromHours(7)); query = query.Where(x => x.InspectedAt >= start); }
-        if (to is { } t) { var end = new DateTimeOffset(t.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.FromHours(7)); query = query.Where(x => x.InspectedAt < end); }
+        if (from is { } f) { var start = new DateTimeOffset(f.ToDateTime(TimeOnly.MinValue), TimeSpan.FromHours(7)).ToUniversalTime(); query = query.Where(x => x.InspectedAt >= start); }
+        if (to is { } t) { var end = new DateTimeOffset(t.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.FromHours(7)).ToUniversalTime(); query = query.Where(x => x.InspectedAt < end); }
         if (result is not null) query = query.Where(x => x.Result == result);
         if (receiptId is not null) query = query.Where(x => x.ReceiptId == receiptId);
         var total = await query.LongCountAsync(ct);
@@ -258,8 +258,8 @@ public sealed class FoodSamplesController(AppDbContext db, ISettingsService sett
     {
         var now = clock.GetUtcNow();
         var query = db.Set<FoodSample>().AsNoTracking();
-        if (from is { } f) { var start = new DateTimeOffset(f.ToDateTime(TimeOnly.MinValue), TimeSpan.FromHours(7)); query = query.Where(x => x.SampledAt >= start); }
-        if (to is { } t) { var end = new DateTimeOffset(t.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.FromHours(7)); query = query.Where(x => x.SampledAt < end); }
+        if (from is { } f) { var start = new DateTimeOffset(f.ToDateTime(TimeOnly.MinValue), TimeSpan.FromHours(7)).ToUniversalTime(); query = query.Where(x => x.SampledAt >= start); }
+        if (to is { } t) { var end = new DateTimeOffset(t.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.FromHours(7)).ToUniversalTime(); query = query.Where(x => x.SampledAt < end); }
         if (menuId is not null) query = query.Where(x => x.MenuId == menuId);
         query = state switch
         {

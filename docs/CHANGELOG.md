@@ -3,6 +3,16 @@
 Định dạng theo [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/); phiên bản theo [SemVer](https://semver.org/).
 Mỗi mục `## [x.y.z] - YYYY-MM-DD` được nạp vào màn hình **Phiên bản hệ thống** (bảng `system_version`).
 
+## [0.7.0] - 2026-11-09
+### P6 – Phân tích, cảnh báo, chi phí, báo cáo, dashboard (SPEC §7.5–7.7, §7.9)
+- Phân tích dinh dưỡng cho 1 món / 1 thực đơn / khoảng ngày: bảng đầy đủ chất dinh dưỡng, % đáp ứng (thanh màu + biểu tượng), P:L:G, biểu đồ vi chất, xu hướng năng lượng theo ngày, trung bình tuần/tháng, so sánh 2 phương án, xuất Excel.
+- Trung tâm cảnh báo `/alerts`: lọc theo mức/loại/trạng thái, tiếp nhận / đánh dấu đã xử lý kèm ghi chú, chạy kiểm tra ngay; màn cấu hình ngưỡng (quyền `alert.config`, có kiểm tra hợp lệ và ghi audit).
+- Bảng tính chi phí suất ăn theo ngày/tuần/tháng × khách hàng: số suất, chi phí kế hoạch, chi phí thực tế (phiếu xuất đã ghi sổ + chi phí chung), doanh thu theo đơn giá thỏa thuận, chênh lệch, lãi gộp, biểu đồ kế hoạch – thực tế.
+- 16 báo cáo RPT-01…RPT-16 dùng chung một khung: bộ lọc theo từng báo cáo, xem trên web (2.000 dòng đầu, có dòng tổng), xuất Excel ClosedXML có tiêu đề đơn vị, kỳ báo cáo, người lập, ngày lập, khối chữ ký và định dạng số Việt Nam; báo cáo trên 3.000 dòng tự chạy nền qua `export_job` (Quartz) và gửi thông báo khi xong; lưu bộ lọc yêu thích theo người dùng; tôn trọng phạm vi dữ liệu kho/khách hàng kể cả khi chạy nền.
+- Dashboard trang chủ theo quyền: thực đơn chờ duyệt, thực đơn nháp, cảnh báo nghiêm trọng, số suất hôm nay theo ca, chi phí/suất tuần này so với ngân sách, % đáp ứng năng lượng 7 ngày, lô sắp hết hạn, mẫu lưu cần hủy.
+- Sửa: mốc ngày giờ (+07) gửi xuống PostgreSQL được chuyển sang UTC (lọc theo ngày ở kiểm thực/lưu mẫu trước đây lỗi).
+- Kiểm thử: integration 68 (6 test báo cáo: chạy + xuất đủ 16 báo cáo, số liệu RPT-02/04 khớp sổ cái, phạm vi kho, xuất nền, bộ lọc yêu thích, phân tích/chi phí/dashboard), E2E P6.
+
 ## [0.6.0] - 2026-11-09
 ### P5 – Kho và An toàn thực phẩm (SPEC §5.5, §5.6, §6.5, §7.8)
 - InventoryEngine thuần C#: bình quân gia quyền di động (mặc định) hoặc FIFO theo lô, gợi ý lô FEFO, chặn xuất âm (cấu hình được), chênh lệch kiểm kê, nhu cầu nguyên liệu từ thực đơn, đề xuất mua `max(0, nhu cầu − tồn khả dụng + tồn tối thiểu)`, quy tắc khóa sổ; 19 unit test số liệu tính tay.

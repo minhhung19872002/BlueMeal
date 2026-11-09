@@ -12,7 +12,7 @@ namespace BlueMeal.Api.Controllers.Analysis;
 
 /// <summary>Alert center (SPEC §7.6): list, acknowledge/resolve, run the daily checks on demand.</summary>
 [Route("api/v1/alerts")]
-public sealed class AlertsController(AppDbContext db, AlertService alerts, TimeProvider clock) : ApiControllerBase
+public sealed class AlertsController(AppDbContext db, AlertService alerts, BlueMeal.Application.Abstractions.ISettingsService settings, BlueMeal.Application.Abstractions.IAuditWriter audit, TimeProvider clock) : ApiControllerBase
 {
     [HttpGet, HasPermission(Permissions.Alert.View)]
     public async Task<IActionResult> List([FromQuery(Name = "")] PageQuery q, [FromQuery] AlertStatus? status, [FromQuery] WarningLevel? level, [FromQuery] string? code,
@@ -51,4 +51,18 @@ public sealed class AlertsController(AppDbContext db, AlertService alerts, TimeP
     /// <summary>Runs the daily checks now (normally scheduled at 06:00).</summary>
     [HttpPost("run-daily"), HasPermission(Permissions.Alert.Config)]
     public async Task<IActionResult> RunDaily(CancellationToken ct) => Ok(await alerts.RunDailyAsync(ct));
+
+    /// <summary>Warning thresholds (SPEC §6.2, §7.6) editable by admin / nutritionist (alert.config).</summary>
+    [HttpGet("config"), HasPermission(Permissions.Alert.Config)]
+    public async Task<IActionResult> Config(CancellationToken ct) => Ok(await settings.GetAsync<BlueMeal.Application.Settings.WarningSettings>(BlueMeal.Application.Settings.SettingKeys.Warning, ct));
+
+    [HttpPut("config"), HasPermission(Permissions.Alert.Config)]
+    public async Task<IActionResult> SaveConfig([FromBody] BlueMeal.Application.Settings.WarningSettings value, CancellationToken ct)
+    {
+        await ValidateAsync(value, ct);
+        var old = await settings.GetAsync<BlueMeal.Application.Settings.WarningSettings>(BlueMeal.Application.Settings.SettingKeys.Warning, ct);
+        await settings.SetAsync(BlueMeal.Application.Settings.SettingKeys.Warning, value, ct);
+        await audit.WriteAsync(AuditAction.Update, "Setting", BlueMeal.Application.Settings.SettingKeys.Warning, old, value, ct: ct);
+        return NoContent();
+    }
 }
