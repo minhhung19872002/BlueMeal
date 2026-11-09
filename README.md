@@ -7,6 +7,25 @@ Phần mềm web quản lý bữa ăn ca, cân đối dinh dưỡng cho người
 - Hướng dẫn cài đặt đầy đủ: [`docs/05_HuongDan_CaiDat.md`](docs/05_HuongDan_CaiDat.md)
 - Checklist nghiệm thu (SPEC §15): [`docs/09_Checklist_NghiemThu.md`](docs/09_Checklist_NghiemThu.md)
 
+## Trạng thái dự án
+
+**v1.0.0 (2026-11-09)**: hoàn thành P0 → P10 theo `SPEC.md`. Chi tiết đối chiếu ở [`docs/09_Checklist_NghiemThu.md`](docs/09_Checklist_NghiemThu.md).
+
+| Hạng mục | Kết quả |
+|---|---|
+| Unit / Integration / Vitest | 117 / 81 / 7 đạt |
+| E2E Playwright | 54/54 (Chrome desktop + mobile Pixel 7). WebKit (Safari desktop + iPhone 14): P1 + P9 đạt 21/21 |
+| Tải k6 (máy phát triển) | 1 000 VU giữ 10 phút: p95 đọc 628 ms, lỗi 0 % ([báo cáo](docs/test-reports/k6-load-test.md)) |
+| Bảo mật | ZAP baseline 0 High / 0 Medium; diễn tập sao lưu → khôi phục PASSED |
+| Lighthouse | 8 trang chính ≥ 85 |
+| Triển khai | Overlay production đã chạy thử (FS chỉ đọc, non-root, TLS, 2 API); gói offline `save-images` / `load-images` đã thử |
+
+Còn lại (thực hiện tại hiện trường):
+- Cài đặt trên hạ tầng của chủ đầu tư và nhập dữ liệu ban đầu (`docs/05_HuongDan_CaiDat.md`).
+- Chạy lại `scripts/load-test.sh 1000 10m` trên máy chủ thật để nghiệm thu hiệu năng.
+- Đào tạo theo vai trò và ký biên bản (`docs/07_TaiLieu_DaoTao.md`).
+- Khi Viện Dinh dưỡng cung cấp đặc tả API chính thức: cấu hình kết nối và `mapping_json` (không cần sửa code).
+
 ## Công nghệ
 
 | Lớp | Thành phần |
