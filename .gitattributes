@@ -10,3 +10,10 @@
 *.xlsx binary
 *.png binary
 *.jpg binary
+# files executed or parsed inside Linux containers must keep LF
+*.conf text eol=lf
+*.template text eol=lf
+*.sql text eol=lf
+*.tsv text eol=lf
+Dockerfile text eol=lf
+*.py text eol=lf
