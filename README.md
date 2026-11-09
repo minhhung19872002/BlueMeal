@@ -5,6 +5,7 @@ Phần mềm web quản lý bữa ăn ca, cân đối dinh dưỡng cho người
 - Đặc tả: [`SPEC.md`](SPEC.md) · Giả định: [`docs/ASSUMPTIONS.md`](docs/ASSUMPTIONS.md) · Nhật ký thay đổi: [`docs/CHANGELOG.md`](docs/CHANGELOG.md)
 - Thiết kế hệ thống: [`docs/02_ThietKe_HeThong.md`](docs/02_ThietKe_HeThong.md) · Giấy phép bên thứ ba: [`docs/THIRD_PARTY_LICENSES.md`](docs/THIRD_PARTY_LICENSES.md)
 - Hướng dẫn cài đặt đầy đủ: [`docs/05_HuongDan_CaiDat.md`](docs/05_HuongDan_CaiDat.md)
+- Checklist nghiệm thu (SPEC §15): [`docs/09_Checklist_NghiemThu.md`](docs/09_Checklist_NghiemThu.md)
 
 ## Công nghệ
 

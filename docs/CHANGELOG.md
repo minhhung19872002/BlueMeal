@@ -3,6 +3,19 @@
 Định dạng theo [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/); phiên bản theo [SemVer](https://semver.org/).
 Mỗi mục `## [x.y.z] - YYYY-MM-DD` được nạp vào màn hình **Phiên bản hệ thống** (bảng `system_version`).
 
+## [1.0.0-rc.1] - 2026-11-09
+### P10 – Tài liệu, đóng gói, bản phát hành ứng viên
+- Checklist nghiệm thu `docs/09_Checklist_NghiemThu.md`: đối chiếu từng mục SPEC §15 với bằng chứng và trạng thái. Còn tồn tại: hiệu năng 1 000 người dùng đồng thời cần đo trên hạ tầng thật; API thật của Viện Dinh dưỡng; các việc tại hiện trường (A-48).
+- Chạy thử overlay production: FS chỉ đọc, user không phải root, bỏ mọi capability, TLS, 2 API. E2E P1 + P8 đạt trên HTTPS.
+- Khóa Data Protection dùng chung qua Redis cho mọi replica (A-47). Bảng Quartz bổ sung cột tùy chọn của 3.x, hết cảnh báo khi worker khởi động.
+- Gói triển khai offline: `save-images` không còn chép `deploy/.env` và khóa/chứng chỉ TLS vào gói. Đã thử `save-images` → `load-images` (5 image, kiểm tra SHA-256).
+- Danh sách giấy phép npm (165 gói production, đều MIT/ISC/BSD/Apache) trong `THIRD_PARTY_LICENSES.md` và `docs/third-party/npm-licenses.json`.
+### P9 – Hiệu năng (tiếp)
+- Pool kết nối PostgreSQL: `DB_POOL_SIZE` 40 mỗi tiến trình (trước là 100, gây lỗi `too many clients` khi chạy 1 000 VU). Bật `No Reset On Close` và auto-prepare của Npgsql.
+- StackExchange.Redis dùng `SocketManager.ThreadPool`: luồng scheduler riêng của thư viện quay vòng chờ, chiếm khoảng 30 % thời gian luồng của API (đo bằng dotnet-trace).
+- Kết quả k6 trên máy phát triển: 400 VU đạt (p95 516 ms, 0 % lỗi). 1 000 VU trong 10 phút: 0 % lỗi, 185 413 request, nhưng p95 đọc 4,2 s do máy bão hòa CPU (`docs/test-reports/k6-load-test.md`).
+- E2E đầy đủ **54/54 đạt** (44 desktop + 10 mobile). Sửa build frontend: tsconfig của e2e thiếu thư viện DOM.
+
 ## [0.10.0] - 2026-11-09
 ### P9 – Hiệu năng, giao diện điện thoại, tài liệu (SPEC §9, §11, §13) — *chưa hoàn tất*
 - Kiểm thử tải k6: `tools/k6/load-test.js`. Mỗi VU là một người dùng đăng nhập một lần, nghỉ 2–5 giây giữa các bước. Thêm sub-metric theo từng endpoint. Đăng nhập lỗi thì chờ lũy thừa trước khi thử lại, và kịch bản tự dừng khi quá 50 % lượt đăng nhập lỗi. Script `scripts/load-test.(sh|ps1)` chạy trên overlay `docker-compose.perf.yml` (2 API). Tài khoản `loadtest*` được tạo bằng `--seed-loadtest=N` và tự xóa sau khi chạy. Thêm công cụ đo chi phí từng request `tools/k6/cost-probe.js` và `one-endpoint.js`.

@@ -14,6 +14,8 @@ TAR="$OUT/bluemeal-images-$VERSION.tar"
 docker save -o "$TAR" $IMAGES
 mkdir -p "$OUT/deploy" "$OUT/scripts"
 tar --exclude=.env -cf - deploy | tar -C "$OUT" -xf -
+# never ship secrets: environment file and TLS key/certificate are created on the target server
+rm -f "$OUT/deploy/.env" "$OUT"/deploy/nginx/ssl/*.key "$OUT"/deploy/nginx/ssl/*.crt "$OUT"/deploy/nginx/ssl/*.pem
 cp -r scripts/. "$OUT/scripts/"
 (cd "$OUT" && sha256sum "$(basename "$TAR")" > "$(basename "$TAR").sha256")
 echo "Saved $TAR. Copy '$OUT' to the offline server and run scripts/load-images.sh"

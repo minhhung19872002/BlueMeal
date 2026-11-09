@@ -129,7 +129,7 @@ Cột **Tự động** chỉ tên test tự động tương ứng (U = unit, I =
 | NFR-02 Bảo mật | mục 4 | `SecurityP8Tests`, `SessionAndPiiTests`, E2E P8, ZAP |
 | NFR-01 Hiệu năng | mục 3 | k6 |
 
-Tổng số test tự động tại v1.0.0: **111 unit, 80 integration, 7 Vitest, 26 E2E Playwright** (xem `docs/test-reports/`).
+Tổng số test tự động tại v1.0.0: **117 unit, 81 integration, 7 Vitest, 54 E2E Playwright (44 desktop + 10 mobile)** (xem `docs/test-reports/`).
 
 ## 3. Kế hoạch kiểm thử hiệu năng
 
@@ -162,7 +162,7 @@ Tổng số test tự động tại v1.0.0: **111 unit, 80 integration, 7 Vitest
 | Unit (backend) | 117/117 đạt; độ phủ dòng các engine tính toán 98,8 % | `dotnet test` |
 | Integration (PostgreSQL thật) | 81/81 đạt (gồm sinh 22 file mẫu nhập `tools/import-templates/`) | `dotnet test` |
 | Frontend unit (Vitest) | 7/7 đạt | `npx vitest run` |
-| E2E Playwright | Bộ đầy đủ: 54 test (44 desktop Chrome + 10 mobile Pixel 7). Lần chạy đầy đủ gần nhất đạt hết là ở P8 (24/24 desktop). Ở P9 đã chạy riêng `p9-responsive` (8 desktop + 8 mobile) và `zz-docs-screenshots` (12): đạt hết. **Chưa chạy lại bộ đầy đủ sau P9**: lần chạy 2026-11-09 bị ngắt vì máy thiếu RAM, worker thoát với mã 0xC0000142. | `docs/test-reports/e2e/index.html`, `e2e-junit.xml` |
+| E2E Playwright | **54/54 đạt** (44 desktop Chrome + 10 mobile Pixel 7, chạy 2026-11-09 theo 4 đợt rồi gộp báo cáo); thêm P1 + P8 (7/7) trên bản production HTTPS | `docs/test-reports/e2e/index.html`, `e2e-junit.xml` |
 | ZAP baseline | 0 High, 0 Medium, 1 Low (false positive, có giải trình), còn lại Informational | `docs/test-reports/zap/zap-baseline.html` |
 | Diễn tập khôi phục | PASSED — 12/12 bảng khớp số bản ghi | `docs/test-reports/restore-drill.txt` |
 | Tải k6 | xem mục 5.1 | `docs/test-reports/k6-load-test.md` |
@@ -170,7 +170,7 @@ Tổng số test tự động tại v1.0.0: **111 unit, 80 integration, 7 Vitest
 
 ### 5.1 Kết quả tải (k6)
 
-Mức 50 VU và 300 VU đạt (300 VU: p95 158 ms, 0 % lỗi). Mức 1 000 VU **chưa có kết quả hợp lệ** sau khi tối ưu. Chi tiết, số đo chi phí từng request và ước tính phần cứng: `docs/test-reports/k6-load-test.md`.
+Trên máy phát triển: đạt tới 400 VU (p95 516 ms, 0 % lỗi). Ở 1 000 VU trong 10 phút: 0 % lỗi, 185 413 request, nhưng p95 đọc 4,2 s (ngưỡng < 1 s) do máy bão hòa CPU. **Cần đo lại trên hạ tầng thật.** Chi tiết, số đo chi phí từng request và ước tính phần cứng: `docs/test-reports/k6-load-test.md`.
 
 ### 5.2 Lighthouse
 

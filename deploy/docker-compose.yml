@@ -3,7 +3,7 @@ name: bluemeal
 
 x-api-env: &api-env
   ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
-  BLUEMEAL_DB: "Host=postgres;Port=5432;Database=bluemeal;Username=bluemeal_app;Password=${BLUEMEAL_APP_PASSWORD:?};Maximum Pool Size=${DB_POOL_SIZE:-100};Timeout=15;Command Timeout=60"
+  BLUEMEAL_DB: "Host=postgres;Port=5432;Database=bluemeal;Username=bluemeal_app;Password=${BLUEMEAL_APP_PASSWORD:?};Maximum Pool Size=${DB_POOL_SIZE:-40};Timeout=15;Command Timeout=60;No Reset On Close=true;Max Auto Prepare=50;Auto Prepare Min Usages=2"
   ConnectionStrings__Migration: "Host=postgres;Port=5432;Database=bluemeal;Username=bluemeal_owner;Password=${BLUEMEAL_OWNER_PASSWORD:?}"
   BLUEMEAL_REDIS: "redis:6379,password=${REDIS_PASSWORD:?}"
   BLUEMEAL_JWT_KEY: ${BLUEMEAL_JWT_KEY:?}

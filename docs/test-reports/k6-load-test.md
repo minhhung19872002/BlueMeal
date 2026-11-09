@@ -13,8 +13,12 @@ Ngưỡng theo SPEC §11: p95 của các request đọc < 1 000 ms, tỷ lệ l�
 | 2026-11-09 | 700 | 3 phút | 19,4 s | 37,9 % | 66 | **Không đạt**: bão đăng nhập (thử lại sau 5 s cố định) chiếm hết CPU |
 | 2026-11-09 | 1 000 | 3 phút | 21,2 s | 62 % | 68 | **Không đạt**: cùng nguyên nhân |
 | 2026-11-09 | 1 000 | 10 phút, ramp 5 phút | — | 100 % (đăng nhập) | — | **Không hợp lệ**: 50 tài khoản `loadtest*` còn từ lần đo trước giữ mật khẩu cũ. Đăng nhập sai từ cùng IP của k6 làm bật CAPTCHA cho cả IP, nên mọi lượt đăng nhập sau đều bị từ chối. Lần chạy còn bị dừng ở phút 11,5 vì máy thiếu RAM. Đã sửa seeder và thêm ngưỡng tự dừng sớm. |
+| 2026-11-09 | 1 000 | 5 phút, ramp 4 phút | 18,2 s | 22 % | 30 | **Không đạt**: PostgreSQL báo `53300 too many clients`. 2 API và worker dùng pool mặc định 100 kết nối mỗi tiến trình, vượt `max_connections=100`. Đã sửa (mục 3.6). |
+| 2026-11-09 | 1 000 | 5 phút, ramp 4 phút | 5,0 s | **0 %** | 188 | **Không đạt p95**: bão hòa CPU. |
+| 2026-11-09 | 400 | 2 phút, ramp 1 phút | **516 ms** | **0 %** | 119 | **Đạt** |
+| 2026-11-09 | 1 000 | **10 phút, ramp 5 phút** | 4,2 s | **0 %** (185 413 request, checks 100 %) | 189 | **Không đạt p95**: máy phát triển bão hòa CPU (100 %), đồng thời có 8–11 tiến trình build (rustc/cl) của dự án khác chạy song song. Báo cáo `k6-load-test.html`, `k6-summary.json`. |
 
-**Chưa có kết quả hợp lệ cho mức 1 000 VU sau khi tối ưu.** Cần chạy lại khi máy đủ tài nguyên. Nên tắt các stack Docker khác, hoặc chạy k6 từ một máy riêng.
+**Kết luận trên máy phát triển**: đạt ngưỡng tới **400 VU** (p95 516 ms). Ở 1 000 VU hệ thống không lỗi (0 %) nhưng p95 đọc 4,2 s vì máy bão hòa CPU. Ở lần chạy này k6, 2 API, PostgreSQL, WAF và các dự án khác cùng chạy trên một máy 16 luồng. **Cần đo lại trên hạ tầng thật** (12–16 vCPU, k6 chạy từ máy khác) để nghiệm thu ngưỡng 1 000 người dùng.
 
 ## 2. Đo chi phí từng loại request (`tools/k6/cost-probe.js`, `tools/k6/one-endpoint.js`; thời gian CPU lấy từ cgroup `cpu.stat`)
 
@@ -36,5 +40,8 @@ Ngưỡng theo SPEC §11: p95 của các request đọc < 1 000 ms, tỷ lệ l�
 3. Kịch bản k6: người dùng đăng nhập thất bại sẽ chờ lâu dần trước khi thử lại (lũy thừa, tối đa 60 s) thay vì cố định 5 s. Đo từng endpoint bằng sub-metric. Tự dừng khi quá 50 % lượt đăng nhập lỗi.
 4. Seeder `--seed-loadtest`: đặt lại mật khẩu cho tài khoản còn sót từ lần trước, và xóa phiên của tài khoản thử khi gỡ.
 5. Thêm biến `DOTNET_ThreadPool_UnfairSemaphoreSpinLimit=0` và `DOTNET_GCDynamicAdaptationMode=1` vào overlay perf để giảm CPU lúc rảnh khi 2 bản API chạy chung một máy. Đo nhanh chưa thấy khác biệt rõ rệt.
+
+6. Pool kết nối: `DB_POOL_SIZE` mặc định đổi từ 100 xuống 40 mỗi tiến trình. Overlay perf đặt `max_connections=200`, bản production là 300. Chuỗi kết nối bật `No Reset On Close` và auto-prepare (`Max Auto Prepare=50`): `pg_stat_statements` cho thấy thời gian thực thi truy vấn chỉ chiếm phần nhỏ CPU của PostgreSQL, còn lại là chi phí giao thức (`DISCARD ALL` sau mỗi lần trả kết nối, parse/plan lặp lại).
+7. StackExchange.Redis dùng `SocketManager.ThreadPool`. `dotnet-trace` cho thấy các luồng scheduler riêng của thư viện quay vòng chờ, chiếm khoảng 30 % thời gian luồng của API khi có tải.
 
 Khi chạy `scripts/load-test.*`, k6 sinh `k6-load-test.html` (web dashboard) và `k6-summary.json` vào thư mục này. Không lưu kèm file của lần chạy không hợp lệ.

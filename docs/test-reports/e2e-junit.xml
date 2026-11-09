@@ -1,98 +1,136 @@
-<testsuites id="" name="" tests="4" failures="2" skipped="0" errors="0" time="188.39478100000002">
-<testsuite name="p1-admin.spec.ts" timestamp="2026-11-09T05:47:12.378Z" hostname="desktop-chrome" tests="4" failures="2" skipped="0" time="183.247" errors="0">
-<testcase name="P1 — authentication &amp; administration › login page is bilingual and switches language instantly" classname="p1-admin.spec.ts" time="1.335">
+<testsuites id="" name="" tests="54" failures="0" skipped="0" errors="0" time="456.425051">
+<testsuite name="p1-admin.spec.ts" timestamp="2026-11-09T13:29:42.597Z" hostname="desktop-chrome" tests="4" failures="0" skipped="0" time="63.986" errors="0">
+<testcase name="P1 — authentication &amp; administration › login page is bilingual and switches language instantly" classname="p1-admin.spec.ts" time="9.779">
 </testcase>
-<testcase name="P1 — authentication &amp; administration › wrong password shows a neutral bilingual error" classname="p1-admin.spec.ts" time="1.128">
+<testcase name="P1 — authentication &amp; administration › wrong password shows a neutral bilingual error" classname="p1-admin.spec.ts" time="7.391">
 </testcase>
-<testcase name="P1 — authentication &amp; administration › admin signs in with TOTP and manages users, roles and sessions" classname="p1-admin.spec.ts" time="90.459">
-<failure message="p1-admin.spec.ts:23:3 admin signs in with TOTP and manages users, roles and sessions" type="FAILURE">
-<![CDATA[  [desktop-chrome] › p1-admin.spec.ts:23:3 › P1 — authentication & administration › admin signs in with TOTP and manages users, roles and sessions 
-
-    Test timeout of 90000ms exceeded.
-
-    Error: locator.click: Test timeout of 90000ms exceeded.
-    Call log:
-      - waiting for getByRole('button', { name: 'OK' })
-
-
-      37 |     await page.getByRole('button', { name: 'Lưu' }).click();
-      38 |     await expect(page.getByText('Mật khẩu tạm thời')).toBeVisible();
-    > 39 |     await page.getByRole('button', { name: 'OK' }).click();
-         |                                                    ^
-      40 |
-      41 |     await page.goto('/admin/roles');
-      42 |     await page.getByText('Thủ kho').first().click();
-        at D:\Source\BlueMeal\frontend\e2e\p1-admin.spec.ts:39:52
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\test-results\p1-admin-P1-—-authenticati-6d5e7-es-users-roles-and-sessions-desktop-chrome\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\test-results\p1-admin-P1-—-authenticati-6d5e7-es-users-roles-and-sessions-desktop-chrome\error-context.md
-
-    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
-    ..\test-results\p1-admin-P1-—-authenticati-6d5e7-es-users-roles-and-sessions-desktop-chrome\trace.zip
-    Usage:
-
-        npx playwright show-trace ..\test-results\p1-admin-P1-—-authenticati-6d5e7-es-users-roles-and-sessions-desktop-chrome\trace.zip
-
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|..\..\frontend\test-results\p1-admin-P1-—-authenticati-6d5e7-es-users-roles-and-sessions-desktop-chrome\test-failed-1.png]]
-
-[[ATTACHMENT|..\..\frontend\test-results\p1-admin-P1-—-authenticati-6d5e7-es-users-roles-and-sessions-desktop-chrome\error-context.md]]
-
-[[ATTACHMENT|..\..\frontend\test-results\p1-admin-P1-—-authenticati-6d5e7-es-users-roles-and-sessions-desktop-chrome\trace.zip]]
-]]>
-</system-out>
+<testcase name="P1 — authentication &amp; administration › admin signs in with TOTP and manages users, roles and sessions" classname="p1-admin.spec.ts" time="31.389">
 </testcase>
-<testcase name="P1 — authentication &amp; administration › catalog screen: search without accents and Excel buttons @mobile" classname="p1-admin.spec.ts" time="90.325">
-<failure message="p1-admin.spec.ts:55:3 catalog screen: search without accents and Excel buttons @mobile" type="FAILURE">
-<![CDATA[  [desktop-chrome] › p1-admin.spec.ts:55:3 › P1 — authentication & administration › catalog screen: search without accents and Excel buttons @mobile 
-
-    Test timeout of 90000ms exceeded.
-
-    Error: locator.fill: Test timeout of 90000ms exceeded.
-    Call log:
-      - waiting for getByTestId('catalog-search').locator('input')
-
-
-      56 |     await loginUi(page, loadAdmin());
-      57 |     await page.goto('/catalog/provinces');
-    > 58 |     await page.getByTestId('catalog-search').locator('input').fill('ho chi minh');
-         |                                                               ^
-      59 |     await page.getByTestId('catalog-search').locator('input').press('Enter');
-      60 |     await expect(page.getByText('Thành phố Hồ Chí Minh')).toBeVisible();
-      61 |     await shot(page, 'catalog-provinces');
-        at D:\Source\BlueMeal\frontend\e2e\p1-admin.spec.ts:58:63
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\test-results\p1-admin-P1-—-authenticati-8438a-ts-and-Excel-buttons-mobile-desktop-chrome\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\test-results\p1-admin-P1-—-authenticati-8438a-ts-and-Excel-buttons-mobile-desktop-chrome\error-context.md
-
-    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
-    ..\test-results\p1-admin-P1-—-authenticati-8438a-ts-and-Excel-buttons-mobile-desktop-chrome\trace.zip
-    Usage:
-
-        npx playwright show-trace ..\test-results\p1-admin-P1-—-authenticati-8438a-ts-and-Excel-buttons-mobile-desktop-chrome\trace.zip
-
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|..\..\frontend\test-results\p1-admin-P1-—-authenticati-8438a-ts-and-Excel-buttons-mobile-desktop-chrome\test-failed-1.png]]
-
-[[ATTACHMENT|..\..\frontend\test-results\p1-admin-P1-—-authenticati-8438a-ts-and-Excel-buttons-mobile-desktop-chrome\error-context.md]]
-
-[[ATTACHMENT|..\..\frontend\test-results\p1-admin-P1-—-authenticati-8438a-ts-and-Excel-buttons-mobile-desktop-chrome\trace.zip]]
-]]>
-</system-out>
+<testcase name="P1 — authentication &amp; administration › catalog screen: search without accents and Excel buttons @mobile" classname="p1-admin.spec.ts" time="15.427">
+</testcase>
+</testsuite>
+<testsuite name="p2-catalogs.spec.ts" timestamp="2026-11-09T13:29:42.597Z" hostname="desktop-chrome" tests="4" failures="0" skipped="0" time="87.976" errors="0">
+<testcase name="P2 — base catalogs › foods list shows sample-data label and nutrient editor" classname="p2-catalogs.spec.ts" time="11.722">
+</testcase>
+<testcase name="P2 — base catalogs › nutrient grid supports quick inline editing" classname="p2-catalogs.spec.ts" time="23.896">
+</testcase>
+<testcase name="P2 — base catalogs › partner detail tabs: contracts and food safety certificates" classname="p2-catalogs.spec.ts" time="22.66">
+</testcase>
+<testcase name="P2 — base catalogs › ingredients show mapping to food composition and stock @mobile" classname="p2-catalogs.spec.ts" time="29.698">
+</testcase>
+</testsuite>
+<testsuite name="p3-recipes.spec.ts" timestamp="2026-11-09T13:29:42.597Z" hostname="desktop-chrome" tests="3" failures="0" skipped="0" time="86.291" errors="0">
+<testcase name="P3 — dishes, recipes, recommendations › recipe editor computes nutrition and cost in realtime" classname="p3-recipes.spec.ts" time="40.047">
+</testcase>
+<testcase name="P3 — dishes, recipes, recommendations › dish quick view shows nutrition per serving" classname="p3-recipes.spec.ts" time="17.728">
+</testcase>
+<testcase name="P3 — dishes, recipes, recommendations › recommendations list shows meal energy target" classname="p3-recipes.spec.ts" time="28.516">
+</testcase>
+</testsuite>
+<testsuite name="p4-menus.spec.ts" timestamp="2026-11-09T13:29:42.597Z" hostname="desktop-chrome" tests="2" failures="0" skipped="0" time="87.385" errors="0">
+<testcase name="P4 — menus: generate → edit → submit → approve → publish › full menu workflow" classname="p4-menus.spec.ts" time="79.384">
+</testcase>
+<testcase name="P4 — menus: generate → edit → submit → approve → publish › plans calendar and approval queue render" classname="p4-menus.spec.ts" time="8.001">
+</testcase>
+</testsuite>
+<testsuite name="p1-admin.spec.ts" timestamp="2026-11-09T13:29:42.597Z" hostname="mobile" tests="1" failures="0" skipped="0" time="9.611" errors="0">
+<testcase name="P1 — authentication &amp; administration › catalog screen: search without accents and Excel buttons @mobile" classname="p1-admin.spec.ts" time="9.611">
+</testcase>
+</testsuite>
+<testsuite name="p2-catalogs.spec.ts" timestamp="2026-11-09T13:29:42.597Z" hostname="mobile" tests="1" failures="0" skipped="0" time="12.967" errors="0">
+<testcase name="P2 — base catalogs › ingredients show mapping to food composition and stock @mobile" classname="p2-catalogs.spec.ts" time="12.967">
+</testcase>
+</testsuite>
+<testsuite name="p5-stock.spec.ts" timestamp="2026-11-09T13:29:42.597Z" hostname="desktop-chrome" tests="3" failures="0" skipped="0" time="85.418" errors="0">
+<testcase name="P5 — stock &amp; food safety › receipt with quality check is posted and shows in balance and stock card" classname="p5-stock.spec.ts" time="24.382">
+</testcase>
+<testcase name="P5 — stock &amp; food safety › stock take: count and approve" classname="p5-stock.spec.ts" time="34.502">
+</testcase>
+<testcase name="P5 — stock &amp; food safety › food sample is recorded with planned disposal" classname="p5-stock.spec.ts" time="26.534">
+</testcase>
+</testsuite>
+<testsuite name="p6-reports.spec.ts" timestamp="2026-11-09T13:29:42.597Z" hostname="desktop-chrome" tests="4" failures="0" skipped="0" time="112.665" errors="0">
+<testcase name="P6 — analysis, alerts, cost sheet, reports, dashboard › dashboard shows role widgets" classname="p6-reports.spec.ts" time="28.516">
+</testcase>
+<testcase name="P6 — analysis, alerts, cost sheet, reports, dashboard › stock movement report is viewed and exported to Excel" classname="p6-reports.spec.ts" time="32.303">
+</testcase>
+<testcase name="P6 — analysis, alerts, cost sheet, reports, dashboard › nutrition analysis of a date range" classname="p6-reports.spec.ts" time="24.331">
+</testcase>
+<testcase name="P6 — analysis, alerts, cost sheet, reports, dashboard › alert center runs daily checks and cost sheet renders" classname="p6-reports.spec.ts" time="27.515">
+</testcase>
+</testsuite>
+<testsuite name="p7-integration.spec.ts" timestamp="2026-11-09T13:29:42.597Z" hostname="desktop-chrome" tests="1" failures="0" skipped="0" time="31.946" errors="0">
+<testcase name="P7 — VDD integration › sync from the mock portal and resolve the conflict" classname="p7-integration.spec.ts" time="31.946">
+</testcase>
+</testsuite>
+<testsuite name="p8-security.spec.ts" timestamp="2026-11-09T13:29:42.597Z" hostname="desktop-chrome" tests="3" failures="0" skipped="0" time="28.134" errors="0">
+<testcase name="P8 — security hardening › security headers are sent on the SPA and API" classname="p8-security.spec.ts" time="0.087">
+</testcase>
+<testcase name="P8 — security hardening › WAF blocks a SQL injection probe" classname="p8-security.spec.ts" time="0.052">
+</testcase>
+<testcase name="P8 — security hardening › manual backup runs in the backup container and appears in the history" classname="p8-security.spec.ts" time="27.995">
+</testcase>
+</testsuite>
+<testsuite name="p9-responsive.spec.ts" timestamp="2026-11-09T13:29:42.597Z" hostname="desktop-chrome" tests="8" failures="0" skipped="0" time="212.499" errors="0">
+<testcase name="P9 — responsive screens @mobile › /stock/receipts fits the screen" classname="p9-responsive.spec.ts" time="8.517">
+</testcase>
+<testcase name="P9 — responsive screens @mobile › /stock/takes fits the screen" classname="p9-responsive.spec.ts" time="25.178">
+</testcase>
+<testcase name="P9 — responsive screens @mobile › /stock/balance fits the screen" classname="p9-responsive.spec.ts" time="29.839">
+</testcase>
+<testcase name="P9 — responsive screens @mobile › /safety/inspections fits the screen" classname="p9-responsive.spec.ts" time="29.914">
+</testcase>
+<testcase name="P9 — responsive screens @mobile › /safety/samples fits the screen" classname="p9-responsive.spec.ts" time="30.035">
+</testcase>
+<testcase name="P9 — responsive screens @mobile › /menus/published fits the screen" classname="p9-responsive.spec.ts" time="29.817">
+</testcase>
+<testcase name="P9 — responsive screens @mobile › /menus/approval fits the screen" classname="p9-responsive.spec.ts" time="29.7">
+</testcase>
+<testcase name="P9 — responsive screens @mobile › sample form is usable on a phone" classname="p9-responsive.spec.ts" time="29.499">
+</testcase>
+</testsuite>
+<testsuite name="p9-responsive.spec.ts" timestamp="2026-11-09T13:29:42.597Z" hostname="mobile" tests="8" failures="0" skipped="0" time="238.351" errors="0">
+<testcase name="P9 — responsive screens @mobile › /stock/receipts fits the screen" classname="p9-responsive.spec.ts" time="29.1">
+</testcase>
+<testcase name="P9 — responsive screens @mobile › /stock/takes fits the screen" classname="p9-responsive.spec.ts" time="29.991">
+</testcase>
+<testcase name="P9 — responsive screens @mobile › /stock/balance fits the screen" classname="p9-responsive.spec.ts" time="30.403">
+</testcase>
+<testcase name="P9 — responsive screens @mobile › /safety/inspections fits the screen" classname="p9-responsive.spec.ts" time="28.873">
+</testcase>
+<testcase name="P9 — responsive screens @mobile › /safety/samples fits the screen" classname="p9-responsive.spec.ts" time="29.823">
+</testcase>
+<testcase name="P9 — responsive screens @mobile › /menus/published fits the screen" classname="p9-responsive.spec.ts" time="29.61">
+</testcase>
+<testcase name="P9 — responsive screens @mobile › /menus/approval fits the screen" classname="p9-responsive.spec.ts" time="31.93">
+</testcase>
+<testcase name="P9 — responsive screens @mobile › sample form is usable on a phone" classname="p9-responsive.spec.ts" time="28.621">
+</testcase>
+</testsuite>
+<testsuite name="zz-docs-screenshots.spec.ts" timestamp="2026-11-09T13:29:42.597Z" hostname="desktop-chrome" tests="12" failures="0" skipped="0" time="327.496" errors="0">
+<testcase name="docs screenshots › screenshot menu-plans" classname="zz-docs-screenshots.spec.ts" time="10.923">
+</testcase>
+<testcase name="docs screenshots › screenshot menu-published" classname="zz-docs-screenshots.spec.ts" time="17.045">
+</testcase>
+<testcase name="docs screenshots › screenshot menu-approval" classname="zz-docs-screenshots.spec.ts" time="30.021">
+</testcase>
+<testcase name="docs screenshots › screenshot menu-builder" classname="zz-docs-screenshots.spec.ts" time="30.039">
+</testcase>
+<testcase name="docs screenshots › screenshot profile-mfa" classname="zz-docs-screenshots.spec.ts" time="29.798">
+</testcase>
+<testcase name="docs screenshots › screenshot settings" classname="zz-docs-screenshots.spec.ts" time="30.39">
+</testcase>
+<testcase name="docs screenshots › screenshot stock-issue" classname="zz-docs-screenshots.spec.ts" time="29.842">
+</testcase>
+<testcase name="docs screenshots › screenshot purchase-requests" classname="zz-docs-screenshots.spec.ts" time="29.488">
+</testcase>
+<testcase name="docs screenshots › screenshot period-locks" classname="zz-docs-screenshots.spec.ts" time="29.811">
+</testcase>
+<testcase name="docs screenshots › screenshot customers" classname="zz-docs-screenshots.spec.ts" time="29.715">
+</testcase>
+<testcase name="docs screenshots › screenshot reports" classname="zz-docs-screenshots.spec.ts" time="30.545">
+</testcase>
+<testcase name="docs screenshots › screenshot menu-calendar (first plan)" classname="zz-docs-screenshots.spec.ts" time="29.879">
 </testcase>
 </testsuite>
 </testsuites>

@@ -14,6 +14,7 @@ using BlueMeal.Infrastructure;
 using BlueMeal.Infrastructure.Identity;
 using BlueMeal.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
@@ -56,6 +57,14 @@ builder.Services.AddSingleton(jwt);
 builder.Services.AddSingleton<TokenService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddSingleton<PasswordHashGate>();
+// Data-protection keys shared by all API replicas and the worker through Redis (the containers have a read-only FS
+// and no persistent profile); without Redis (tests) the default in-memory keys are kept.
+builder.Services.AddDataProtection().SetApplicationName("BlueMeal");
+builder.Services.AddOptions<Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions>().Configure<IServiceProvider>((o, sp) =>
+{
+    if (sp.GetService<StackExchange.Redis.IConnectionMultiplexer>() is { } mux)
+        o.XmlRepository = new Microsoft.AspNetCore.DataProtection.StackExchangeRedis.RedisXmlRepository(() => mux.GetDatabase(), "bluemeal:dp-keys");
+});
 builder.Services.AddScoped<CaptchaService>();
 builder.Services.AddScoped<PermissionService>();
 

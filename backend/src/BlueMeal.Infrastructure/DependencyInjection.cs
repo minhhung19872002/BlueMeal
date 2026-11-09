@@ -65,7 +65,14 @@ public static class DependencyInjection
         var redisCs = config.GetConnectionString("Redis");
         if (!string.IsNullOrWhiteSpace(redisCs))
         {
-            services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisCs + ",abortConnect=false"));
+            services.AddSingleton<IConnectionMultiplexer>(_ =>
+            {
+                var o = ConfigurationOptions.Parse(redisCs + ",abortConnect=false");
+                // The default dedicated scheduler threads spin while waiting and burned ~30 % of API thread time under load
+                // (dotnet-trace, k6 P9); the .NET thread pool is enough for our request rates.
+                o.SocketManager = SocketManager.ThreadPool;
+                return ConnectionMultiplexer.Connect(o);
+            });
             services.AddSingleton<ICacheService, RedisCacheService>();
         }
         else services.AddSingleton<ICacheService, MemoryCacheService>();

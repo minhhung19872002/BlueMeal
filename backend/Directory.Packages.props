@@ -24,6 +24,7 @@
     <PackageVersion Include="Otp.NET" Version="1.4.1" />
     <PackageVersion Include="QRCoder" Version="1.8.1" />
     <PackageVersion Include="StackExchange.Redis" Version="2.13.23" />
+    <PackageVersion Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="8.0.33" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.9.0" />
     <PackageVersion Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.2" />
     <PackageVersion Include="AspNetCore.HealthChecks.Redis" Version="8.0.1" />

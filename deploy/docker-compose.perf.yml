@@ -3,6 +3,8 @@
 # - per-IP limits raised because every virtual user comes from the k6 container's single IP
 #   (per-user API limits and the auth limiter stay active through RateLimit__*).
 services:
+  postgres:
+    command: ["postgres", "-c", "max_connections=200", "-c", "shared_preload_libraries=pg_stat_statements"]
   api:
     ports: !reset []
     deploy:

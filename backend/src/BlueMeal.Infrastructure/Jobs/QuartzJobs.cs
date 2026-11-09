@@ -117,5 +117,9 @@ public static class QuartzSchema
         CREATE INDEX IF NOT EXISTS idx_qrtz_t_next_fire_time ON quartz.qrtz_triggers(next_fire_time);
         CREATE INDEX IF NOT EXISTS idx_qrtz_t_state ON quartz.qrtz_triggers(trigger_state);
         CREATE INDEX IF NOT EXISTS idx_qrtz_ft_trig_name ON quartz.qrtz_fired_triggers(trigger_name);
+        -- optional 3.x columns (additive schema changes): misfire original fire time, node affinity
+        ALTER TABLE quartz.qrtz_triggers ADD COLUMN IF NOT EXISTS misfire_orig_fire_time BIGINT NULL;
+        ALTER TABLE quartz.qrtz_triggers ADD COLUMN IF NOT EXISTS preferred_node TEXT NULL;
+        ALTER TABLE quartz.qrtz_triggers ADD COLUMN IF NOT EXISTS preferred_node_auto BOOL NOT NULL DEFAULT false;
         """;
 }

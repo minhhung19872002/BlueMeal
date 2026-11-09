@@ -26,6 +26,7 @@ Cột **Phân phối** cho biết thành phần có nằm trong sản phẩm bà
 | AspNetCore.HealthChecks.NpgSql / .Redis | 8.0.2 / 8.0.1 | Apache-2.0 | ✔ | Health check |
 | Microsoft.Extensions.Http.Resilience (Polly) | 8.10.0 | MIT (Polly: BSD-3-Clause) | ✔ | Retry/circuit breaker gọi API VDD |
 | Polly | 8.5.2 | BSD-3-Clause | ✔ | Pipeline retry + circuit breaker + timeout của `VddApiNutritionDataProvider` |
+| Microsoft.AspNetCore.DataProtection.StackExchangeRedis | 8.0.33 | MIT | ✔ | Lưu khóa Data Protection dùng chung cho các replica trong Redis |
 | MailKit / MimeKit | 4.18.2 | MIT | ✔ | Gửi email |
 | xunit / xunit.runner.visualstudio | 2.9.3 / 2.8.2 | Apache-2.0 | dev | Unit test |
 | FluentAssertions | **7.2.2** | Apache-2.0 | dev | Assertion (**không dùng bản 8.x** vì giấy phép thương mại Xceed) |
@@ -35,7 +36,31 @@ Cột **Phân phối** cho biết thành phần có nằm trong sản phẩm bà
 
 ## 2. Frontend — npm
 
-*(Bổ sung đầy đủ ở Phase P0 sau khi khởi tạo frontend; danh sách cuối sinh tự động bằng `npx license-checker` ở P10.)*
+Thư viện được bundle vào bản build frontend (`dependencies` trong `frontend/package.json`):
+
+| Thành phần | Phiên bản | Giấy phép | Phân phối |
+|---|---|---|---|
+| @ant-design/icons | 5.6.1 | MIT | ✔ |
+| @hookform/resolvers | 5.9.2 | MIT | ✔ |
+| @tanstack/react-query | 5.90.21 | MIT | ✔ |
+| @zxing/browser | 0.1.5 | MIT | ✔ |
+| @zxing/library | 0.21.3 | MIT | ✔ |
+| antd | 5.29.3 | MIT | ✔ |
+| axios | 1.21.0 | MIT | ✔ |
+| dayjs | 1.11.18 | MIT | ✔ |
+| i18next | 25.10.10 | MIT | ✔ |
+| react | 18.3.1 | MIT | ✔ |
+| react-dom | 18.3.1 | MIT | ✔ |
+| react-hook-form | 7.65.0 | MIT | ✔ |
+| react-i18next | 15.7.4 | MIT | ✔ |
+| react-router | 7.18.5 | MIT | ✔ |
+| recharts | 3.3.0 | MIT | ✔ |
+| zod | 4.6.7 | MIT | ✔ |
+| zustand | 5.0.8 | MIT | ✔ |
+
+Toàn bộ cây phụ thuộc production (164 gói, quét bằng `npx license-checker-rseidelsohn --production`, ngày 2026-11-09): 148 MIT, 11 ISC, 2 BSD-3-Clause, 1 (Unlicense OR Apache-2.0), 1 Apache-2.0, 1 MIT AND ISC AND BSD-3-Clause. `@zxing/text-encoding` có hai giấy phép (Unlicense OR Apache-2.0), dùng theo Apache-2.0. Không có gói GPL/AGPL/thương mại. Danh sách đầy đủ từng gói: `docs/third-party/npm-licenses.json`.
+
+Công cụ phát triển (Vite, TypeScript, ESLint, Vitest, Playwright, Lighthouse…) chỉ dùng khi build/kiểm thử, không nằm trong sản phẩm (mục 4).
 
 ## 3. Hạ tầng (Docker image)
 

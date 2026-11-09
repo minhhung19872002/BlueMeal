@@ -14,6 +14,10 @@ $tar = Join-Path $Output "bluemeal-images-$Version.tar"
 docker save -o $tar @images
 if ($LASTEXITCODE -ne 0) { throw "docker save failed" }
 Copy-Item deploy -Destination (Join-Path $Output "deploy") -Recurse -Force -Exclude ".env"
+# never ship secrets: environment file and TLS key/certificate are created on the target server
+Remove-Item -Force -ErrorAction SilentlyContinue (Join-Path $Output "deploy\.env")
+Get-ChildItem (Join-Path $Output "deploy
+ginx\ssl") -Include *.key, *.crt, *.pem -Recurse -ErrorAction SilentlyContinue | Remove-Item -Force
 Copy-Item scripts -Destination (Join-Path $Output "scripts") -Recurse -Force
 $hash = (Get-FileHash $tar -Algorithm SHA256).Hash.ToLower()
 "$hash  $(Split-Path $tar -Leaf)" | Set-Content "$tar.sha256"
