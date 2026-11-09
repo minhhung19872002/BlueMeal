@@ -182,7 +182,7 @@ Cả 8 trang đều ≥ 85 ở cả ba hạng mục Performance, Accessibility, 
 |---|---|---|
 | Windows 10/11 | Chrome, Edge, Cốc Cốc (nhân Chromium) | E2E Playwright (Chromium) + kiểm thử thủ công |
 | Linux | Chrome, Firefox | kiểm thử thủ công |
-| macOS / iOS | Safari | kiểm thử thủ công (WebKit); Playwright WebKit có thể bật bằng project `webkit` |
+| macOS / iOS | Safari | E2E Playwright WebKit: `PW_WEBKIT=1 npx playwright test --project=webkit --project=iphone`. P1 + P9 đạt 21/21 (Desktop Safari + iPhone 14, 2026-11-09) |
 | Android | Chrome | E2E project `mobile` (Pixel 7) cho các màn kho/kiểm thực/lưu mẫu/thực đơn + thủ công |
 
 Ứng dụng chỉ dùng chuẩn web hiện đại (ES2020, CSS Grid/Flex), không plugin; giao diện responsive từ 360 px.

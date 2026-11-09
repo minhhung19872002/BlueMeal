@@ -24,5 +24,10 @@ export default defineConfig({
   projects: [
     { name: 'desktop-chrome', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } },
     { name: 'mobile', use: { ...devices['Pixel 7'] }, grep: /@mobile/ },
+    // Safari engine (macOS / iOS), opt-in: PW_WEBKIT=1 npx playwright test --project=webkit --project=iphone
+    ...(process.env.PW_WEBKIT ? [
+      { name: 'webkit', use: { ...devices['Desktop Safari'], viewport: { width: 1440, height: 900 } } },
+      { name: 'iphone', use: { ...devices['iPhone 14'] }, grep: /@mobile/ },
+    ] : []),
   ],
 });
