@@ -47,6 +47,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             var clr = et.ClrType;
             var eb = b.Entity(clr);
 
+            // Ids are generated client-side (SequentialGuid); tell EF so that new children added to tracked
+            // collections are INSERTed instead of being treated as existing rows.
+            if (typeof(Entity).IsAssignableFrom(clr))
+                eb.Property(nameof(Entity.Id)).ValueGeneratedNever();
+
             if (typeof(IVersioned).IsAssignableFrom(clr))
                 eb.Property(nameof(IVersioned.Version)).IsRowVersion();
 

@@ -14,12 +14,13 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', destructuredArrayIgnorePattern: '^_' }],
       // SPEC §9: no hard-coded UI strings in JSX — every label must come from locales/vi|en
       'i18next/no-literal-string': ['error', {
         mode: 'jsx-only',
         'jsx-attributes': { include: ['title', 'placeholder', 'label', 'alt', 'aria-label', 'okText', 'cancelText', 'tooltip', 'description', 'message'] },
         callees: { exclude: ['t', 'i18n.t', 'has', 'hasAny', 'can', 'enumLabel', 'lookupLabel', '*.includes', 'includes', '*.startsWith', '*.endsWith', 'set*', '*.get', '*.set', '*.has', 'navigate', 'Number', 'String', 'console.*', 'Error', 'require', 'useTranslation', 'navigate', 'dayjs', 'fmt.*'] },
-        words: { exclude: ['[0-9!-/:-@[-`{-~ ]+', '—', '∅', '✓', '✗', '·', '•', '→', '/', '₫', '%', 'kcal', 'g', 'P', 'L', 'G', 'VI', 'EN', 'BlueMeal', 'OK', 'Excel', 'MFA', 'TOTP', 'QR', 'API', 'P:L:G'] },
+        words: { exclude: ['[0-9!-/:-@[-`{-~ ]+', 'v', '—', '∅', '✓', '✗', '·', '•', '→', '/', '₫', '%', 'kcal', 'g', 'P', 'L', 'G', 'VI', 'EN', 'BlueMeal', 'OK', 'Excel', 'MFA', 'TOTP', 'QR', 'API', 'P:L:G'] },
       }],
       // SPEC §10.5: XSS hardening
       'no-restricted-syntax': ['error', { selector: "JSXAttribute[name.name='dangerouslySetInnerHTML']", message: 'dangerouslySetInnerHTML is forbidden (SPEC §10.5).' }],

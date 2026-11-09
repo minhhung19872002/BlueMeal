@@ -29,7 +29,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.Alert", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -119,7 +118,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.ApiClient", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -248,7 +246,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.AppSetting", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -511,7 +508,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.BackupJob", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -572,7 +568,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.Country", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -656,7 +651,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.Customer", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -798,7 +792,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.CustomerContact", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -871,7 +864,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.CustomerPrice", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -942,7 +934,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.CustomerType", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1026,7 +1017,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.Department", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1117,7 +1107,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.Dish", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1226,7 +1215,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.Employee", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1357,7 +1345,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.ExportJob", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1427,7 +1414,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.FileAttachment", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1501,7 +1487,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.Food", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1625,7 +1610,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.FoodGroup", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1716,7 +1700,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.FoodInspectionStep1", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1835,7 +1818,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.FoodInspectionStep2", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1929,7 +1911,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.FoodInspectionStep3", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2020,7 +2001,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.FoodNutrient", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2053,7 +2033,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.FoodSafetySpec", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2144,7 +2123,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.FoodSample", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2241,7 +2219,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.Ingredient", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2381,7 +2358,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.IngredientPriceHistory", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2430,7 +2406,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.IntegrationEndpoint", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2549,7 +2524,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.IntegrationLog", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2630,7 +2604,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.LoginHistory", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2675,7 +2648,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.MealOrder", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2753,7 +2725,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.MealShift", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2841,7 +2812,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.MealStructureSlot", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2877,7 +2847,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.MealStructureTemplate", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2961,7 +2930,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.Menu", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -3124,7 +3092,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.MenuApproval", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -3176,7 +3143,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.MenuItem", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -3220,7 +3186,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.MenuPlan", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -3324,7 +3289,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.MfaRecoveryCode", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -3353,7 +3317,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.Notification", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -3406,7 +3369,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.Nutrient", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -3503,7 +3465,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.NutrientRetentionFactor", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -3537,7 +3498,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.OneTimeToken", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -3576,7 +3536,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.Organization", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -3656,7 +3615,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.Partner", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -3794,7 +3752,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.PartnerCertificate", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -3873,7 +3830,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.PartnerContract", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -3953,7 +3909,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.PartnerContractPrice", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -3982,7 +3937,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.PartnerRating", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -4048,7 +4002,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.PartnerType", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -4132,7 +4085,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.PasswordHistory", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -4161,7 +4113,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.Permission", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -4208,7 +4159,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.Province", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -4299,7 +4249,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.PurchaseRequest", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -4377,7 +4326,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.PurchaseRequestLine", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -4438,7 +4386,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.Recipe", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -4524,7 +4471,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.RecipeItem", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -4569,7 +4515,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.Recommendation", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -4723,7 +4668,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.RecommendationNutrient", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -4765,7 +4709,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.ReportDefinition", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -4812,7 +4755,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.ReportGroup", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -4919,7 +4861,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.StockBalance", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -4972,7 +4913,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.StockIssue", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -5075,7 +5015,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.StockIssueLine", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -5133,7 +5072,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.StockLedger", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -5222,7 +5160,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.StockLot", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -5290,7 +5227,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.StockPeriodLock", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -5323,7 +5259,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.StockReceipt", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -5426,7 +5361,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.StockReceiptLine", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -5505,7 +5439,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.StockTake", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -5592,7 +5525,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.StockTakeLine", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -5650,7 +5582,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.SubjectGroup", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -5762,7 +5693,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.SyncConflict", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -5822,7 +5752,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.SystemVersion", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -5857,7 +5786,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.UnitOfMeasure", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -5950,7 +5878,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.UserDataScope", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -5979,7 +5906,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.UserPreference", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -6033,7 +5959,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.UserSession", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -6078,6 +6003,10 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("revoked_reason");
 
+                    b.Property<DateTimeOffset?>("RotatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("rotated_at");
+
                     b.Property<string>("UserAgent")
                         .HasColumnType("text")
                         .HasColumnName("user_agent");
@@ -6105,7 +6034,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.Ward", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -6196,7 +6124,6 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("BlueMeal.Domain.Entities.Warehouse", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 

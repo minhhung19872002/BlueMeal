@@ -141,7 +141,19 @@ public sealed class AuthTests(ApiFactory f)
         var second = jar.GetAllCookies().First(k => k.Name == "bm_rt").Value;
         second.Should().NotBe(first);
 
-        // replay the old refresh token from another client → session revoked
+        // within the 30 s grace window a concurrent refresh with the previous token is tolerated (page reload race)…
+        var racer = f.NewClient();
+        var race = new HttpRequestMessage(HttpMethod.Post, "/api/v1/auth/refresh");
+        race.Headers.Add("Cookie", $"bm_rt={first}; bm_csrf=x");
+        race.Headers.Add("X-BlueMeal-CSRF", "x");
+        (await racer.SendAsync(race)).StatusCode.Should().Be(HttpStatusCode.OK);
+        // …but replaying it after the grace window is treated as theft and revokes the session
+        await using (var conn = new Npgsql.NpgsqlConnection(f.OwnerConnectionString))
+        {
+            await conn.OpenAsync();
+            await using var cmd = new Npgsql.NpgsqlCommand("UPDATE app.user_session SET rotated_at = now() - interval '5 minutes' WHERE previous_token_hash IS NOT NULL", conn);
+            await cmd.ExecuteNonQueryAsync();
+        }
         var attacker = f.NewClient();
         var req = new HttpRequestMessage(HttpMethod.Post, "/api/v1/auth/refresh");
         req.Headers.Add("Cookie", $"bm_rt={first}; bm_csrf=x");

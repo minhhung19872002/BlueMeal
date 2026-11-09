@@ -1,0 +1,8 @@
+{
+  "criteria": {
+    "color": "Color",
+    "smell": "Smell",
+    "state": "State/texture",
+    "documents": "Required origin documents"
+  }
+}

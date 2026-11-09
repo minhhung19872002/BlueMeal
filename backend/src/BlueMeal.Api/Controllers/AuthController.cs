@@ -56,7 +56,7 @@ public sealed class AuthController(AuthService auth, CaptchaService captcha, Jwt
         return NoContent();
     }
 
-    [HttpPost("refresh"), AllowAnonymous, EnableRateLimiting("auth")]
+    [HttpPost("refresh"), AllowAnonymous]
     public async Task<ActionResult<LoginResponse>> Refresh(CancellationToken ct)
     {
         EnsureCsrf();

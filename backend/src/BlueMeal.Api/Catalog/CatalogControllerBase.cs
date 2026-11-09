@@ -71,6 +71,15 @@ public abstract class CatalogControllerBase<TEntity, TDto, TUpsert> : ApiControl
     /// <summary>Post-processing of read DTOs (e.g. PII masking for users without pii.view — SPEC §10.6).</summary>
     protected virtual Task PostProcessAsync(IList<TDto> items, bool single, CancellationToken ct) => Task.CompletedTask;
 
+    /// <summary>Extra dynamic Excel columns (e.g. one column per nutrient) appended after the DTO columns.</summary>
+    protected virtual Task<IReadOnlyList<ExcelColumn>> ExtraExcelColumnsAsync(CancellationToken ct) => Task.FromResult<IReadOnlyList<ExcelColumn>>([]);
+
+    /// <summary>Fills extra column values for exported entities (keys = ExcelColumn.Key).</summary>
+    protected virtual Task FillExtraExportAsync(IReadOnlyList<TEntity> entities, IReadOnlyList<Dictionary<string, object?>> rows, CancellationToken ct) => Task.CompletedTask;
+
+    /// <summary>Reads extra column values from an imported row into the upsert DTO; append localized errors.</summary>
+    protected virtual void ReadExtraImport(IReadOnlyDictionary<string, string?> raw, IReadOnlyList<ExcelColumn> extra, TUpsert input, List<string> errors) { }
+
     /// <summary>Post-processing of exported rows (masking).</summary>
     protected virtual void PostProcessExportRow(IDictionary<string, object?> row) { }
 
@@ -180,11 +189,13 @@ public abstract class CatalogControllerBase<TEntity, TDto, TUpsert> : ApiControl
         var refMaps = await LoadRefMaps(cols, toCode: true, ct);
         var rows = entities.Select(e => ToRow(e.Adapt<TUpsert>(), e, cols, refMaps)).ToList();
         foreach (var r in rows) PostProcessExportRow(r);
+        var extra = await ExtraExcelColumnsAsync(ct);
+        if (extra.Count > 0) await FillExtraExportAsync(entities, rows, ct);
         var bytes = Excel.Write(new ExcelSheet
         {
             Name = ExportTitle,
             Header = await ReportHeader(ExportTitle, null, ct),
-            Columns = cols.Select(c => new ExcelColumn(c.Prop.Name, c.Header, c.Attr?.Width ?? 18, c.Attr?.Format)).ToList(),
+            Columns = cols.Select(c => new ExcelColumn(c.Prop.Name, c.Header, c.Attr?.Width ?? 18, c.Attr?.Format)).Concat(extra).ToList(),
             Rows = rows,
         });
         await Audit.WriteAsync(AuditAction.Export, typeof(TEntity).Name, null, message: $"{rows.Count} rows", ct: ct);
@@ -192,9 +203,10 @@ public abstract class CatalogControllerBase<TEntity, TDto, TUpsert> : ApiControl
     }
 
     [HttpGet("import/template"), HasPermission(PermissionAction.Import)]
-    public virtual IActionResult ImportTemplate()
+    public virtual async Task<IActionResult> ImportTemplate(CancellationToken ct)
     {
         var cols = ExcelColumns();
+        var extra = await ExtraExcelColumnsAsync(ct);
         var notes = new List<string> { L.IsEnglish ? "Columns marked * are required. Rows with an existing code are updated." : "Cột có dấu * là bắt buộc. Dòng có mã đã tồn tại sẽ được cập nhật." };
         foreach (var c in cols)
         {
@@ -206,7 +218,7 @@ public abstract class CatalogControllerBase<TEntity, TDto, TUpsert> : ApiControl
             if (hint is not null) notes.Add($"• {c.Header}: {hint}");
         }
         var bytes = Excel.Write(
-            new ExcelSheet { Name = L.IsEnglish ? "Data" : "Du lieu", Columns = cols.Select(c => new ExcelColumn(c.Prop.Name, c.Header, c.Attr?.Width ?? 18, c.Attr?.Format, c.Required)).ToList() },
+            new ExcelSheet { Name = L.IsEnglish ? "Data" : "Du lieu", Columns = cols.Select(c => new ExcelColumn(c.Prop.Name, c.Header, c.Attr?.Width ?? 18, c.Attr?.Format, c.Required)).Concat(extra).ToList() },
             new ExcelSheet { Name = L.IsEnglish ? "Guide" : "Huong dan", Notes = notes });
         return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{ExportTitle}_template.xlsx");
     }
@@ -236,21 +248,22 @@ public abstract class CatalogControllerBase<TEntity, TDto, TUpsert> : ApiControl
         if (errors.Count > 0 && !req.SkipErrors) return new ImportCommitResult(0, 0, results.Count, errors);
 
         int created = 0, updated = 0;
+        var updateCodes = parsed.Where(p => p.Row.Errors.Count == 0 && p.Row.Action == ImportAction.Update).Select(p => p.Row.Code!).ToList();
+        var existing = updateCodes.Count == 0 ? new Dictionary<string, TEntity>(StringComparer.OrdinalIgnoreCase)
+            : (await LoadForImport(Db.Set<TEntity>()).Where(e => updateCodes.Contains(EF.Property<string>(e, "Code"))).ToListAsync(ct))
+                .ToDictionary(e => (string)typeof(TEntity).GetProperty("Code")!.GetValue(e)!, StringComparer.OrdinalIgnoreCase);
         await using var tx = await Db.Database.BeginTransactionAsync(ct);
         foreach (var (row, input) in parsed)
         {
             if (row.Errors.Count > 0) continue;
-            TEntity entity;
-            if (row.Action == ImportAction.Update)
+            if (row.Action == ImportAction.Update && existing.TryGetValue(row.Code!, out var entity))
             {
-                entity = await Db.Set<TEntity>().FirstAsync(e => EF.Property<string>(e, "Code") == row.Code, ct);
-                await UpsertAsync(entity, input, false, ct, save: false);
+                await UpsertAsync(entity, input, false, ct, save: false, checkDuplicate: false);
                 updated++;
             }
             else
             {
-                entity = new TEntity();
-                await UpsertAsync(entity, input, true, ct, save: false);
+                await UpsertAsync(new TEntity(), input, true, ct, save: false, checkDuplicate: false);
                 created++;
             }
         }
@@ -325,15 +338,17 @@ public abstract class CatalogControllerBase<TEntity, TDto, TUpsert> : ApiControl
         await Audit.WriteAsync(active ? AuditAction.Unlock : AuditAction.Lock, typeof(TEntity).Name, id.ToString(), ct: ct);
     }
 
-    protected async Task UpsertAsync(TEntity entity, TUpsert input, bool isNew, CancellationToken ct, bool save = true)
+    /// <summary>Includes needed when updating entities during import (e.g. child collections).</summary>
+    protected virtual IQueryable<TEntity> LoadForImport(IQueryable<TEntity> q) => q;
+
+    protected async Task UpsertAsync(TEntity entity, TUpsert input, bool isNew, CancellationToken ct, bool save = true, bool checkDuplicate = true)
     {
-        if (HasCode)
+        if (HasCode && typeof(TUpsert).GetProperty("Code") is { } codeProp && codeProp.GetValue(input) is string rawCode)
         {
-            var code = (string?)typeof(TUpsert).GetProperty("Code")?.GetValue(input);
-            if (!string.IsNullOrWhiteSpace(code))
+            var code = rawCode.Trim();
+            codeProp.SetValue(input, code);
+            if (checkDuplicate && code.Length > 0)
             {
-                code = code.Trim();
-                typeof(TUpsert).GetProperty("Code")!.SetValue(input, code);
                 var id = entity.Id;
                 var dup = await Db.Set<TEntity>().AnyAsync(e => EF.Property<string>(e, "Code") == code && e.Id != id, ct)
                           || Db.ChangeTracker.Entries<TEntity>().Any(x => x.State == EntityState.Added && x.Entity.Id != id && (string?)typeof(TEntity).GetProperty("Code")!.GetValue(x.Entity) == code);
@@ -411,8 +426,9 @@ public abstract class CatalogControllerBase<TEntity, TDto, TUpsert> : ApiControl
                 headerMap[BlueMeal.Infrastructure.Excel.ExcelService.Norm(c.Attr.HeaderEn)] = c;
             }
         }
+        var extraCols = await ExtraExcelColumnsAsync(ct);
         using var ms = new MemoryStream(bytes);
-        var read = Excel.Read(ms, headerMap.Keys.ToList());
+        var read = Excel.Read(ms, headerMap.Keys.Concat(extraCols.Select(e => BlueMeal.Infrastructure.Excel.ExcelService.Norm(e.Header))).ToList());
         if (read.Rows.Count == 0) throw new AppException("import.noSheet");
         var refMaps = await LoadRefMaps(cols, toCode: false, ct);
         var existingCodes = HasCode
@@ -442,6 +458,7 @@ public abstract class CatalogControllerBase<TEntity, TDto, TUpsert> : ApiControl
                 }
                 catch (FormatException) { errors.Add(L.T("import.invalid", col.Header, raw)); }
             }
+            if (extraCols.Count > 0) ReadExtraImport(row.Values, extraCols, input, errors);
             foreach (var c in cols.Where(c => c.Required))
             {
                 var v = c.Prop.GetValue(input);

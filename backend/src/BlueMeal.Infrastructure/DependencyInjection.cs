@@ -73,6 +73,7 @@ public static class DependencyInjection
         services.AddSingleton<IFileStorage>(_ => new LocalFileStorage(config["Storage:FilesPath"] ?? Path.Combine(AppContext.BaseDirectory, "data", "files")));
         services.AddScoped<ISettingsService, SettingsService>();
         services.AddScoped<SampleDataSeeder>();
+        services.AddScoped<BlueMeal.Infrastructure.Engines.EngineDataService>();
         services.AddScoped<IDocNumberGenerator, DocNumberGenerator>();
         services.AddScoped<IAuditWriter, AuditWriter>();
         services.AddScoped<INotificationService, NotificationService>();

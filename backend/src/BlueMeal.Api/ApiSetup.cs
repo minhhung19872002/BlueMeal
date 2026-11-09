@@ -42,6 +42,7 @@ public static class ApiServiceCollectionExtensions
     public static IServiceCollection AddBlueMealApi(this IServiceCollection services, IConfiguration config)
     {
         Catalog.MapsterSetup.Configure();
+        FluentValidation.ServiceCollectionExtensions.AddValidatorsFromAssembly(services, typeof(ApiServiceCollectionExtensions).Assembly, includeInternalTypes: true);
         services.AddScoped<Controllers.Admin.FileService>();
         return services;
     }

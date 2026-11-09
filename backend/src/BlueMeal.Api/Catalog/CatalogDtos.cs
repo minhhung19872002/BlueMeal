@@ -56,10 +56,15 @@ public static class MapsterSetup
     public static void Configure()
     {
         TypeAdapterConfig.GlobalSettings.Default
-            .IgnoreMember((member, side) => side == MemberSide.Destination && Protected.Contains(member.Name)
-                                            && member.Info is System.Reflection.MemberInfo mi && mi.DeclaringType is { } dt && typeof(Entity).IsAssignableFrom(dt))
+            .IgnoreMember((member, side) => side == MemberSide.Destination && member.Info is System.Reflection.MemberInfo mi && mi.DeclaringType is { } dt
+                                            && typeof(Entity).IsAssignableFrom(dt)
+                                            && (Protected.Contains(member.Name) || IsChildCollection(member.Type)))
             .IgnoreNullValues(false)
             .PreserveReference(false);
         TypeAdapterConfig.GlobalSettings.Compiler = exp => exp.Compile();
     }
+
+    /// <summary>Child collections are always synchronized explicitly by controllers, never by the mapper.</summary>
+    private static bool IsChildCollection(Type t)
+        => t != typeof(string) && t.IsGenericType && t.GetInterfaces().Append(t).Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ICollection<>));
 }

@@ -3,6 +3,21 @@
 Định dạng theo [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/); phiên bản theo [SemVer](https://semver.org/).
 Mỗi mục `## [x.y.z] - YYYY-MM-DD` được nạp vào màn hình **Phiên bản hệ thống** (bảng `system_version`).
 
+## [0.4.0] - 2026-11-09
+### P3 – Món ăn, công thức, khuyến nghị (SPEC §6.1–6.3, §7.3.6–7.3.9)
+- NutritionEngine, CostEngine, WarningEngine viết thuần C# (decimal, làm tròn khi hiển thị); 57 unit test với số liệu tính tay, độ phủ dòng 98,8%.
+- Món ăn (ảnh, loại món, phương pháp chế biến, xem nhanh dinh dưỡng & chi phí 1 suất); công thức có phiên bản (nháp → kích hoạt → lưu trữ), nhân bản, so sánh 2 phiên bản, quy đổi theo số suất, tính dinh dưỡng – chi phí – cơ cấu P:L:G **realtime** khi soạn.
+- Đơn giá theo cấu hình: giá tham chiếu / nhập gần nhất / bình quân gia quyền (mặc định) / hợp đồng; chi phí chung theo % hoặc cố định/suất.
+- Khuyến nghị kèm mục tiêu theo từng chất (min/max/bữa, mức cảnh báo); nhóm báo cáo + gán 16 báo cáo.
+- Sửa: validator của API trước đây chưa được đăng ký; id sinh ở client được EF coi là bản ghi tồn tại (ValueGeneratedNever).
+
+## [0.3.0] - 2026-11-09
+### P2 – Danh mục nền (SPEC §7.2, §7.3.1–7.3.5)
+- Đối tượng; loại đối tác/đối tác (hợp đồng + đơn giá hợp đồng, giấy chứng nhận ATTP có tệp, đánh giá, lịch sử nhập); loại khách hàng/khách hàng (liên hệ, đơn giá suất ăn, đặt suất, thực đơn công bố) với phạm vi dữ liệu theo khách hàng.
+- Kho (phạm vi theo thủ kho), nhóm thực phẩm dạng cây, chất dinh dưỡng, thực phẩm (lưới sửa nhanh giá trị/100 g, khóa dữ liệu từ API, nhập/xuất Excel mỗi chất một cột), ATTP – chất lượng, nguyên liệu (lịch sử giá, tồn), ca ăn, cơ cấu bữa.
+- Dữ liệu MẪU gắn nhãn [DỮ LIỆU MẪU]: 81 thực phẩm, 42 nguyên liệu, 30 món kèm công thức, 3 khuyến nghị; xóa nhanh bằng 1 thao tác.
+- Nhập 500 thực phẩm từ Excel < 30 s (integration test); tìm kiếm không dấu.
+
 ## [0.2.0] - 2026-11-09
 ### P1 – Xác thực và quản trị (SPEC §7.1, §10.1–10.3)
 - Khung danh mục dùng chung: phân trang server, tìm không dấu, lọc, sắp xếp, ẩn/hiện cột lưu theo người dùng, khóa/mở, xóa mềm, lịch sử thay đổi, nhập Excel (mẫu → xem trước → ghi) và xuất Excel.

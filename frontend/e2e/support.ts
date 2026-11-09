@@ -38,6 +38,31 @@ export function saveAdmin(s: AdminState) {
 
 export const hasAdminState = () => existsSync(STATE_FILE) || !!process.env.E2E_ADMIN_TOTP;
 
+const USED_FILE = join(here, '.auth', 'totp-used.json');
+
+function usedCodes(): string[] {
+  try {
+    return JSON.parse(readFileSync(USED_FILE, 'utf8')) as string[];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Returns a TOTP code not used before (the server rejects replays — SPEC §10.1), waiting for the next 30 s window
+ * when needed. Used codes are shared across Playwright workers/projects through a small file.
+ */
+export async function freshTotp(secret: string): Promise<string> {
+  let code = totp(secret);
+  while (usedCodes().includes(code)) {
+    await new Promise((r) => setTimeout(r, 1000));
+    code = totp(secret);
+  }
+  mkdirSync(dirname(USED_FILE), { recursive: true });
+  writeFileSync(USED_FILE, JSON.stringify([...usedCodes().slice(-10), code]));
+  return code;
+}
+
 /** UI login including the TOTP step. */
 export async function loginUi(page: Page, user: AdminState) {
   await page.goto('/login');
@@ -46,7 +71,7 @@ export async function loginUi(page: Page, user: AdminState) {
   await page.getByTestId('login-submit').click();
   const mfa = page.getByTestId('mfa-code');
   await mfa.waitFor({ timeout: 15_000 });
-  await mfa.fill(totp(user.totpSecret));
+  await mfa.fill(await freshTotp(user.totpSecret));
   await mfa.press('Enter');
   await page.waitForURL((u) => !u.pathname.startsWith('/login'));
 }
@@ -59,10 +84,10 @@ export async function shot(page: Page, name: string) {
 /** Minimal API client using the same session cookies as the browser is not needed; we use bearer tokens. */
 export async function apiLogin(user: AdminState): Promise<string> {
   const r1 = await fetch(BASE_URL + '/api/v1/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userName: user.userName, password: user.password }) });
-  const b1 = await r1.json();
+  const b1: any = await r1.json();
   if (!b1.mfaRequired) return b1.accessToken;
-  const r2 = await fetch(BASE_URL + '/api/v1/auth/mfa/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mfaToken: b1.mfaToken, code: totp(user.totpSecret), method: 'totp' }) });
-  const b2 = await r2.json();
+  const r2 = await fetch(BASE_URL + '/api/v1/auth/mfa/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mfaToken: b1.mfaToken, code: await freshTotp(user.totpSecret), method: 'totp' }) });
+  const b2: any = await r2.json();
   if (!b2.accessToken) throw new Error('API login failed: ' + JSON.stringify(b2));
   return b2.accessToken;
 }

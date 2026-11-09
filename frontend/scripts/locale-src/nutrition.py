@@ -1,0 +1,15 @@
+L = {
+    "panelTitle": ("Dinh dưỡng & chi phí (1 suất)", "Nutrition & cost (1 serving)"),
+    "energy": ("Năng lượng", "Energy"), "target": ("Mục tiêu bữa", "Meal target"), "score": ("Điểm dinh dưỡng", "Nutrition score"),
+    "protein": ("Protein", "Protein"), "lipid": ("Lipid", "Fat"), "glucid": ("Glucid", "Carbohydrate"),
+    "animalProtein": ("Đạm động vật / tổng đạm", "Animal / total protein"), "animalHint": ("Tính theo nhóm thực phẩm nguồn gốc động vật", "Based on animal-source food groups"),
+    "energyMacros": ("NL tính từ P, L, G", "Energy from P, L, G"), "energyTable": ("NL theo bảng thành phần", "Energy (composition table)"),
+    "plgTitle": ("Cơ cấu năng lượng P:L:G", "Energy structure P:L:G"), "compliance": ("% đáp ứng khuyến nghị", "% of recommendation met"),
+    "costPerServing": ("Chi phí / suất", "Cost per serving"), "foodCost": ("Chi phí thực phẩm", "Food cost"), "budget": ("Ngân sách / suất", "Budget per serving"),
+    "margin": ("Lãi/lỗ dự kiến / suất", "Expected margin per serving"), "noWarnings": ("Không có cảnh báo", "No warnings"),
+    "level": {"Info": ("Thông tin", "Info"), "Warning": ("Cảnh báo", "Warning"), "Critical": ("Nghiêm trọng", "Critical")},
+    "status": {"ok": ("Đạt", "OK"), "belowMin": ("Thấp hơn mức tối thiểu", "Below minimum"), "aboveMax": ("Vượt mức tối đa", "Above maximum"), "outOfRange": ("Ngoài khoảng 90–110%", "Outside 90–110%")},
+    "n": {"ENERGY": ("Năng lượng (kcal)", "Energy (kcal)"), "PROTEIN": ("Protein (g)", "Protein (g)"), "LIPID": ("Lipid (g)", "Fat (g)"), "GLUCID": ("Glucid (g)", "Carbohydrate (g)"),
+          "FIBER": ("Chất xơ (g)", "Fibre (g)"), "CA": ("Canxi (mg)", "Calcium (mg)"), "FE": ("Sắt (mg)", "Iron (mg)"), "NA": ("Natri (mg)", "Sodium (mg)"), "VIT_C": ("Vitamin C (mg)", "Vitamin C (mg)"),
+          "VIT_A": ("Vitamin A (µg)", "Vitamin A (µg)"), "VIT_B1": ("Vitamin B1 (mg)", "Thiamin (mg)"), "ZN": ("Kẽm (mg)", "Zinc (mg)")},
+}

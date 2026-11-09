@@ -147,6 +147,8 @@ public class UserSession : Entity
     public string RefreshTokenHash { get; set; } = default!;
     /// <summary>Hash of the previous refresh token: re-use detection after rotation.</summary>
     public string? PreviousTokenHash { get; set; }
+    /// <summary>When the refresh token was last rotated (grace window for concurrent refreshes).</summary>
+    public DateTimeOffset? RotatedAt { get; set; }
     public string? Ip { get; set; }
     public string? UserAgent { get; set; }
     public string? Device { get; set; }

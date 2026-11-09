@@ -1,0 +1,14 @@
+L = {
+    "title": ("Công thức món ăn", "Recipes"), "dish": ("Món ăn", "Dish"), "version": ("Phiên bản", "Version"), "current": ("Hiện hành", "Current"),
+    "status": ("Trạng thái", "Status"), "items": ("Số nguyên liệu", "Ingredients"), "updated": ("Cập nhật", "Updated"), "new": ("Tạo công thức", "New recipe"),
+    "editor": ("Soạn công thức", "Recipe editor"), "baseServings": ("Số suất cơ sở", "Base servings"), "instructions": ("Hướng dẫn chế biến", "Preparation instructions"),
+    "prepTime": ("Thời gian chế biến (phút)", "Preparation time (min)"), "cookingLoss": ("Hao hụt khi chế biến (%)", "Cooking loss (%)"),
+    "ingredient": ("Nguyên liệu", "Ingredient"), "gross": ("KL sống (g)", "Gross (g)"), "net": ("KL sạch (g)", "Net (g)"), "netOverride": ("Ghi đè KL sạch", "Override net"),
+    "refuse": ("Thải bỏ %", "Refuse %"), "prepNote": ("Ghi chú sơ chế", "Prep note"), "addLine": ("Thêm nguyên liệu", "Add ingredient"), "noFood": ("Chưa có dữ liệu dinh dưỡng", "No nutrition data"),
+    "save": ("Lưu bản nháp", "Save draft"), "activate": ("Kích hoạt", "Activate"), "clone": ("Nhân bản", "Clone"), "newVersion": ("Tạo phiên bản mới", "New version"),
+    "compare": ("So sánh 2 phiên bản", "Compare 2 versions"), "scale": ("Quy đổi theo số suất", "Scale to servings"), "servings": ("Số suất", "Servings"),
+    "purchaseUnits": ("Số lượng mua", "Purchase qty"), "versions": ("Các phiên bản", "Versions"), "readOnly": ("Phiên bản này đang áp dụng/lưu trữ — tạo phiên bản mới để thay đổi.", "This version is active/archived — create a new version to change it."),
+    "activated": ("Đã kích hoạt phiên bản", "Version activated"), "a": ("Bản A", "Version A"), "b": ("Bản B", "Version B"), "diff": ("Chênh lệch (g/suất)", "Difference (g/serving)"),
+    "perServing": ("g / suất", "g / serving"), "cloneTo": ("Nhân bản sang món khác", "Clone to another dish"), "quick": ("Xem nhanh dinh dưỡng & chi phí", "Quick nutrition & cost"),
+    "noRecipe": ("Món chưa có công thức", "No recipe yet"), "openRecipe": ("Mở công thức", "Open recipe"), "assignReports": ("Gán báo cáo", "Assign reports"),
+}

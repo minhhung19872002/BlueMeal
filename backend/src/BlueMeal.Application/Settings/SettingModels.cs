@@ -210,6 +210,9 @@ public class InspectionFormSettings
 public class SampleDataSettings
 {
     public bool Loaded { get; set; }
+    /// <summary>Sample data was purged by an administrator: never re-seed automatically.</summary>
+    public bool Purged { get; set; }
+    public DateTimeOffset? PurgedAt { get; set; }
     public Dictionary<string, List<Guid>> Ids { get; set; } = new();
 }
 

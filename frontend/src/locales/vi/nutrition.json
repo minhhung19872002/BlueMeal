@@ -1,0 +1,45 @@
+{
+  "panelTitle": "Dinh dưỡng & chi phí (1 suất)",
+  "energy": "Năng lượng",
+  "target": "Mục tiêu bữa",
+  "score": "Điểm dinh dưỡng",
+  "protein": "Protein",
+  "lipid": "Lipid",
+  "glucid": "Glucid",
+  "animalProtein": "Đạm động vật / tổng đạm",
+  "animalHint": "Tính theo nhóm thực phẩm nguồn gốc động vật",
+  "energyMacros": "NL tính từ P, L, G",
+  "energyTable": "NL theo bảng thành phần",
+  "plgTitle": "Cơ cấu năng lượng P:L:G",
+  "compliance": "% đáp ứng khuyến nghị",
+  "costPerServing": "Chi phí / suất",
+  "foodCost": "Chi phí thực phẩm",
+  "budget": "Ngân sách / suất",
+  "margin": "Lãi/lỗ dự kiến / suất",
+  "noWarnings": "Không có cảnh báo",
+  "level": {
+    "Info": "Thông tin",
+    "Warning": "Cảnh báo",
+    "Critical": "Nghiêm trọng"
+  },
+  "status": {
+    "ok": "Đạt",
+    "belowMin": "Thấp hơn mức tối thiểu",
+    "aboveMax": "Vượt mức tối đa",
+    "outOfRange": "Ngoài khoảng 90–110%"
+  },
+  "n": {
+    "ENERGY": "Năng lượng (kcal)",
+    "PROTEIN": "Protein (g)",
+    "LIPID": "Lipid (g)",
+    "GLUCID": "Glucid (g)",
+    "FIBER": "Chất xơ (g)",
+    "CA": "Canxi (mg)",
+    "FE": "Sắt (mg)",
+    "NA": "Natri (mg)",
+    "VIT_C": "Vitamin C (mg)",
+    "VIT_A": "Vitamin A (µg)",
+    "VIT_B1": "Vitamin B1 (mg)",
+    "ZN": "Kẽm (mg)"
+  }
+}

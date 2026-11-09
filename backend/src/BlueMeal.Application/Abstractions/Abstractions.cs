@@ -8,6 +8,7 @@ namespace BlueMeal.Application.Abstractions;
 public interface IAppDbContext
 {
     DbSet<T> Set<T>() where T : class;
+    EntityEntry<T> Entry<T>(T entity) where T : class;
     Task<int> SaveChangesAsync(CancellationToken ct = default);
     DatabaseFacade Database { get; }
     ChangeTracker ChangeTracker { get; }

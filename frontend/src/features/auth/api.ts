@@ -32,6 +32,7 @@ export async function fetchMe() {
 /** Applies a successful login: memory token + user preferences (language, theme). */
 export function applySession(r: LoginResponse) {
   useAuth.getState().setSession(r);
+  useAuth.getState().markInitialized(); // a fresh login needs no bootstrap refresh
   if (r.user) {
     void changeLanguage(r.user.language === 'en' ? 'en' : 'vi');
     useUi.getState().setTheme(r.user.theme === 'dark' ? 'dark' : 'light');

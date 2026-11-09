@@ -66,3 +66,26 @@ L = {
         "addChild": ("Thêm đơn vị con", "Add child unit"), "list": ("Danh sách", "List"),
     },
 }
+
+L["sub"] = {
+    "contractNo": ("Số hợp đồng", "Contract no."), "signedDate": ("Ngày ký", "Signed on"), "validFrom": ("Hiệu lực từ", "Valid from"), "validTo": ("Đến", "Valid to"),
+    "value": ("Giá trị (₫)", "Value (VND)"), "status": ("Trạng thái", "Status"), "file": ("Tệp đính kèm", "Attachment"), "contractPrices": ("Đơn giá theo hợp đồng", "Contract prices"),
+    "certType": ("Loại giấy", "Certificate type"), "number": ("Số", "Number"), "issuer": ("Cơ quan cấp", "Issued by"), "issuedDate": ("Ngày cấp", "Issued on"),
+    "expiryDate": ("Ngày hết hạn", "Expires on"), "daysToExpiry": ("Còn (ngày)", "Days left"), "expired": ("Đã hết hạn", "Expired"), "expiring": ("Sắp hết hạn", "Expiring"),
+    "ratedDate": ("Ngày đánh giá", "Rated on"), "quality": ("Chất lượng", "Quality"), "delivery": ("Giao hàng", "Delivery"), "price": ("Giá cả", "Price"), "comment": ("Nhận xét", "Comment"), "average": ("Trung bình", "Average"),
+    "fullName": ("Họ và tên", "Full name"), "position": ("Chức vụ", "Position"), "isPrimary": ("Liên hệ chính", "Primary contact"),
+    "shift": ("Ca ăn", "Meal shift"), "subject": ("Đối tượng", "Subject group"), "pricePerServing": ("Đơn giá / suất (₫)", "Price per serving (VND)"),
+    "docNo": ("Số phiếu", "Doc no."), "docDate": ("Ngày", "Date"), "warehouse": ("Kho", "Warehouse"), "invoiceNo": ("Số hóa đơn", "Invoice no."), "amount": ("Thành tiền", "Amount"), "lines": ("Số dòng", "Lines"),
+    "orderDate": ("Ngày", "Date"), "registered": ("Số suất đăng ký", "Registered"), "actual": ("Số suất thực tế", "Actual"), "menuDate": ("Ngày", "Date"), "code": ("Mã", "Code"),
+    "servings": ("Số suất", "Servings"), "energy": ("Năng lượng (kcal)", "Energy (kcal)"), "ingredient": ("Nguyên liệu", "Ingredient"), "unitPrice": ("Đơn giá", "Unit price"),
+    "effectiveDate": ("Ngày hiệu lực", "Effective date"), "source": ("Nguồn", "Source"), "partner": ("Nhà cung cấp", "Supplier"), "addPrice": ("Thêm giá", "Add price"),
+    "quantity": ("Số lượng tồn", "Quantity"), "avgCost": ("Giá bình quân", "Average cost"), "stockValue": ("Giá trị", "Value"), "lot": ("Lô", "Lot"), "mfg": ("NSX", "Mfg"), "exp": ("HSD", "Exp"),
+    "slotType": ("Loại món", "Dish type"), "slotQty": ("Số lượng", "Qty"), "slotRequired": ("Bắt buộc", "Required"), "addSlot": ("Thêm loại món", "Add slot"),
+}
+L["foods"] = {
+    "grid": ("Lưới dinh dưỡng /100g", "Nutrient grid /100 g"), "list": ("Danh sách", "List"), "nutrients": ("Chất hiển thị", "Shown nutrients"),
+    "sync": ("Đồng bộ từ Viện Dinh dưỡng", "Sync from National Institute of Nutrition"), "locked": ("Dữ liệu API — khóa sửa", "API data — locked"),
+    "unlock": ("Mở khóa sửa", "Unlock for editing"), "lock": ("Khóa lại", "Lock"), "sample": ("Dữ liệu mẫu", "Sample data"), "edible": ("/100g phần ăn được", "/100 g edible"),
+    "editHint": ("Bấm vào ô để sửa nhanh, Enter để lưu", "Click a cell to edit, Enter to save"), "modified": ("Đã sửa tay", "Locally modified"),
+    "tree": ("Cây nhóm", "Group tree"), "foodCount": ("Số thực phẩm", "Foods"),
+}

@@ -1,0 +1,45 @@
+{
+  "panelTitle": "Nutrition & cost (1 serving)",
+  "energy": "Energy",
+  "target": "Meal target",
+  "score": "Nutrition score",
+  "protein": "Protein",
+  "lipid": "Fat",
+  "glucid": "Carbohydrate",
+  "animalProtein": "Animal / total protein",
+  "animalHint": "Based on animal-source food groups",
+  "energyMacros": "Energy from P, L, G",
+  "energyTable": "Energy (composition table)",
+  "plgTitle": "Energy structure P:L:G",
+  "compliance": "% of recommendation met",
+  "costPerServing": "Cost per serving",
+  "foodCost": "Food cost",
+  "budget": "Budget per serving",
+  "margin": "Expected margin per serving",
+  "noWarnings": "No warnings",
+  "level": {
+    "Info": "Info",
+    "Warning": "Warning",
+    "Critical": "Critical"
+  },
+  "status": {
+    "ok": "OK",
+    "belowMin": "Below minimum",
+    "aboveMax": "Above maximum",
+    "outOfRange": "Outside 90–110%"
+  },
+  "n": {
+    "ENERGY": "Energy (kcal)",
+    "PROTEIN": "Protein (g)",
+    "LIPID": "Fat (g)",
+    "GLUCID": "Carbohydrate (g)",
+    "FIBER": "Fibre (g)",
+    "CA": "Calcium (mg)",
+    "FE": "Iron (mg)",
+    "NA": "Sodium (mg)",
+    "VIT_C": "Vitamin C (mg)",
+    "VIT_A": "Vitamin A (µg)",
+    "VIT_B1": "Thiamin (mg)",
+    "ZN": "Zinc (mg)"
+  }
+}

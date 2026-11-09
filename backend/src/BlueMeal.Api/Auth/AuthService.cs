@@ -41,6 +41,7 @@ public sealed class AuthService(
     ILogger<AuthService> log)
 {
     private const string MfaPrefix = "mfa:";
+    private static readonly TimeSpan RotationGrace = TimeSpan.FromSeconds(30);
     private DateTimeOffset Now => clock.GetUtcNow();
 
     // ------------------------------------------------------------------ login
@@ -123,7 +124,7 @@ public sealed class AuthService(
         {
             "recovery" => await UseRecoveryCodeAsync(user.Id, req.Code, ct),
             "email" => await VerifyOneTimeAsync(user.Id, "EmailOtp", req.Code, ct),
-            _ => VerifyTotp(user.MfaSecret, req.Code),
+            _ => VerifyTotp(user.MfaSecret, req.Code) && await ConsumeTotpAsync(user.Id, req.Code, ct),
         };
         if (!ok)
         {
@@ -184,10 +185,16 @@ public sealed class AuthService(
         var session = await db.Set<UserSession>().FirstOrDefaultAsync(s => s.RefreshTokenHash == hash, ct);
         if (session is null)
         {
-            // Re-use of a rotated token → likely theft: revoke the whole session (A-07)
-            var stolen = await db.Set<UserSession>().FirstOrDefaultAsync(s => s.PreviousTokenHash == hash && s.RevokedAt == null, ct);
-            if (stolen is not null) { await RevokeSessionInternal(stolen, "refresh_reuse"); await db.SaveChangesAsync(ct); }
-            throw new AppException("error.unauthorized", 401);
+            var previous = await db.Set<UserSession>().FirstOrDefaultAsync(s => s.PreviousTokenHash == hash && s.RevokedAt == null, ct);
+            // Concurrent refresh (e.g. page reload while a refresh was in flight): accept the just-rotated token
+            // within a short grace window and rotate again.
+            if (previous is not null && previous.RotatedAt is { } rot && Now - rot < RotationGrace) session = previous;
+            else
+            {
+                // Re-use of a rotated token outside the grace window → likely theft: revoke the whole session (A-07)
+                if (previous is not null) { await RevokeSessionInternal(previous, "refresh_reuse"); await db.SaveChangesAsync(ct); }
+                throw new AppException("error.unauthorized", 401);
+            }
         }
         var sp = await settings.GetAsync<SessionPolicySettings>(SettingKeys.SessionPolicy, ct);
         if (!session.IsActive(Now)) throw new AppException("auth.sessionRevoked", 401);
@@ -201,8 +208,9 @@ public sealed class AuthService(
         if (user is null || !user.IsActive) { await RevokeSessionInternal(session, "user_disabled"); await db.SaveChangesAsync(ct); throw new AppException("auth.disabled", 401); }
 
         var newRefresh = TokenService.NewOpaqueToken();
-        session.PreviousTokenHash = session.RefreshTokenHash;
+        if (session.RefreshTokenHash == hash) session.PreviousTokenHash = session.RefreshTokenHash; // keep the original previous hash on grace re-rotation
         session.RefreshTokenHash = TokenService.Sha256(newRefresh);
+        session.RotatedAt = Now;
         session.LastSeenAt = Now;
         session.Ip = ip ?? session.Ip;
         var (restricted, mustChange, mfaSetup) = await RestrictionAsync(user, ct);
@@ -404,6 +412,10 @@ public sealed class AuthService(
         if (user.TwoFactorEnabled) return VerifyTotp(user.MfaSecret, code ?? "") || await UseRecoveryCodeAsync(userId, code ?? "", ct);
         return true;
     }
+
+    /// <summary>Replay protection: each TOTP code can be used once per user within its validity window.</summary>
+    private Task<bool> ConsumeTotpAsync(Guid userId, string code, CancellationToken ct)
+        => cache.TrySetAsync($"totp-used:{userId:N}:{code.Trim()}", "1", TimeSpan.FromSeconds(120), ct);
 
     public static bool VerifyTotp(string? secret, string code)
     {

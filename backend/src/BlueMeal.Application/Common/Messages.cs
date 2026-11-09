@@ -56,6 +56,7 @@ public static partial class L
         ["menu.notApproved"] = ("Chỉ thực đơn đã duyệt/công bố mới được dùng cho thao tác này.", "Only approved/published menus can be used for this action."),
         ["menu.noCandidates"] = ("Không có món ăn phù hợp cho loại món {0}.", "No eligible dishes for slot {0}."),
         ["menu.reasonRequired"] = ("Bắt buộc nhập lý do.", "A reason is required."),
+        ["recipe.notDraft"] = ("Chỉ sửa/xóa được công thức ở trạng thái Nháp và không phải bản hiện hành. Hãy tạo phiên bản mới.", "Only non-current draft recipes can be edited or deleted. Create a new version instead."),
         ["recipe.noCurrent"] = ("Món ăn chưa có công thức hiện hành.", "The dish has no current recipe."),
         ["stock.negative"] = ("Không đủ tồn kho cho nguyên liệu {0} (tồn {1}, cần {2}).", "Insufficient stock for {0} (on hand {1}, required {2})."),
         ["stock.posted"] = ("Phiếu đã ghi sổ, không thể sửa. Hãy lập phiếu điều chỉnh.", "The document is posted and cannot be edited. Create an adjustment instead."),
