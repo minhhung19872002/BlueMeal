@@ -10,13 +10,6 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Mobile drawer-like sidebar (≥ 360px responsive — SPEC §9) */
-.bm-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.35);
-  z-index: 15;
-}
 @media (max-width: 991px) {
   .bm-hide-mobile {
     display: none;
@@ -51,14 +44,9 @@ body {
 
 /* Print (A4) for published menus, stock documents and inspection logs */
 @media print {
-  .ant-layout-sider,
-  .ant-layout-header,
   .bm-no-print,
   .bm-backdrop {
     display: none !important;
-  }
-  .ant-layout-content {
-    padding: 0 !important;
   }
   body {
     background: #fff !important;

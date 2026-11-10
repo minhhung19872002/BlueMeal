@@ -1,6 +1,8 @@
 {
   "appName": "BlueMeal",
-  "appTagline": "Smart shift meals – balanced nutrition for workers",
+  "appTagline": "Smart shift meals, balanced nutrition for workers",
+  "orgShort": "National Institute of Nutrition",
+  "orgFull": "National Institute of Nutrition – Ministry of Health",
   "language": { "label": "Language", "vi": "Tiếng Việt", "en": "English" },
   "theme": { "light": "Light theme", "dark": "Dark theme" },
   "actions": {
@@ -54,7 +56,7 @@
     "dateRange": "End date must be after start date",
     "passwordMismatch": "Passwords do not match"
   },
-  "header": { "notifications": "Notifications", "markAllRead": "Mark all as read", "noNotifications": "No new notifications", "version": "Version" },
+  "header": { "notifications": "Notifications", "markAllRead": "Mark all as read", "noNotifications": "No new notifications", "version": "Version", "toggleMenu": "Toggle menu", "breadcrumb": "Breadcrumb" },
   "nav": {
     "dashboard": "Home",
     "system": "System administration",

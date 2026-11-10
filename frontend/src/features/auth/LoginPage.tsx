@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Alert, Button, Form, Input, Space, Typography } from 'antd';
-import { LockOutlined, ReloadOutlined, UserOutlined } from '@ant-design/icons';
+import { Alert, Button, Form, Input, Space } from 'antd';
+import { ReloadOutlined } from '@ant-design/icons';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { problemMessage } from '@/shared/api/http';
@@ -117,15 +117,15 @@ export default function LoginPage() {
   }
 
   return (
-    <AuthShell title={t('login.title')} subtitle={t('login.subtitle')}>
+    <AuthShell title={t('login.title')} subtitle={t('login.subtitle')} hint={t('login.firstLoginHint')}>
       {error && <Alert type="error" showIcon message={error} style={{ marginBottom: 16 }} data-testid="login-error" />}
       {info && <Alert type="info" showIcon message={info} style={{ marginBottom: 16 }} />}
       <Form form={form} layout="vertical" onFinish={onPassword} requiredMark={false}>
         <Form.Item name="userName" label={t('login.userName')} rules={[{ required: true, message: t('common:validation.requiredShort') }]}>
-          <Input size="large" prefix={<UserOutlined />} autoComplete="username" autoFocus data-testid="login-username" />
+          <Input size="large" autoComplete="username" autoFocus data-testid="login-username" />
         </Form.Item>
         <Form.Item name="password" label={t('login.password')} rules={[{ required: true, message: t('common:validation.requiredShort') }]}>
-          <Input.Password size="large" prefix={<LockOutlined />} autoComplete="current-password" data-testid="login-password" />
+          <Input.Password size="large" autoComplete="current-password" data-testid="login-password" />
         </Form.Item>
         {captcha && (
           <Form.Item label={t('login.captcha')} required>
@@ -138,13 +138,13 @@ export default function LoginPage() {
             </Form.Item>
           </Form.Item>
         )}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', fontSize: 13, margin: '-6px 0 18px' }}>
+          <Link to="/forgot-password">{t('login.forgot')}</Link>
+        </div>
         <Button type="primary" htmlType="submit" block size="large" loading={loading} data-testid="login-submit">
           {t('login.submit')}
         </Button>
       </Form>
-      <Typography.Paragraph style={{ marginTop: 16, marginBottom: 0, textAlign: 'center' }}>
-        <Link to="/forgot-password">{t('login.forgot')}</Link>
-      </Typography.Paragraph>
     </AuthShell>
   );
 }

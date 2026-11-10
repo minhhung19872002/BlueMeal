@@ -1,4 +1,10 @@
 {
   "welcome": "Xin chào, {{name}}",
-  "intro": "Chào mừng bạn đến với BlueMeal – phần mềm quản lý bữa ăn ca thông minh."
+  "intro": "Chào mừng bạn đến với BlueMeal – phần mềm quản lý bữa ăn ca thông minh.",
+  "menusCount": "{{count}} thực đơn",
+  "sampleBadge": "Dữ liệu mẫu",
+  "stockLink": "Tồn kho",
+  "dayLeft": "còn {{count}} ngày",
+  "daysLeft": "còn {{count}} ngày",
+  "expired": "đã hết hạn"
 }

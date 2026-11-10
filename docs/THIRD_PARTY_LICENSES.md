@@ -43,6 +43,7 @@ Thư viện được bundle vào bản build frontend (`dependencies` trong `fro
 | @ant-design/icons | 5.6.1 | MIT | ✔ |
 | @hookform/resolvers | 5.9.2 | MIT | ✔ |
 | @tanstack/react-query | 5.90.21 | MIT | ✔ |
+| @fontsource/be-vietnam-pro (phông Be Vietnam Pro, tự host) | 5.3.0 | OFL-1.1 | ✔ |
 | @zxing/browser | 0.1.5 | MIT | ✔ |
 | @zxing/library | 0.21.3 | MIT | ✔ |
 | antd | 5.29.3 | MIT | ✔ |

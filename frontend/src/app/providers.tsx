@@ -1,4 +1,4 @@
-import { type ReactNode, useMemo } from 'react';
+import { type ReactNode, useEffect, useMemo } from 'react';
 import { App as AntApp, ConfigProvider, theme as antTheme } from 'antd';
 import viVN from 'antd/locale/vi_VN';
 import enUS from 'antd/locale/en_US';
@@ -25,25 +25,45 @@ export function AppProviders({ children }: { children: ReactNode }) {
   const { i18n } = useTranslation();
   const mode = useUi((s) => s.theme);
   const nonce = useMemo(cspNonce, []);
-  const themeConfig = useMemo(
-    () => ({
-      algorithm: mode === 'dark' ? antTheme.darkAlgorithm : antTheme.defaultAlgorithm,
+  // CSS variables of the design (app/layout/layout.css) follow the same theme; sidebar light, comfortable density (design defaults).
+  useEffect(() => {
+    const de = document.documentElement;
+    de.dataset.theme = mode;
+    de.dataset.sb = 'light';
+    de.dataset.density = 'comfortable';
+  }, [mode]);
+  // Tokens from DESIGN_HANDOFF.md §1 ("BlueMeal Layout.dc.html").
+  const themeConfig = useMemo(() => {
+    const dark = mode === 'dark';
+    return {
+      algorithm: dark ? antTheme.darkAlgorithm : antTheme.defaultAlgorithm,
       token: {
-        colorPrimary: BRAND_GREEN,
+        colorPrimary: '#2f7a49',
         colorInfo: '#2f7d8c',
-        colorSuccess: '#4c9f38',
+        colorSuccess: '#3f8f5a',
         colorWarning: '#d99a1e',
         colorError: '#c8463d',
+        colorBgLayout: dark ? '#0b110d' : '#f4f6f3',
+        colorBgContainer: dark ? '#141a16' : '#ffffff',
+        colorBgElevated: dark ? '#19211c' : '#ffffff',
+        colorFillAlter: dark ? '#19211c' : '#f7f9f6',
+        colorBorderSecondary: dark ? '#27322b' : '#e2e7e1',
+        colorText: dark ? '#e8efe9' : '#14201a',
+        colorTextSecondary: dark ? '#a9b6ad' : '#55635a',
+        colorTextTertiary: dark ? '#8b998f' : '#69766d',
+        colorLink: dark ? '#7cc796' : '#2a7144',
+        colorPrimaryBg: dark ? '#1f3326' : '#e8f3eb',
         borderRadius: 8,
-        fontFamily: "'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif",
+        borderRadiusLG: 12,
+        controlHeight: 38,
+        fontFamily: "'Be Vietnam Pro', 'Segoe UI', sans-serif",
       },
       components: {
-        Layout: { siderBg: mode === 'dark' ? '#141a16' : '#ffffff', headerBg: mode === 'dark' ? '#141a16' : '#ffffff' },
-        Menu: { itemSelectedBg: mode === 'dark' ? '#1f3326' : '#e8f3eb' },
+        Card: { boxShadowTertiary: 'none' },
+        Table: { headerBg: dark ? '#19211c' : '#f7f9f6', rowSelectedBg: dark ? '#1f3326' : '#e8f3eb' },
       },
-    }),
-    [mode],
-  );
+    };
+  }, [mode]);
 
   return (
     <ConfigProvider locale={i18n.language === 'en' ? enUS : viVN} theme={themeConfig} csp={nonce ? { nonce } : undefined} componentSize="middle">

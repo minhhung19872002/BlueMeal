@@ -1,4 +1,10 @@
 {
   "welcome": "Hello, {{name}}",
-  "intro": "Welcome to BlueMeal – smart shift meal management."
+  "intro": "Welcome to BlueMeal – smart shift meal management.",
+  "menusCount": "{{count}} menu(s)",
+  "sampleBadge": "Sample data",
+  "stockLink": "Stock balance",
+  "dayLeft": "{{count}} day left",
+  "daysLeft": "{{count}} days left",
+  "expired": "expired"
 }
