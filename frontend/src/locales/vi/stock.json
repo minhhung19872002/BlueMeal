@@ -53,6 +53,8 @@
     "created": "Đã tạo {{n}} phiếu xuất dự kiến"
   },
   "takes": {
+    "lineDiff": "Dòng chênh lệch",
+    "diffValue": "Giá trị chênh lệch",
     "title": "Kiểm kê kho",
     "new": "Tạo phiên kiểm kê",
     "members": "Thành viên tổ kiểm kê",
@@ -69,6 +71,11 @@
     "saveCounts": "Lưu số đếm"
   },
   "balance": {
+    "state": "Tình trạng",
+    "ok": "Đủ",
+    "soon": "Sắp hết hạn",
+    "expired": "Đã hết hạn",
+    "items": "Số mặt hàng",
     "title": "Tồn kho",
     "atDate": "Tồn tại ngày",
     "value": "Giá trị",
@@ -111,6 +118,8 @@
     "receiptsCreated": "Đã tạo {{n}} phiếu nhập nháp"
   },
   "locks": {
+    "locked": "Đã khóa",
+    "new": "Khóa sổ kỳ mới",
     "title": "Khóa sổ kho",
     "period": "Kỳ (tháng)",
     "allWarehouses": "Tất cả kho",

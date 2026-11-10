@@ -53,6 +53,8 @@
     "created": "Created {{n}} planned issues"
   },
   "takes": {
+    "lineDiff": "Lines with differences",
+    "diffValue": "Difference value",
     "title": "Stock takes",
     "new": "New stock take",
     "members": "Committee members",
@@ -69,6 +71,11 @@
     "saveCounts": "Save counts"
   },
   "balance": {
+    "state": "Status",
+    "ok": "OK",
+    "soon": "Expiring soon",
+    "expired": "Expired",
+    "items": "Items",
     "title": "Stock balance",
     "atDate": "Balance at",
     "value": "Value",
@@ -111,6 +118,8 @@
     "receiptsCreated": "Created {{n}} draft receipts"
   },
   "locks": {
+    "locked": "Locked",
+    "new": "Lock a period",
     "title": "Period locks",
     "period": "Period (month)",
     "allWarehouses": "All warehouses",
