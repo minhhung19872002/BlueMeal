@@ -16,7 +16,7 @@ export interface MenuDetail {
 }
 
 export const MENU_STATUS_COLOR: Record<string, string> = {
-  Draft: 'default', Submitted: 'processing', Approved: 'green', Rejected: 'red', Returned: 'orange', Published: 'cyan', Cancelled: 'default',
+  Draft: 'default', Submitted: 'processing', Approved: 'green', Rejected: 'red', Returned: 'orange', Published: 'purple', Cancelled: 'default',
 };
 
 export function MenuStatusTag({ status }: { status: string }) {

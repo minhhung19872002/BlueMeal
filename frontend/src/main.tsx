@@ -7,6 +7,7 @@ import '@fontsource/be-vietnam-pro/500.css';
 import '@fontsource/be-vietnam-pro/600.css';
 import '@fontsource/be-vietnam-pro/700.css';
 import './app/layout/layout.css';
+import './app/layout/pages.css';
 import './index.css';
 import { AppProviders } from '@/app/providers';
 import { router } from '@/app/router';

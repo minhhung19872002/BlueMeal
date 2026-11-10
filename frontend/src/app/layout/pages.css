@@ -1,0 +1,73 @@
+/*
+ * Inner pages, ported from Claude Design BMCatalog / BMOps / BMMenus / BMAnalysis / BMAdmin (project ae7386cc…).
+ * Same convention as layout.css: the design's inline style / style-hover values turned into classes.
+ * Section 2 restyles antd components that carry real behaviour (Table, Tag, Card, Drawer) to the design.
+ */
+
+/* ---- 1. list page (BMCatalog) ---- */
+.bm-page{display:flex;flex-direction:column;gap:14px}
+.bm-ph{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+.bm-h1{margin:0;font-size:clamp(20px,2.4vw,26px);font-weight:700;letter-spacing:-.015em}
+.bm-ph-sub{font-size:13px;color:var(--ink-3);margin-top:2px}
+.bm-ph-actions{display:flex;flex-wrap:wrap;gap:8px}
+.bm-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;min-width:0}
+.bm-filter{padding:12px 14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-bottom:1px solid var(--border)}
+.bm-filter-search{flex:1 1 220px;max-width:360px}
+.bm-filter-item{flex:0 1 220px;min-width:0}
+.bm-chips{padding:10px 14px;display:flex;gap:6px;overflow-x:auto;border-bottom:1px solid var(--border)}
+.bm-chip{flex:none;height:32px;padding:0 12px;border:1px solid var(--border);border-radius:999px;background:transparent;color:var(--ink-2);font-weight:500;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.bm-chip.is-on{border-color:var(--ink);background:var(--ink);color:var(--surface)}
+.bm-chip-n{font-variant-numeric:tabular-nums;opacity:.75}
+.bm-tag{font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap;display:inline-block;line-height:1.45}
+.bm-tag.t-neutral{background:var(--tag-neutral-bg);color:var(--tag-neutral-fg)}
+.bm-tag.t-info{background:var(--tag-info-bg);color:var(--tag-info-fg)}
+.bm-tag.t-green{background:var(--tag-green-bg);color:var(--tag-green-fg)}
+.bm-tag.t-orange{background:var(--tag-orange-bg);color:var(--tag-orange-fg)}
+.bm-tag.t-red{background:var(--tag-red-bg);color:var(--tag-red-fg)}
+.bm-mlist{display:flex;flex-direction:column}
+.bm-mcard{padding:14px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px;cursor:pointer}
+.bm-mlist .bm-mcard:first-child{border-top:0}
+.bm-mcard-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.bm-mcard-title{font-weight:600}
+.bm-mcard-sub{font-size:12px;color:var(--ink-3)}
+.bm-mcard-meta{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.bm-mcard-l{font-size:11px;color:var(--ink-3)}
+.bm-mcard-v{font-weight:500;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis}
+.bm-mcard-acts{display:flex;justify-content:flex-end;gap:4px;margin:-4px -6px -6px 0}
+.bm-noRows{padding:40px 16px;text-align:center;color:var(--ink-3)}
+.bm-card-foot{padding:12px 14px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--ink-3)}
+.bm-btn-danger-soft{height:40px;padding:0 14px;border:1px solid var(--tag-red-fg);border-radius:8px;background:transparent;color:var(--tag-red-fg);font-weight:600;cursor:pointer}
+.bm-btn-danger-soft.is-armed{background:var(--tag-red-bg)}
+
+/* ---- 2. antd components inside the app shell, restyled to the design ---- */
+/* Tables (BMCatalog table): header 12/600 on surface-2, rows padded by --row-py, hover surface-2, selected primary-bg */
+.bm-content .ant-table-wrapper .ant-table{background:transparent}
+.bm-content .ant-table-wrapper .ant-table-thead>tr>th,.bm-content .ant-table-wrapper .ant-table-thead>tr>td{font-size:12px;font-weight:600;color:var(--ink-3);background:var(--surface-2);padding:10px 12px;white-space:nowrap}
+.bm-content .ant-table-wrapper .ant-table-thead>tr>th::before{display:none}
+.bm-content .ant-table-wrapper .ant-table-tbody>tr>td{padding:var(--row-py) 12px;font-variant-numeric:tabular-nums;border-bottom:0;border-top:1px solid var(--border)}
+.bm-content .ant-table-wrapper .ant-table-tbody>tr.ant-table-row:hover>td{background:var(--surface-2)}
+.bm-content .ant-table-wrapper .ant-table-tbody>tr.ant-table-row-selected>td{background:var(--primary-bg)}
+.bm-content .ant-table-wrapper .ant-table-container table>thead>tr:first-child>*:first-child,.bm-content .ant-table-wrapper .ant-table-container table>thead>tr:first-child>*:last-child{border-radius:0}
+.bm-content .ant-table-wrapper .ant-table-tbody>tr.ant-table-placeholder>td{border-top:1px solid var(--border)}
+/* Status tags (DESIGN_HANDOFF §1): pill, 12px/600, tag-* tokens */
+.bm-content .ant-tag,.bm-drawer .ant-tag{border:0;border-radius:999px;font-size:12px;font-weight:600;padding:1px 9px;line-height:20px;background:var(--tag-neutral-bg);color:var(--tag-neutral-fg)}
+.bm-content .ant-tag-green,.bm-content .ant-tag-success,.bm-drawer .ant-tag-green{background:var(--tag-green-bg);color:var(--tag-green-fg)}
+.bm-content .ant-tag-blue,.bm-content .ant-tag-processing,.bm-content .ant-tag-cyan,.bm-content .ant-tag-geekblue,.bm-drawer .ant-tag-blue{background:var(--tag-info-bg);color:var(--tag-info-fg)}
+.bm-content .ant-tag-orange,.bm-content .ant-tag-gold,.bm-content .ant-tag-warning,.bm-content .ant-tag-yellow,.bm-drawer .ant-tag-orange,.bm-drawer .ant-tag-gold{background:var(--tag-orange-bg);color:var(--tag-orange-fg)}
+.bm-content .ant-tag-red,.bm-content .ant-tag-error,.bm-content .ant-tag-volcano,.bm-content .ant-tag-magenta,.bm-drawer .ant-tag-red{background:var(--tag-red-bg);color:var(--tag-red-fg)}
+/* Published menu status (MENU_STATUS_COLOR = purple): solid primary, white text — DESIGN_HANDOFF §1 */
+.bm-content .ant-tag-purple,.bm-drawer .ant-tag-purple{background:#2f7a49;color:#fff}
+/* Page header used by the other screens: H1 26/700 like the design, actions on the right */
+.bm-content .bm-page-header{margin-bottom:14px}
+.bm-content .bm-page-header h4.ant-typography{font-size:clamp(20px,2.4vw,26px);font-weight:700;letter-spacing:-.015em}
+/* Cards: 1px border, radius 12, no shadow; panel titles 14/600 with a bottom border */
+.bm-content .ant-card{border:1px solid var(--border);box-shadow:none}
+.bm-content .ant-card .ant-card-head{min-height:0;padding:14px 18px;border-bottom:1px solid var(--border)}
+.bm-content .ant-card .ant-card-head-title{font-size:14px;font-weight:600}
+/* Right drawer (BMCatalog): 60px header, title 16/700, footer 12×18 */
+.bm-drawer .ant-drawer-header{height:60px;flex:none;padding:0 18px;border-bottom:1px solid var(--border)}
+.bm-drawer .ant-drawer-title{font-weight:700;font-size:16px}
+.bm-drawer .ant-drawer-body{padding:18px}
+.bm-drawer .ant-drawer-footer{padding:12px 18px;border-top:1px solid var(--border)}
+.bm-drawer-foot{display:flex;gap:8px;align-items:center}
+.bm-mcard-v .ant-tag,.bm-mcard-v .bm-tag{white-space:normal}

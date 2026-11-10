@@ -19,8 +19,9 @@
     "actions": "Actions", "fromDate": "From", "toDate": "To", "date": "Date", "type": "Type", "quantity": "Quantity", "unit": "Unit",
     "amount": "Amount", "price": "Unit price", "total": "Total", "phone": "Phone", "email": "Email", "address": "Address", "taxCode": "Tax code"
   },
-  "status": { "active": "Active", "inactive": "Inactive", "locked": "Locked" },
+  "status": { "all": "All", "active": "Active", "inactive": "Inactive", "locked": "Locked" },
   "confirmDelete": "Are you sure you want to delete this record?",
+  "confirmDeleteShort": "Confirm delete",
   "confirmLeave": "You have unsaved changes. Leave this page?",
   "saved": "Saved successfully",
   "deleted": "Deleted",

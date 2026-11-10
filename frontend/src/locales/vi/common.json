@@ -19,8 +19,9 @@
     "actions": "Thao tác", "fromDate": "Từ ngày", "toDate": "Đến ngày", "date": "Ngày", "type": "Loại", "quantity": "Số lượng", "unit": "Đơn vị",
     "amount": "Thành tiền", "price": "Đơn giá", "total": "Tổng cộng", "phone": "Điện thoại", "email": "Email", "address": "Địa chỉ", "taxCode": "Mã số thuế"
   },
-  "status": { "active": "Đang dùng", "inactive": "Ngừng dùng", "locked": "Đã khóa" },
+  "status": { "all": "Tất cả", "active": "Đang dùng", "inactive": "Ngừng dùng", "locked": "Đã khóa" },
   "confirmDelete": "Bạn chắc chắn muốn xóa bản ghi này?",
+  "confirmDeleteShort": "Xác nhận xóa",
   "confirmLeave": "Dữ liệu chưa được lưu. Bạn có chắc muốn rời trang?",
   "saved": "Đã lưu thành công",
   "deleted": "Đã xóa",
