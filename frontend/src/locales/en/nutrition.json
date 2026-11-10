@@ -16,6 +16,8 @@
   "foodCost": "Food cost",
   "budget": "Budget per serving",
   "margin": "Expected margin per serving",
+  "variance": "Variance vs budget",
+  "adq": { "ok": "Met", "low": "Low", "high": "High" },
   "noWarnings": "No warnings",
   "level": {
     "Info": "Info",

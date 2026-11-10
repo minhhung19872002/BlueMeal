@@ -16,6 +16,8 @@
   "foodCost": "Chi phí thực phẩm",
   "budget": "Ngân sách / suất",
   "margin": "Lãi/lỗ dự kiến / suất",
+  "variance": "Chênh lệch so với ngân sách",
+  "adq": { "ok": "Đạt", "low": "Thấp", "high": "Cao" },
   "noWarnings": "Không có cảnh báo",
   "level": {
     "Info": "Thông tin",

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Alert, App, Button, Card, Checkbox, Col, DatePicker, Descriptions, Empty, Form, Grid, Input, InputNumber, Modal, Popconfirm, Row, Space, Statistic, Table, Tabs, Tag, Typography } from 'antd';
+import { App, Button, Card, Checkbox, Col, DatePicker, Empty, Form, Grid, Input, InputNumber, Modal, Popconfirm, Row, Space, Statistic, Table, Tabs, Tag, Typography } from 'antd';
 import { CheckOutlined, LockOutlined, PlusOutlined, SaveOutlined, UnlockOutlined } from '@ant-design/icons';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -9,6 +9,7 @@ import { http, problemMessage, type PagedResult } from '@/shared/api/http';
 import { usePermission } from '@/shared/auth/authStore';
 import { LookupSelect, useEnumLabel } from '@/shared/components/catalog/inputs';
 import { DATE_FORMAT, fmt, isoDate } from '@/shared/utils/format';
+import { InfoGrid, Page, Section, Totals } from '@/shared/components/PageChrome';
 import { idemKey, ingName, StatusTag } from './shared';
 
 // ================================================================== stock takes
@@ -36,11 +37,8 @@ export function StockTakesPage() {
     }
   };
   return (
-    <Card>
-      <div className="bm-page-header">
-        <Typography.Title level={4}>{t('takes.title')}</Typography.Title>
-        {has('stock.take.create') && <Button type="primary" icon={<PlusOutlined />} onClick={() => { form.setFieldsValue({ takeDate: dayjs() }); setOpen(true); }} data-testid="take-new">{t('takes.new')}</Button>}
-      </div>
+    <Page title={t('takes.title')} actions={has('stock.take.create') && <Button type="primary" icon={<PlusOutlined />} onClick={() => { form.setFieldsValue({ takeDate: dayjs() }); setOpen(true); }} data-testid="take-new">{t('takes.new')}</Button>}>
+      <div className="bm-card">
       <Table<TakeRow>
         rowKey="id" loading={isFetching} dataSource={data?.items} scroll={{ x: 'max-content' }} onRow={(r) => ({ onClick: () => navigate(`/stock/takes/${r.id}`), style: { cursor: 'pointer' } })}
         pagination={{ current: page, pageSize: 30, total: data?.totalItems, onChange: setPage, showTotal: (n) => t('common:totalItems', { count: n }) }}
@@ -62,7 +60,8 @@ export function StockTakesPage() {
           <Form.Item name="note" label={t('note')}><Input maxLength={1000} /></Form.Item>
         </Form>
       </Modal>
-    </Card>
+      </div>
+    </Page>
   );
 }
 
@@ -116,25 +115,27 @@ export function StockTakeDetailPage() {
   });
   const counted = lines.filter((l) => l.actualQty != null).length;
   return (
-    <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-      <Card>
-        <div className="bm-page-header">
-          <Space><Typography.Title level={4} style={{ margin: 0 }}>{t('takes.title')} {data.docNo}</Typography.Title><StatusTag enumName="StockTakeStatus" status={data.status} /></Space>
-          <Space wrap>
-            <Button onClick={() => navigate('/stock/takes')}>{t('common:actions.back')}</Button>
-            {editable && <Button icon={<SaveOutlined />} loading={busy} onClick={() => void save()} data-testid="take-save">{t('takes.saveCounts')}</Button>}
-            {editable && has('stock.take.approve') && <Button type="primary" icon={<CheckOutlined />} disabled={counted < lines.length} onClick={approve} data-testid="take-approve">{t('takes.approve')}</Button>}
-          </Space>
-        </div>
-        <Descriptions size="small" column={{ xs: 1, sm: 2, lg: 4 }}>
-          <Descriptions.Item label={t('warehouse')}>{data.warehouse}</Descriptions.Item>
-          <Descriptions.Item label={t('docDate')}>{fmt.date(data.takeDate)}</Descriptions.Item>
-          <Descriptions.Item label={t('takes.counted')}>{counted}/{lines.length}</Descriptions.Item>
-          {data.adjustDocs.length > 0 && <Descriptions.Item label={t('takes.adjustDocs')}>{data.adjustDocs.join(', ')}</Descriptions.Item>}
-        </Descriptions>
-        {editable ? <Input.TextArea rows={1} value={members} onChange={(e) => setMembers(e.target.value)} placeholder={t('takes.members')} maxLength={1000} /> : data.members && <Typography.Paragraph>{t('takes.members')}: {data.members}</Typography.Paragraph>}
-      </Card>
-      <Card size="small" extra={editable && (
+    <Page
+      title={`${t('takes.title')} ${data.docNo}`}
+      tag={<StatusTag enumName="StockTakeStatus" status={data.status} />}
+      actions={(
+        <>
+          <Button onClick={() => navigate('/stock/takes')}>{t('common:actions.back')}</Button>
+          {editable && <Button icon={<SaveOutlined />} loading={busy} onClick={() => void save()} data-testid="take-save">{t('takes.saveCounts')}</Button>}
+          {editable && has('stock.take.approve') && <Button type="primary" icon={<CheckOutlined />} disabled={counted < lines.length} onClick={approve} data-testid="take-approve">{t('takes.approve')}</Button>}
+        </>
+      )}
+    >
+      <div className="bm-card bm-pad bm-stack">
+        <InfoGrid items={[
+          { key: 'w', label: t('warehouse'), value: data.warehouse },
+          { key: 'd', label: t('docDate'), value: fmt.date(data.takeDate) },
+          { key: 'c', label: t('takes.counted'), value: `${counted}/${lines.length}` },
+          ...(data.adjustDocs.length > 0 ? [{ key: 'a', label: t('takes.adjustDocs'), value: data.adjustDocs.join(', ') }] : []),
+        ]} />
+        {editable ? <Input.TextArea rows={1} value={members} onChange={(e) => setMembers(e.target.value)} placeholder={t('takes.members')} maxLength={1000} /> : data.members && <div className="bm-info-l">{t('takes.members')}: <span style={{ color: 'var(--ink)' }}>{data.members}</span></div>}
+      </div>
+      <Section title={t('lineItems')} extra={editable && (
         <Space wrap>
           <LookupSelect resource="ingredients" value={extra.ingredientId} onChange={(v) => setExtra({ ...extra, ingredientId: v })} placeholder={t('takes.addItem')} style={{ width: 240 }} />
           <InputNumber min={0} value={extra.actualQty} onChange={(v) => setExtra({ ...extra, actualQty: v ?? undefined })} placeholder={t('takes.actual')} />
@@ -149,13 +150,13 @@ export function StockTakeDetailPage() {
             { title: t('takes.actual'), key: 'a', width: 130, align: 'right', render: (_, l) => (editable
               ? <InputNumber size={screens.md ? 'small' : 'middle'} min={0} value={l.actualQty ?? undefined} onChange={(v) => patch(l.id, { actualQty: v ?? null })} inputMode="decimal" data-testid="take-actual" />
               : fmt.number(l.actualQty, 3)) },
-            { title: t('takes.diff'), key: 'd', width: 100, align: 'right', render: (_, l) => <Typography.Text type={l.difference < 0 ? 'danger' : l.difference > 0 ? 'success' : undefined}>{fmt.number(l.difference, 3)}</Typography.Text> },
+            { title: t('takes.diff'), key: 'd', width: 100, align: 'right', render: (_, l) => <span style={{ fontWeight: 600, color: l.difference ? 'var(--danger-text)' : undefined }}>{l.difference > 0 ? '+' : ''}{fmt.number(l.difference, 3)}</span> },
             { title: t('takes.cause'), key: 'c', width: 200, render: (_, l) => (editable ? <Input size="small" maxLength={500} value={l.cause} onChange={(e) => patch(l.id, { cause: e.target.value })} /> : l.cause) },
             { title: t('takes.resolution'), key: 'r', width: 200, responsive: ['lg'], render: (_, l) => (editable ? <Input size="small" maxLength={500} value={l.resolution} onChange={(e) => patch(l.id, { resolution: e.target.value })} /> : l.resolution) },
           ]}
         />
-      </Card>
-    </Space>
+      </Section>
+    </Page>
   );
 }
 
@@ -184,8 +185,8 @@ export function StockBalancePage() {
     queryFn: async () => (await http.get<LotRow[]>('/stock/lots', { params: { warehouseId, expiringDays: days ?? undefined, ingredientId: params.get('ingredientId') ?? undefined } })).data,
   });
   return (
-    <Card>
-      <div className="bm-page-header"><Typography.Title level={4}>{t('balance.title')}</Typography.Title></div>
+    <Page title={t('balance.title')}>
+      <div className="bm-card bm-pad">
       <div className="bm-toolbar">
         <LookupSelect resource="warehouses" placeholder={t('warehouse')} value={warehouseId} onChange={(v) => { setWarehouseId(v); setPage(1); }} style={{ width: screens.md ? 200 : '100%' }} />
         <DatePicker placeholder={t('balance.atDate')} value={date} onChange={(v) => { setDate(v); setPage(1); }} format={DATE_FORMAT} />
@@ -236,7 +237,8 @@ export function StockBalancePage() {
           ),
         },
       ]} />
-    </Card>
+      </div>
+    </Page>
   );
 }
 
@@ -258,8 +260,8 @@ export function StockCardPage() {
     queryFn: async () => (await http.get<CardResult>('/stock/card', { params: { ingredientId, warehouseId, from: isoDate(range[0]), to: isoDate(range[1]) } })).data,
   });
   return (
-    <Card>
-      <div className="bm-page-header bm-no-print"><Typography.Title level={4}>{t('card.title')}</Typography.Title></div>
+    <Page title={t('card.title')}>
+      <div className="bm-card bm-pad">
       <div className="bm-toolbar bm-no-print">
         <LookupSelect resource="ingredients" value={ingredientId} onChange={setIngredientId} placeholder={t('ingredient')} style={{ width: 300 }} data-testid="card-ingredient" />
         <LookupSelect resource="warehouses" value={warehouseId} onChange={setWarehouseId} placeholder={t('warehouse')} style={{ width: 200 }} />
@@ -292,7 +294,8 @@ export function StockCardPage() {
           />
         </>
       )}
-    </Card>
+      </div>
+    </Page>
   );
 }
 
@@ -321,11 +324,8 @@ export function PurchaseRequestsPage() {
     }
   };
   return (
-    <Card>
-      <div className="bm-page-header">
-        <Typography.Title level={4}>{t('purchase.title')}</Typography.Title>
-        {has('purchase.create') && <Button type="primary" icon={<PlusOutlined />} onClick={() => setOpen(true)} data-testid="pr-generate">{t('purchase.generate')}</Button>}
-      </div>
+    <Page title={t('purchase.title')} actions={has('purchase.create') && <Button type="primary" icon={<PlusOutlined />} onClick={() => setOpen(true)} data-testid="pr-generate">{t('purchase.generate')}</Button>}>
+      <div className="bm-card">
       <Table<PrRow>
         rowKey="id" loading={isFetching} dataSource={data?.items} scroll={{ x: 'max-content' }} onRow={(r) => ({ onClick: () => navigate(`/stock/purchase-requests/${r.id}`), style: { cursor: 'pointer' } })}
         pagination={{ current: page, pageSize: 30, total: data?.totalItems, onChange: setPage }}
@@ -346,7 +346,8 @@ export function PurchaseRequestsPage() {
           <Typography.Text type="secondary">{t('purchase.formula')}</Typography.Text>
         </Space>
       </Modal>
-    </Card>
+      </div>
+    </Page>
   );
 }
 
@@ -391,11 +392,11 @@ export function PurchaseRequestDetailPage() {
   };
   const total = lines.reduce((s, l) => s + (l.orderQty ?? 0) * (l.estimatedPrice ?? 0), 0);
   return (
-    <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-      <Card>
-        <div className="bm-page-header">
-          <Space><Typography.Title level={4} style={{ margin: 0 }}>{t('purchase.title')} {data.docNo}</Typography.Title><StatusTag enumName="PurchaseRequestStatus" status={data.status} /></Space>
-          <Space wrap className="bm-no-print">
+    <Page
+      title={`${t('purchase.title')} ${data.docNo}`}
+      tag={<StatusTag enumName="PurchaseRequestStatus" status={data.status} />}
+      actions={(
+        <>
             <Button onClick={() => navigate('/stock/purchase-requests')}>{t('common:actions.back')}</Button>
             <Button onClick={() => window.print()}>{t('print')}</Button>
             {editable && <Button icon={<SaveOutlined />} onClick={() => void save()}>{t('common:actions.save')}</Button>}
@@ -403,18 +404,20 @@ export function PurchaseRequestDetailPage() {
             {['Draft', 'Submitted'].includes(data.status) && has('purchase.approve') && <Button type="primary" onClick={() => void act('approve')} data-testid="pr-approve">{t('purchase.approve')}</Button>}
             {['Approved', 'Ordered'].includes(data.status) && has('stock.receipt.create') && <Button type="primary" onClick={() => void act('receipts')} data-testid="pr-receipts">{t('purchase.toReceipts')}</Button>}
             {['Draft', 'Submitted', 'Approved'].includes(data.status) && has('purchase.edit') && <Popconfirm title={t('purchase.cancel')} onConfirm={() => void act('cancel')}><Button danger>{t('purchase.cancel')}</Button></Popconfirm>}
-          </Space>
-        </div>
-        <Descriptions size="small" column={{ xs: 1, sm: 2, lg: 4 }}>
-          <Descriptions.Item label={t('docDate')}>{fmt.date(data.docDate)}</Descriptions.Item>
-          <Descriptions.Item label={t('purchase.needDate')}>{fmt.date(data.needDate)}</Descriptions.Item>
-          <Descriptions.Item label={t('purchase.estAmount')}>{fmt.money(total)}</Descriptions.Item>
-          <Descriptions.Item label={t('purchase.menus')}>{data.menus.map((m) => <Tag key={m.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/menus/${m.id}`)}>{m.code}</Tag>)}</Descriptions.Item>
-          {data.receipts.length > 0 && <Descriptions.Item label={t('receipts.title')}>{data.receipts.map((r) => <Tag key={r.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/stock/receipts/${r.id}`)}>{r.docNo}</Tag>)}</Descriptions.Item>}
-        </Descriptions>
-        <Alert type="info" showIcon message={t('purchase.formula')} className="bm-no-print" />
-      </Card>
-      <Card size="small">
+        </>
+      )}
+      sub={t('purchase.formula')}
+    >
+      <div className="bm-card bm-pad">
+        <InfoGrid items={[
+          { key: 'd', label: t('docDate'), value: fmt.date(data.docDate) },
+          { key: 'n', label: t('purchase.needDate'), value: fmt.date(data.needDate) },
+          { key: 'a', label: t('purchase.estAmount'), value: fmt.money(total) },
+          { key: 'm', label: t('purchase.menus'), value: <span className="bm-dchips">{data.menus.map((m) => <a key={m.id} className="bm-dchip" onClick={() => navigate(`/menus/${m.id}`)}>{m.code}</a>)}</span> },
+          ...(data.receipts.length > 0 ? [{ key: 'r', label: t('receipts.title'), value: <span className="bm-dchips">{data.receipts.map((r) => <a key={r.id} className="bm-dchip" onClick={() => navigate(`/stock/receipts/${r.id}`)}>{r.docNo}</a>)}</span> }] : []),
+        ]} />
+      </div>
+      <div className="bm-card">
         <Table<PrLine>
           rowKey="id" dataSource={lines} pagination={false} size="small" scroll={{ x: 'max-content' }}
           columns={[
@@ -430,8 +433,9 @@ export function PurchaseRequestDetailPage() {
             { title: t('partner'), key: 'pt', width: 220, render: (_, l) => (editable ? <LookupSelect resource="partners" value={l.partnerId} onChange={(v) => patch(l.id, { partnerId: v ?? null })} /> : l.partner) },
           ]}
         />
-      </Card>
-    </Space>
+        <Totals items={[{ label: t('purchase.estAmount'), value: fmt.money(total) }]} />
+      </div>
+    </Page>
   );
 }
 
@@ -456,9 +460,8 @@ export function PeriodLocksPage() {
   };
   const unlock = async (id: string) => { try { await http.delete(`/stock/period-locks/${id}`); void refetch(); } catch (e) { message.error(problemMessage(e)); } };
   return (
-    <Card>
-      <div className="bm-page-header"><Typography.Title level={4}>{t('locks.title')}</Typography.Title></div>
-      <Alert type="info" showIcon message={t('locks.hint')} style={{ marginBottom: 12 }} />
+    <Page title={t('locks.title')} sub={t('locks.hint')}>
+      <div className="bm-card">
       <div className="bm-toolbar">
         <LookupSelect resource="warehouses" value={warehouseId} onChange={setWarehouseId} placeholder={t('locks.allWarehouses')} style={{ width: 220 }} />
         <DatePicker picker="month" value={period} onChange={setPeriod} format="MM/YYYY" />
@@ -474,6 +477,7 @@ export function PeriodLocksPage() {
           { key: 'a', width: 120, render: (_, r) => <Popconfirm title={t('locks.unlock')} onConfirm={() => void unlock(r.id)}><Button size="small" icon={<UnlockOutlined />}>{t('locks.unlock')}</Button></Popconfirm> },
         ]}
       />
-    </Card>
+      </div>
+    </Page>
   );
 }

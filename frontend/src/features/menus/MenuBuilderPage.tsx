@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, App, Button, Card, Col, DatePicker, Drawer, Empty, Form, Input, InputNumber, List, Row, Select, Space, Table, Typography } from 'antd';
+import { App, Button, DatePicker, Drawer, Empty, Form, Input, InputNumber, List, Select } from 'antd';
 import { DeleteOutlined, PlusOutlined, SaveOutlined, SwapOutlined } from '@ant-design/icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -9,6 +9,7 @@ import { http, problemMessage } from '@/shared/api/http';
 import { usePermission } from '@/shared/auth/authStore';
 import { LookupSelect, useEnumLabel, type LookupItem } from '@/shared/components/catalog/inputs';
 import { NutritionPanel } from '@/shared/components/nutrition/NutritionPanel';
+import { Page, Section } from '@/shared/components/PageChrome';
 import { useBeforeUnload } from '@/shared/hooks/useTablePrefs';
 import { ENUMS } from '@/shared/utils/enums';
 import { DATE_FORMAT, fmt, isoDate } from '@/shared/utils/format';
@@ -122,92 +123,77 @@ export default function MenuBuilderPage() {
     queryFn: async () => (await http.get<Suggestion[]>(`/menus/${id}/suggestions`, { params: { itemId: swapFor!.itemId } })).data,
   });
 
+  const dishEnergy = (dishId?: string) => computed.data?.nutrition.dishes.find((d) => d.dishId === dishId)?.energyKcal;
+  const addLine = () => { setLines([...lines, { key: newKey(), slot: 'Other', servingFactor: 1 }]); setDirty(true); };
+
   return (
-    <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-      <Card>
-        <div className="bm-page-header">
-          <Space>
-            <Typography.Title level={4} style={{ margin: 0 }}>{isNew ? t('new') : `${t('edit')} ${detail?.code ?? ''}`}</Typography.Title>
-            {detail && <MenuStatusTag status={detail.status} />}
-          </Space>
-          <Space>
-            <Button onClick={() => navigate(isNew ? '/menus' : `/menus/${id}`)}>{t('common:actions.back')}</Button>
-            {editable && <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={() => void save()} data-testid="menu-save">{t('save')}</Button>}
-          </Space>
+    <Page
+      title={isNew ? t('new') : `${t('edit')} ${detail?.code ?? ''}`}
+      tag={detail && <MenuStatusTag status={detail.status} />}
+      actions={(
+        <>
+          <Button onClick={() => navigate(isNew ? '/menus' : `/menus/${id}`)}>{t('common:actions.back')}</Button>
+          {editable && <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={() => void save()} data-testid="menu-save">{t('save')}</Button>}
+        </>
+      )}
+    >
+      {!editable && detail && <div className="bm-note is-info">{t('readOnly')}</div>}
+      <Form layout="vertical" disabled={!editable} className="bm-formcard is-tight">
+        <Form.Item label={t('date')} required validateStatus={errors.menuDate ? 'error' : undefined}>
+          <DatePicker value={ctx.menuDate} onChange={(v) => patch({ menuDate: v })} format={DATE_FORMAT} style={{ width: '100%' }} data-testid="menu-date" />
+        </Form.Item>
+        <Form.Item label={t('shift')} required validateStatus={errors.mealShiftId ? 'error' : undefined}>
+          <LookupSelect resource="meal-shifts" value={ctx.mealShiftId} onChange={(v) => patch({ mealShiftId: v })} data-testid="menu-shift" />
+        </Form.Item>
+        <Form.Item label={t('subject')}><LookupSelect resource="subject-groups" value={ctx.subjectGroupId} onChange={(v) => patch({ subjectGroupId: v })} data-testid="menu-subject" /></Form.Item>
+        <Form.Item label={t('customer')}><LookupSelect resource="customers" value={ctx.customerId} onChange={(v) => patch({ customerId: v })} /></Form.Item>
+        <Form.Item label={t('recommendation')}><LookupSelect resource="recommendations" value={ctx.recommendationId} onChange={(v) => patch({ recommendationId: v })} /></Form.Item>
+        <Form.Item label={t('structure')}><LookupSelect resource="meal-structures" value={ctx.structureTemplateId} onChange={(v) => patch({ structureTemplateId: v })} /></Form.Item>
+        <Form.Item label={t('servings')}><InputNumber min={1} max={100000} value={ctx.servings} onChange={(v) => patch({ servings: Number(v) || 1 })} style={{ width: '100%' }} /></Form.Item>
+        <Form.Item label={t('budget')}><InputNumber min={0} step={1000} value={ctx.budgetPerServing ?? undefined} onChange={(v) => patch({ budgetPerServing: v ?? null })} style={{ width: '100%' }} /></Form.Item>
+        <Form.Item label={t('note')} className="bm-span-all"><Input.TextArea rows={1} maxLength={1000} value={ctx.note} onChange={(e) => patch({ note: e.target.value })} /></Form.Item>
+      </Form>
+      <div className="bm-2col">
+        <div className="bm-2col-main">
+          <Section title={t('dishes')} extra={editable && <Button icon={<PlusOutlined />} onClick={addLine}>{t('addDish')}</Button>}>
+            {errors.items && <div className="bm-note is-red" style={{ margin: '12px 16px 0' }}>{t('common:validation.requiredShort')}</div>}
+            <div className="bm-mlines">
+              {lines.map((l) => {
+                const kcal = dishEnergy(l.dishId);
+                return (
+                  <div key={l.key} className="bm-mline">
+                    <div className="bm-mline-slot">
+                      <Select value={l.slot} disabled={!editable} aria-label={t('slot')} onChange={(v) => patchLine(l.key, { slot: v, dishId: undefined, label: undefined, itemId: undefined })}
+                        options={ENUMS.DishType.map((d) => ({ value: d, label: enumLabel('DishType', d) }))} />
+                    </div>
+                    <div className="bm-mline-dish">
+                      <LookupSelect resource="dishes" value={l.dishId} disabled={!editable} extraParams={{ dishType: l.slot }} style={{ width: '100%' }} data-testid={`menu-dish-${l.slot}`}
+                        onChange={(v, item) => patchLine(l.key, { dishId: v ?? undefined, label: item ? `${(item as LookupItem).code} — ${(item as LookupItem).nameVi}` : undefined, itemId: undefined })} />
+                    </div>
+                    <div className="bm-mline-n">
+                      <InputNumber min={0.1} max={5} step={0.1} value={l.servingFactor} disabled={!editable} aria-label={t('factor')} onChange={(v) => patchLine(l.key, { servingFactor: Number(v) || 1 })} />
+                    </div>
+                    <span className="bm-mline-info">{kcal != null ? `${fmt.number(kcal, 0)} kcal` : ''}</span>
+                    {editable && (
+                      <span className="bm-mline-acts">
+                        {l.itemId && !dirty && <Button type="text" icon={<SwapOutlined />} title={t('swap')} aria-label={t('swap')} onClick={() => setSwapFor(l)} />}
+                        <Button type="text" danger icon={<DeleteOutlined />} aria-label={t('common:actions.delete')} onClick={() => { setLines(lines.filter((x) => x.key !== l.key)); setDirty(true); }} />
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </Section>
         </div>
-        {!editable && detail && <Alert type="info" showIcon message={t('readOnly')} style={{ marginBottom: 12 }} />}
-        <Form layout="vertical" disabled={!editable}>
-          <Row gutter={12}>
-            <Col xs={24} sm={12} lg={6}>
-              <Form.Item label={t('date')} required validateStatus={errors.menuDate ? 'error' : undefined}>
-                <DatePicker value={ctx.menuDate} onChange={(v) => patch({ menuDate: v })} format={DATE_FORMAT} style={{ width: '100%' }} data-testid="menu-date" />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12} lg={6}>
-              <Form.Item label={t('shift')} required validateStatus={errors.mealShiftId ? 'error' : undefined}>
-                <LookupSelect resource="meal-shifts" value={ctx.mealShiftId} onChange={(v) => patch({ mealShiftId: v })} data-testid="menu-shift" />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12} lg={6}>
-              <Form.Item label={t('subject')}><LookupSelect resource="subject-groups" value={ctx.subjectGroupId} onChange={(v) => patch({ subjectGroupId: v })} data-testid="menu-subject" /></Form.Item>
-            </Col>
-            <Col xs={24} sm={12} lg={6}>
-              <Form.Item label={t('customer')}><LookupSelect resource="customers" value={ctx.customerId} onChange={(v) => patch({ customerId: v })} /></Form.Item>
-            </Col>
-            <Col xs={24} sm={12} lg={6}>
-              <Form.Item label={t('recommendation')}><LookupSelect resource="recommendations" value={ctx.recommendationId} onChange={(v) => patch({ recommendationId: v })} /></Form.Item>
-            </Col>
-            <Col xs={24} sm={12} lg={6}>
-              <Form.Item label={t('structure')}><LookupSelect resource="meal-structures" value={ctx.structureTemplateId} onChange={(v) => patch({ structureTemplateId: v })} /></Form.Item>
-            </Col>
-            <Col xs={12} lg={3}>
-              <Form.Item label={t('servings')}><InputNumber min={1} max={100000} value={ctx.servings} onChange={(v) => patch({ servings: Number(v) || 1 })} style={{ width: '100%' }} /></Form.Item>
-            </Col>
-            <Col xs={12} lg={3}>
-              <Form.Item label={t('budget')}><InputNumber min={0} step={1000} value={ctx.budgetPerServing ?? undefined} onChange={(v) => patch({ budgetPerServing: v ?? null })} style={{ width: '100%' }} /></Form.Item>
-            </Col>
-            <Col xs={24}>
-              <Form.Item label={t('note')}><Input.TextArea rows={1} maxLength={1000} value={ctx.note} onChange={(e) => patch({ note: e.target.value })} /></Form.Item>
-            </Col>
-          </Row>
-        </Form>
-      </Card>
-      <Row gutter={[16, 16]}>
-        <Col xs={24} lg={13}>
-          <Card title={t('dishes')} size="small" extra={editable && <Button size="small" icon={<PlusOutlined />} onClick={() => { setLines([...lines, { key: newKey(), slot: 'Other', servingFactor: 1 }]); setDirty(true); }}>{t('addDish')}</Button>}>
-            {errors.items && <Alert type="error" showIcon message={t('common:validation.requiredShort')} style={{ marginBottom: 8 }} />}
-            <Table<Line>
-              rowKey="key" dataSource={lines} pagination={false} size="small" scroll={{ x: 'max-content' }}
-              columns={[
-                { title: t('slot'), key: 'slot', width: 150, render: (_, l) => (
-                  <Select size="small" value={l.slot} disabled={!editable} style={{ width: 140 }} onChange={(v) => patchLine(l.key, { slot: v, dishId: undefined, label: undefined, itemId: undefined })}
-                    options={ENUMS.DishType.map((d) => ({ value: d, label: enumLabel('DishType', d) }))} />
-                ) },
-                { title: t('dishes'), key: 'dish', render: (_, l) => (
-                  <LookupSelect resource="dishes" value={l.dishId} disabled={!editable} extraParams={{ dishType: l.slot }} style={{ minWidth: 240, width: '100%' }} data-testid={`menu-dish-${l.slot}`}
-                    onChange={(v, item) => patchLine(l.key, { dishId: v ?? undefined, label: item ? `${(item as LookupItem).code} — ${(item as LookupItem).nameVi}` : undefined, itemId: undefined })} />
-                ) },
-                { title: t('factor'), key: 'f', width: 110, render: (_, l) => (
-                  <InputNumber size="small" min={0.1} max={5} step={0.1} value={l.servingFactor} disabled={!editable} onChange={(v) => patchLine(l.key, { servingFactor: Number(v) || 1 })} />
-                ) },
-                { key: 'a', width: 80, render: (_, l) => editable && (
-                  <Space size={0}>
-                    {l.itemId && !dirty && <Button size="small" type="text" icon={<SwapOutlined />} title={t('swap')} onClick={() => setSwapFor(l)} />}
-                    <Button size="small" type="text" danger icon={<DeleteOutlined />} onClick={() => { setLines(lines.filter((x) => x.key !== l.key)); setDirty(true); }} />
-                  </Space>
-                ) },
-              ]}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} lg={11}>
-          {body.items.length === 0 ? <Card size="small" title={t('realtime')}><Empty /></Card> : (
-            <NutritionPanel title={t('realtime')} nutrition={computed.data?.nutrition} cost={computed.data?.cost} warnings={computed.data?.warnings} />
-          )}
-          {computed.isError && <Alert type="error" showIcon message={problemMessage(computed.error)} style={{ marginTop: 8 }} />}
-        </Col>
-      </Row>
-      <Drawer open={!!swapFor} onClose={() => setSwapFor(null)} title={`${t('suggestions')} — ${swapFor?.label ?? ''}`} width={460}>
+        <div className="bm-2col-side">
+          {body.items.length === 0
+            ? <Section title={t('realtime')}><div className="bm-pad"><Empty image={Empty.PRESENTED_IMAGE_SIMPLE} /></div></Section>
+            : <NutritionPanel title={t('realtime')} nutrition={computed.data?.nutrition} cost={computed.data?.cost} warnings={computed.data?.warnings} />}
+          {computed.isError && <div className="bm-note is-red" style={{ marginTop: 8 }}>{problemMessage(computed.error)}</div>}
+        </div>
+      </div>
+      <Drawer open={!!swapFor} onClose={() => setSwapFor(null)} title={`${t('suggestions')} — ${swapFor?.label ?? ''}`} width={460} rootClassName="bm-drawer">
         <List
           loading={suggestions.isFetching}
           dataSource={suggestions.data ?? []}
@@ -222,6 +208,6 @@ export default function MenuBuilderPage() {
           )}
         />
       </Drawer>
-    </Space>
+    </Page>
   );
 }
