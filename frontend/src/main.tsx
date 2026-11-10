@@ -9,6 +9,7 @@ import '@fontsource/be-vietnam-pro/700.css';
 import './app/layout/layout.css';
 import './app/layout/pages.css';
 import './index.css';
+import './app/layout/pages-analysis-admin.css';
 import { AppProviders } from '@/app/providers';
 import { router } from '@/app/router';
 

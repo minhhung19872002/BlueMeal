@@ -1,19 +1,24 @@
 import { useEffect, useMemo, useState } from 'react';
-import { App, Button, Card, Checkbox, Col, Empty, Form, Input, List, Modal, Popconfirm, Row, Space, Switch, Table, Tag, Tooltip, Typography } from 'antd';
-import { DeleteOutlined, EditOutlined, PlusOutlined, SafetyOutlined } from '@ant-design/icons';
+import { App, Form, Input, Modal, Popconfirm, Switch, Spin } from 'antd';
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { http, problemMessage } from '@/shared/api/http';
 import { usePermission } from '@/shared/auth/authStore';
 import { zodRule, zs } from '@/shared/utils/validation';
+import { PageHead, PillTabs, Section, Toggle, XButton } from '@/app/layout/designKit';
 
 interface Role { id: string; code: string; nameVi: string; nameEn?: string; description?: string; isSystem: boolean; requiresMfa: boolean; isActive: boolean; userCount: number; permissionCount: number }
 interface Perm { id: string; code: string; module: string; action: string; nameVi: string; nameEn: string; moduleNameVi: string; moduleNameEn: string; actionNameVi: string; actionNameEn: string }
 
 const MATRIX_ACTIONS = ['view', 'create', 'edit', 'delete', 'approve', 'export', 'import'];
 
-/** Roles + module × action permission matrix (SPEC §7.1.5, §7.1.9). */
+function Check() {
+  return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6" /></svg>;
+}
+
+/** Roles + module × action permission matrix (SPEC §7.1.5, §7.1.9) — layout: Claude Design BMAdmin (role pills, 44px touch cells). */
 export default function RolesPage() {
   const { t, i18n } = useTranslation('admin');
   const { message } = App.useApp();
@@ -40,6 +45,13 @@ export default function RolesPage() {
       setDirty(false);
     }
   }, [detail.data]);
+  // keep the selected role object fresh after list refetches (counts, MFA flag)
+  useEffect(() => {
+    if (selected && roles.data) {
+      const fresh = roles.data.find((r) => r.id === selected.id);
+      if (fresh && fresh !== selected) setSelected(fresh);
+    }
+  }, [roles.data, selected]);
 
   const modules = useMemo(() => {
     const map = new Map<string, { module: string; name: string; perms: Perm[] }>();
@@ -61,11 +73,18 @@ export default function RolesPage() {
     setGranted(next);
     setDirty(true);
   };
-  const toggleRow = (m: { perms: Perm[] }, on: boolean) => {
+  const toggleRow = (m: { perms: Perm[] }) => {
+    const on = !m.perms.every((p) => granted.has(p.code));
     const next = new Set(granted);
     m.perms.forEach((p) => (on ? next.add(p.code) : next.delete(p.code)));
     setGranted(next);
     setDirty(true);
+  };
+
+  const pick = (r: Role) => {
+    if (selected?.id === r.id) return;
+    if (dirty && !window.confirm(t('common:confirmLeave'))) return;
+    setSelected(r);
   };
 
   const saveMatrix = async () => {
@@ -92,82 +111,97 @@ export default function RolesPage() {
     }
   };
 
-  const columns = [
-    { key: 'module', title: t('roles.module'), fixed: 'left' as const, width: 240, render: (_: unknown, m: (typeof modules)[number]) => (
-      <Space>
-        {canEdit && <Checkbox checked={m.perms.every((p) => granted.has(p.code))} indeterminate={m.perms.some((p) => granted.has(p.code)) && !m.perms.every((p) => granted.has(p.code))} onChange={(e) => toggleRow(m, e.target.checked)} />}
-        <span>{m.name}</span>
-      </Space>
-    ) },
-    ...MATRIX_ACTIONS.map((a) => ({
-      key: a,
-      title: t(`roles.action.${a}`, a),
-      width: 80,
-      align: 'center' as const,
-      render: (_: unknown, m: (typeof modules)[number]) => {
-        const p = m.perms.find((x) => x.action === a);
-        return p ? <Checkbox checked={locked || granted.has(p.code)} disabled={!canEdit} onChange={(e) => toggle(p.code, e.target.checked)} /> : null;
-      },
-    })),
-    { key: 'other', title: t('roles.other'), render: (_: unknown, m: (typeof modules)[number]) => (
-      <Space wrap size={4}>
-        {m.perms.filter((p) => !MATRIX_ACTIONS.includes(p.action)).map((p) => (
-          <Checkbox key={p.code} checked={locked || granted.has(p.code)} disabled={!canEdit} onChange={(e) => toggle(p.code, e.target.checked)}>
-            {en ? p.actionNameEn : p.actionNameVi}
-          </Checkbox>
-        ))}
-      </Space>
-    ) },
-  ];
+  /** "Bắt buộc MFA" switch in the matrix header: same PUT /roles/{id} as the edit dialog. */
+  const setMfa = async (requiresMfa: boolean) => {
+    if (!selected) return;
+    try {
+      await http.put(`/roles/${selected.id}`, { code: selected.code, nameVi: selected.nameVi, nameEn: selected.nameEn, description: selected.description, requiresMfa, isActive: selected.isActive });
+      void roles.refetch();
+    } catch (e) {
+      message.error(problemMessage(e));
+    }
+  };
+
+  const roleName = (r: Role) => (en && r.nameEn ? r.nameEn : r.nameVi);
+  const activeCount = locked ? perms.data?.length ?? 0 : granted.size;
 
   return (
-    <Row gutter={16}>
-      <Col xs={24} lg={7}>
-        <Card title={t('roles.title')} extra={has('role.create') && <Button size="small" icon={<PlusOutlined />} onClick={() => { setEditing('new'); form.resetFields(); form.setFieldsValue({ isActive: true }); }}>{t('common:actions.add')}</Button>}>
-          <List
-            loading={roles.isLoading}
-            dataSource={roles.data}
-            renderItem={(r) => (
-              <List.Item
-                onClick={() => {
-                  if (dirty && !window.confirm(t('common:confirmLeave'))) return;
-                  setSelected(r);
-                }}
-                style={{ cursor: 'pointer', background: selected?.id === r.id ? 'rgba(63,143,90,0.08)' : undefined, paddingInline: 8, borderRadius: 6 }}
-                actions={[
-                  has('role.edit') && <Tooltip key="e" title={t('common:actions.edit')}><Button size="small" type="text" icon={<EditOutlined />} onClick={(e) => { e.stopPropagation(); setEditing(r); form.setFieldsValue(r); }} /></Tooltip>,
-                  has('role.delete') && !r.isSystem && (
-                    <Popconfirm key="d" title={t('common:confirmDelete')} onConfirm={async () => { try { await http.delete(`/roles/${r.id}`); void roles.refetch(); } catch (e) { message.error(problemMessage(e)); } }}>
-                      <Button size="small" type="text" danger icon={<DeleteOutlined />} onClick={(e) => e.stopPropagation()} />
-                    </Popconfirm>
-                  ),
-                ].filter(Boolean)}
-              >
-                <List.Item.Meta
-                  title={<Space>{en && r.nameEn ? r.nameEn : r.nameVi}{r.isSystem && <Tag>{t('roles.system')}</Tag>}{r.requiresMfa && <Tooltip title={t('roles.requiresMfa')}><SafetyOutlined /></Tooltip>}</Space>}
-                  description={`${r.code} · ${t('roles.users')}: ${r.userCount} · ${t('roles.permissions')}: ${r.permissionCount}`}
-                />
-              </List.Item>
-            )}
-          />
-        </Card>
-      </Col>
-      <Col xs={24} lg={17}>
-        <Card
-          title={selected ? `${t('roles.matrix')} — ${en && selected.nameEn ? selected.nameEn : selected.nameVi}` : t('roles.matrix')}
-          extra={selected && canEdit && <Button type="primary" disabled={!dirty} onClick={() => void saveMatrix()} data-testid="save-matrix">{t('roles.saveMatrix')}</Button>}
+    <div className="bm-page">
+      <PageHead title={t('roles.pageTitle')} actions={
+        <>
+          {has('role.create') && <XButton onClick={() => { setEditing('new'); form.resetFields(); form.setFieldsValue({ isActive: true }); }}><PlusOutlined />{t('roles.add')}</XButton>}
+          {selected && canEdit && <XButton kind="primary" disabled={!dirty} onClick={() => void saveMatrix()} data-testid="save-matrix">{t('roles.saveMatrix')}</XButton>}
+        </>
+      } />
+      {roles.isLoading ? <Spin /> : (
+        <PillTabs label={t('roles.title')} value={selected?.id ?? ''} onChange={(id) => { const r = roles.data?.find((x) => x.id === id); if (r) pick(r); }}
+          items={(roles.data ?? []).map((r) => ({ key: r.id, label: <>{roleName(r)}<span className="bm-x-tab-n">{r.userCount}</span></> }))} />
+      )}
+      {!selected ? (
+        <div className="bm-x-empty">{t('roles.selectRole')}</div>
+      ) : (
+        <Section
+          title={`${t('roles.matrix')} — ${roleName(selected)}`}
+          hint={<>{selected.code} · {t('roles.activeCount', { n: activeCount })}{locked ? ` · ${t('roles.systemLocked')}` : ''}</>}
+          extra={
+            <div className="bm-ph-actions">
+              <Toggle checked={selected.requiresMfa} disabled={!has('role.edit')} onChange={(v) => void setMfa(v)} onText={t('roles.requiresMfa')} offText={t('roles.requiresMfa')} label={t('roles.requiresMfa')} />
+              {has('role.edit') && <XButton onClick={() => { setEditing(selected); form.setFieldsValue(selected); }} aria-label={t('roles.editRole')}><EditOutlined />{t('common:actions.edit')}</XButton>}
+              {has('role.delete') && !selected.isSystem && (
+                <Popconfirm title={t('common:confirmDelete')} onConfirm={async () => { try { await http.delete(`/roles/${selected.id}`); setSelected(null); void roles.refetch(); } catch (e) { message.error(problemMessage(e)); } }}>
+                  <XButton kind="danger" aria-label={t('roles.deleteRole')}><DeleteOutlined />{t('common:actions.delete')}</XButton>
+                </Popconfirm>
+              )}
+            </div>
+          }
+          bodyClass="bm-x-sec-table"
         >
-          {!selected ? (
-            <Empty description={t('roles.selectRole')} />
-          ) : (
-            <>
-              {locked && <Typography.Paragraph type="secondary">{t('roles.systemLocked')}</Typography.Paragraph>}
-              <Input.Search placeholder={t('roles.search')} allowClear onChange={(e) => setFilter(e.target.value)} style={{ maxWidth: 320, marginBottom: 12 }} />
-              <Table rowKey="module" size="small" columns={columns} dataSource={modules} pagination={false} scroll={{ x: 1000, y: 560 }} loading={detail.isFetching} />
-            </>
+          <div className="bm-x-pad"><Input.Search placeholder={t('roles.search')} allowClear onChange={(e) => setFilter(e.target.value)} style={{ maxWidth: 320 }} /></div>
+          {detail.isFetching && !detail.data ? <div className="bm-x-pad"><Spin /></div> : (
+            <div style={{ overflowX: 'auto' }}>
+              <table className="bm-x-matrix">
+                <thead>
+                  <tr>
+                    <th>{t('roles.module')}</th>
+                    {MATRIX_ACTIONS.map((a) => <th key={a}>{t(`roles.action.${a}`, a)}</th>)}
+                    <th>{t('roles.other')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {modules.map((m) => (
+                    <tr key={m.module}>
+                      <th className={canEdit ? 'is-click' : undefined} onClick={canEdit ? () => toggleRow(m) : undefined} title={canEdit ? t('roles.toggleRow') : undefined}>{m.name}</th>
+                      {MATRIX_ACTIONS.map((a) => {
+                        const p = m.perms.find((x) => x.action === a);
+                        if (!p) return <td key={a} />;
+                        const on = locked || granted.has(p.code);
+                        return (
+                          <td key={a}>
+                            <button type="button" className={on ? 'bm-x-cell is-on' : 'bm-x-cell'} disabled={!canEdit} aria-pressed={on}
+                              aria-label={`${m.name} – ${t(`roles.action.${a}`, a)}`} onClick={() => toggle(p.code, !on)}>
+                              <span className="bm-x-box">{on && <Check />}</span>
+                            </button>
+                          </td>
+                        );
+                      })}
+                      <td className="is-other">
+                        {m.perms.filter((p) => !MATRIX_ACTIONS.includes(p.action)).map((p) => {
+                          const on = locked || granted.has(p.code);
+                          return (
+                            <button key={p.code} type="button" className={on ? 'bm-x-chip-check is-on' : 'bm-x-chip-check'} disabled={!canEdit} aria-pressed={on} onClick={() => toggle(p.code, !on)}>
+                              {en ? p.actionNameEn : p.actionNameVi}
+                            </button>
+                          );
+                        })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
-        </Card>
-      </Col>
+        </Section>
+      )}
       <Modal open={!!editing} title={editing === 'new' ? t('common:actions.add') : t('common:actions.edit')} onCancel={() => setEditing(null)} onOk={() => void saveRole()} destroyOnHidden>
         <Form form={form} layout="vertical">
           <Form.Item name="code" label={t('roles.code')} rules={[zodRule(z.string().regex(/^[A-Z0-9_]+$/, 'catalog:validation.code'))]}>
@@ -180,6 +214,6 @@ export default function RolesPage() {
           <Form.Item name="isActive" label={t('common:fields.isActive')} valuePropName="checked"><Switch /></Form.Item>
         </Form>
       </Modal>
-    </Row>
+    </div>
   );
 }

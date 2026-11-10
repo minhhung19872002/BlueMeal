@@ -8,6 +8,8 @@
     "exports": "File đã xuất",
     "download": "Tải về",
     "favorites": "Bộ lọc yêu thích",
+    "exportsTitle": "File đã xuất (xuất nền)",
+    "runHint": "{{name}} — đặt bộ lọc rồi bấm “Xem báo cáo”.",
     "saveFavorite": "Lưu bộ lọc",
     "favoriteName": "Tên bộ lọc",
     "deleteFavorite": "Xóa bộ lọc",
@@ -74,7 +76,24 @@
     "recommendation": "Khuyến nghị",
     "trendTarget": "Năng lượng khuyến nghị",
     "trendActual": "Năng lượng thực tế",
-    "plg": "Cơ cấu P:L:G"
+    "plg": "Cơ cấu P:L:G",
+    "compareOff": "Tắt so sánh",
+    "byDay": "Mức đáp ứng năng lượng theo ngày",
+    "adequacy": "Mức đáp ứng từng chất",
+    "daysOk": "Số ngày đạt",
+    "daysOkHint": "trong khoảng 90–110%",
+    "animal": "Tỷ lệ đạm động vật",
+    "pickHint": "Chọn phạm vi rồi bấm “Phân tích”.",
+    "part": {
+      "p": "Đạm",
+      "l": "Béo",
+      "g": "Bột đường"
+    },
+    "st": {
+      "good": "Đạt",
+      "low": "Thấp",
+      "high": "Cao"
+    }
   },
   "alerts": {
     "title": "Trung tâm cảnh báo",
@@ -117,6 +136,25 @@
       "plgEnabled": "Kiểm tra cơ cấu P:L:G"
     }
   },
+  "safety": {
+    "title": "Tổng quan ATTP",
+    "today": "Biên bản kiểm thực hôm nay",
+    "openLog": "bấm để mở sổ kiểm thực",
+    "notPass": "Không đạt / có điều kiện",
+    "last7": "7 ngày gần nhất",
+    "kept": "Mẫu đang lưu",
+    "due": "Mẫu đến hạn hủy",
+    "dueHint": "cần hủy hôm nay",
+    "certs": "Chứng nhận sắp hết hạn",
+    "rate": "Tỷ lệ biên bản đạt theo ngày",
+    "certTable": "Chứng nhận ATTP của đối tác",
+    "attention": "Biên bản cần lưu ý",
+    "date": "Ngày",
+    "step": "Bước",
+    "subject": "Đối tượng",
+    "result": "Kết quả",
+    "none": "Không có"
+  },
   "cost": {
     "title": "Bảng tính chi phí suất ăn",
     "period": "Kỳ",
@@ -137,7 +175,16 @@
     "byDay": "Theo ngày",
     "byWeek": "Theo tuần",
     "byMonth": "Theo tháng",
-    "overhead": "Cấu hình chi phí chung"
+    "overhead": "Cấu hình chi phí chung",
+    "mode": "Tổng hợp",
+    "allCustomers": "Tất cả khách hàng",
+    "exportRpt": "Xuất Excel (RPT-11)",
+    "detail": "Chi tiết theo kỳ",
+    "over": "vượt {{v}}",
+    "under": "thấp hơn {{v}}",
+    "ofRevenue": "{{v}} doanh thu",
+    "bn": "{{v}} tỷ ₫",
+    "mn": "{{v}} tr ₫"
   },
   "dash": {
     "pendingApproval": "Thực đơn chờ duyệt",

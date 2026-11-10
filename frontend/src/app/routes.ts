@@ -62,6 +62,7 @@ export const appRoutes: AppRoute[] = [
   { path: 'stock/locks', page: () => import('@/features/stock/StockPages').then((m) => ({ default: m.PeriodLocksPage })), perms: ['stock.lock'] },
   { path: 'safety/inspections', page: () => import('@/features/safety/SafetyPages').then((m) => ({ default: m.InspectionsPage })), perms: ['inspection.view'] },
   { path: 'safety/samples', page: () => import('@/features/safety/SafetyPages').then((m) => ({ default: m.SamplesPage })), perms: ['sample.view'] },
+  { path: 'safety/dashboard', page: () => import('@/features/safety/SafetyDashboardPage'), perms: ['food_safety.view', 'stock.view'] },
   { path: 'reports', page: () => import('@/features/reports/ReportsPage'), perms: ['report.view'] },
   { path: 'analysis/nutrition', page: () => import('@/features/reports/AnalysisPages').then((m) => ({ default: m.NutritionAnalysisPage })), perms: ['nutrition.view'] },
   { path: 'alerts', page: () => import('@/features/reports/AnalysisPages').then((m) => ({ default: m.AlertsPage })), perms: ['alert.view'] },

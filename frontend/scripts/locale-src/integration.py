@@ -11,6 +11,7 @@ L = {
         "testFail": ("Kết nối lỗi: {{error}}", "Connection failed: {{error}}"),
         "synced": ("Nhận {{received}} · tạo {{created}} · cập nhật {{updated}} · xung đột {{conflicts}}", "Received {{received}} · created {{created}} · updated {{updated}} · conflicts {{conflicts}}"),
         "pushed": ("Đã gửi — mã tiếp nhận {{id}}", "Pushed — receipt {{id}}"), "stored": ("đã lưu, nhập để thay", "stored, type to replace"),
+        "none": ("Chưa có kết nối nào.", "No endpoint configured yet."), "secretHint": ("Client secret / API key không hiển thị lại sau khi lưu.", "Client secrets / API keys are never shown again after saving."),
         "auth": {"None": ("Không xác thực", "None"), "ApiKey": ("API key", "API key"), "Basic": ("Basic (tên/mật khẩu)", "Basic (user/password)"), "OAuth2ClientCredentials": ("OAuth2 client credentials", "OAuth2 client credentials")},
         "cred": {"apiKey": ("API key", "API key"), "apiKeyHeader": ("Tên header", "Header name"), "username": ("Tên đăng nhập", "Username"), "password": ("Mật khẩu", "Password"),
                  "tokenUrl": ("Địa chỉ cấp token", "Token URL"), "clientId": ("Client ID", "Client ID"), "clientSecret": ("Client secret", "Client secret"), "scope": ("Scope", "Scope")},

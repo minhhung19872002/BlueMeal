@@ -8,6 +8,8 @@
     "exports": "Exported files",
     "download": "Download",
     "favorites": "Favorite filters",
+    "exportsTitle": "Exported files (background exports)",
+    "runHint": "{{name}} — set the filters, then press “View report”.",
     "saveFavorite": "Save filter",
     "favoriteName": "Filter name",
     "deleteFavorite": "Delete filter",
@@ -74,7 +76,24 @@
     "recommendation": "Recommendation",
     "trendTarget": "Target energy",
     "trendActual": "Actual energy",
-    "plg": "P:L:G structure"
+    "plg": "P:L:G structure",
+    "compareOff": "Stop comparing",
+    "byDay": "Energy met by day",
+    "adequacy": "Adequacy by nutrient",
+    "daysOk": "Days on target",
+    "daysOkHint": "within 90–110%",
+    "animal": "Animal protein share",
+    "pickHint": "Choose a scope, then press “Analyze”.",
+    "part": {
+      "p": "Protein",
+      "l": "Fat",
+      "g": "Carbohydrate"
+    },
+    "st": {
+      "good": "On target",
+      "low": "Low",
+      "high": "High"
+    }
   },
   "alerts": {
     "title": "Alert center",
@@ -117,6 +136,25 @@
       "plgEnabled": "Check P:L:G structure"
     }
   },
+  "safety": {
+    "title": "Food safety overview",
+    "today": "Inspection records today",
+    "openLog": "click to open the inspection log",
+    "notPass": "Failed / conditional",
+    "last7": "last 7 days",
+    "kept": "Samples kept",
+    "due": "Samples due for disposal",
+    "dueHint": "dispose today",
+    "certs": "Certificates expiring",
+    "rate": "Pass rate by day",
+    "certTable": "Partner food-safety certificates",
+    "attention": "Records needing attention",
+    "date": "Date",
+    "step": "Step",
+    "subject": "Subject",
+    "result": "Result",
+    "none": "None"
+  },
   "cost": {
     "title": "Meal cost sheet",
     "period": "Period",
@@ -137,7 +175,16 @@
     "byDay": "By day",
     "byWeek": "By week",
     "byMonth": "By month",
-    "overhead": "Overhead settings"
+    "overhead": "Overhead settings",
+    "mode": "Group by",
+    "allCustomers": "All customers",
+    "exportRpt": "Export Excel (RPT-11)",
+    "detail": "Details by period",
+    "over": "{{v}} over",
+    "under": "{{v}} under",
+    "ofRevenue": "{{v}} of revenue",
+    "bn": "₫{{v}} bn",
+    "mn": "₫{{v}} m"
   },
   "dash": {
     "pendingApproval": "Menus awaiting approval",

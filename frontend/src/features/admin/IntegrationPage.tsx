@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, App, Button, Card, Checkbox, Col, DatePicker, Descriptions, Empty, Form, Input, InputNumber, Modal, Row, Select, Space, Switch, Table, Tabs, Tag, Typography } from 'antd';
+import { App, Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Modal, Row, Select, Space, Switch, Table, Tag, Typography } from 'antd';
 import { ApiOutlined, CloudSyncOutlined, KeyOutlined, PlusOutlined, SendOutlined } from '@ant-design/icons';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { http, problemMessage, type PagedResult } from '@/shared/api/http';
 import { usePermission } from '@/shared/auth/authStore';
 import { DATE_FORMAT, fmt, isoDate } from '@/shared/utils/format';
+import { PageHead, PillTabs, Section, StaticField, XButton } from '@/app/layout/designKit';
 
 interface EndpointView {
   id: string; code: string; nameVi: string; nameEn?: string; baseUrl: string; authType: string; timeoutSeconds: number; syncCron?: string; mappingJson: string; isEnabled: boolean; isActive: boolean;
@@ -108,7 +109,7 @@ function ConflictDiff({ c }: { c: ConflictRow }) {
   const keys = [...new Set([...Object.keys(l), ...Object.keys(r)])].sort();
   const rows = keys.map((k) => ({ key: k, local: l[k] ?? '', remote: r[k] ?? '', diff: (l[k] ?? '') !== (r[k] ?? '') }));
   return (
-    <Table size="small" pagination={false} dataSource={rows.filter((x) => x.diff).concat(rows.filter((x) => !x.diff))} rowKey="key"
+    <Table size="small" pagination={false} dataSource={rows.filter((x) => x.diff).concat(rows.filter((x) => !x.diff))} rowKey="key" scroll={{ x: 'max-content' }}
       rowClassName={(x) => (x.diff ? 'bm-diff-row' : '')}
       columns={[
         { title: t('conflict.field'), dataIndex: 'key', width: 220 },
@@ -118,6 +119,7 @@ function ConflictDiff({ c }: { c: ConflictRow }) {
   );
 }
 
+/** VDD data portal integration (SPEC §7.10) — layout: Claude Design BMAdmin (pill tabs, connection cards, tables). */
 export default function IntegrationPage() {
   const { t, i18n } = useTranslation('integration');
   const { message, modal } = App.useApp();
@@ -174,107 +176,114 @@ export default function IntegrationPage() {
   };
   const pendingConflicts = conflicts.data?.totalItems ?? 0;
 
+  const actions = tab === 'endpoints'
+    ? has('integration.edit') && <XButton kind="primary" onClick={() => setEditing('new')}><PlusOutlined />{t('ep.add')}</XButton>
+    : tab === 'clients'
+      ? has('integration.edit') && <XButton kind="primary" onClick={() => { clientForm.resetFields(); setClientOpen(true); }}><PlusOutlined />{t('client.add')}</XButton>
+      : null;
+
   return (
-    <Card>
-      <div className="bm-page-header"><Typography.Title level={4}>{t('title')}</Typography.Title></div>
-      <Tabs activeKey={tab} onChange={setTab} items={[
-        {
-          key: 'endpoints', label: t('tabs.endpoints'),
-          children: (
-            <Space direction="vertical" style={{ width: '100%' }}>
-              {has('integration.edit') && <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditing('new')}>{t('ep.add')}</Button>}
-              {(endpoints.data ?? []).length === 0 && !endpoints.isLoading && <Empty />}
-              {(endpoints.data ?? []).map((e) => (
-                <Card key={e.id} size="small" title={<Space><ApiOutlined />{e.code} — {i18n.language === 'en' && e.nameEn ? e.nameEn : e.nameVi}{!e.isEnabled && <Tag>{t('common:status.inactive')}</Tag>}</Space>}
-                  extra={has('integration.edit') && <a onClick={() => setEditing(e)}>{t('common:actions.edit')}</a>}>
-                  <Descriptions size="small" column={{ xs: 1, md: 3 }}>
-                    <Descriptions.Item label={t('ep.baseUrl')}>{e.baseUrl}</Descriptions.Item>
-                    <Descriptions.Item label={t('ep.authType')}>{t(`ep.auth.${e.authType}`)}</Descriptions.Item>
-                    <Descriptions.Item label={t('ep.cron')}>{e.syncCron}</Descriptions.Item>
-                    <Descriptions.Item label={t('ep.lastSync')}>{fmt.dateTime(e.lastSyncAt)}</Descriptions.Item>
-                    <Descriptions.Item label={t('ep.lastSuccess')}>{fmt.dateTime(e.lastSuccessAt)}</Descriptions.Item>
-                  </Descriptions>
-                  <Space wrap>
-                    {has('integration.edit') && <Button icon={<ApiOutlined />} loading={busy === `test-${e.id}`} onClick={() => void test(e)} data-testid="ep-test">{t('ep.test')}</Button>}
-                    {has('integration.sync') && <Button type="primary" icon={<CloudSyncOutlined />} loading={busy === `sync-${e.id}-false`} onClick={() => void sync(e, false)} data-testid="ep-sync">{t('ep.sync')}</Button>}
-                    {has('integration.sync') && <Button loading={busy === `sync-${e.id}-true`} onClick={() => void sync(e, true)}>{t('ep.fullSync')}</Button>}
-                    {has('integration.sync') && <Button icon={<SendOutlined />} onClick={() => setPushFor(e)}>{t('ep.push')}</Button>}
-                  </Space>
-                </Card>
-              ))}
-            </Space>
-          ),
-        },
-        {
-          key: 'logs', label: t('tabs.logs'),
-          children: (
-            <Table<LogRow> rowKey="id" size="small" loading={logs.isFetching} dataSource={logs.data?.items} scroll={{ x: 'max-content' }}
-              pagination={{ current: logPage, pageSize: 30, total: logs.data?.totalItems, onChange: setLogPage, showSizeChanger: false }}
-              expandable={{ expandedRowRender: (l) => <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontSize: 12 }}>{l.requestSummary}{l.error ? `\n${t('log.error')}: ${l.error}` : ''}</pre> }}
-              columns={[
-                { title: t('log.at'), dataIndex: 'startedAt', width: 150, render: fmt.dateTime },
-                { title: t('log.endpoint'), dataIndex: 'endpoint', width: 120 },
-                { title: t('log.operation'), dataIndex: 'operation', width: 170 },
-                { title: t('log.result'), dataIndex: 'success', width: 120, render: (v, l) => <Tag color={v ? 'green' : 'red'}>{v ? t('log.ok') : t('log.fail')}{l.statusCode ? ` ${l.statusCode}` : ''}</Tag> },
-                { title: t('log.duration'), dataIndex: 'durationMs', width: 110, align: 'right', render: (v) => fmt.number(v) },
-                { title: t('log.received'), dataIndex: 'recordsReceived', width: 80, align: 'right' },
-                { title: t('log.created'), dataIndex: 'recordsCreated', width: 80, align: 'right' },
-                { title: t('log.updated'), dataIndex: 'recordsUpdated', width: 90, align: 'right' },
-                { title: t('log.conflicts'), dataIndex: 'conflicts', width: 90, align: 'right', render: (v) => (v > 0 ? <Tag color="orange">{v}</Tag> : v) },
-                { title: t('log.by'), dataIndex: 'triggeredBy', width: 120, render: (v) => v ?? t('log.scheduled') },
-              ]} />
-          ),
-        },
-        {
-          key: 'conflicts', label: <span data-testid="tab-conflicts">{t('tabs.conflicts')}{pendingConflicts > 0 && <Tag color="orange" style={{ marginInlineStart: 6 }}>{pendingConflicts}</Tag>}</span>,
-          children: (
-            <Space direction="vertical" style={{ width: '100%' }}>
-              <Alert type="info" showIcon message={t('conflict.hint')} />
-              {pendingConflicts === 0 && <Empty description={t('conflict.none')} />}
-              {(conflicts.data?.items ?? []).map((c) => {
-                const fl = flatten(c.local);
-                const fr = flatten(c.remote);
-                const diff = [...new Set([...Object.keys(fl), ...Object.keys(fr)])].filter((k) => (fl[k] ?? '') !== (fr[k] ?? '')).length;
-                return (
-                  <Card key={c.id} size="small" data-testid="conflict-card"
-                    title={<Space wrap><Tag>{t(`conflict.${c.entityType}`, { defaultValue: c.entityType })}</Tag>{c.entityCode}<Typography.Text type="secondary">{fmt.dateTime(c.detectedAt)} · {t('conflict.diffCount', { n: diff })}</Typography.Text></Space>}
-                    extra={has('integration.resolve') && (
-                      <Space>
-                        <Button loading={busy === `res-${c.id}`} onClick={() => void resolve(c, 'local')} data-testid="conflict-keep-local">{t('conflict.keepLocal')}</Button>
-                        <Button type="primary" loading={busy === `res-${c.id}`} onClick={() => void resolve(c, 'remote')} data-testid="conflict-accept-remote">{t('conflict.acceptRemote')}</Button>
-                      </Space>
-                    )}>
-                    <ConflictDiff c={c} />
-                  </Card>
-                );
-              })}
-            </Space>
-          ),
-        },
-        {
-          key: 'clients', label: t('tabs.clients'),
-          children: (
-            <Space direction="vertical" style={{ width: '100%' }}>
-              <Alert type="info" showIcon message={t('client.doc')} />
-              {has('integration.edit') && <Button type="primary" icon={<PlusOutlined />} onClick={() => { clientForm.resetFields(); setClientOpen(true); }}>{t('client.add')}</Button>}
-              <Table<ClientRow> rowKey="id" size="small" loading={clients.isFetching} dataSource={clients.data} pagination={false}
-                columns={[
-                  { title: t('client.name'), dataIndex: 'name' },
-                  { title: t('client.clientId'), dataIndex: 'clientId', render: (v) => <Typography.Text code copyable>{v}</Typography.Text> },
-                  { title: t('client.scopes'), dataIndex: 'scopes', render: (v: string) => v.split(' ').map((s) => <Tag key={s}>{s}</Tag>) },
-                  { title: t('client.active'), dataIndex: 'isActive', width: 100, render: (v) => <Tag color={v ? 'green' : 'default'}>{v ? '✓' : '✗'}</Tag> },
-                  { title: t('client.lastUsed'), dataIndex: 'lastUsedAt', width: 150, render: fmt.dateTime },
-                  { key: 'a', width: 200, render: (_, c) => has('integration.edit') && (
-                    <Space size={4}>
-                      <Button size="small" icon={<KeyOutlined />} onClick={() => void act(`rot-${c.id}`, async () => { const r = (await http.post<{ clientId: string; clientSecret: string }>(`/integration/clients/${c.id}/rotate`)).data; showSecret(r.clientId, r.clientSecret); })}>{t('client.rotate')}</Button>
-                      <Button size="small" onClick={() => void act(`tog-${c.id}`, async () => { await http.post(`/integration/clients/${c.id}/toggle`); void clients.refetch(); })}>{t('client.toggle')}</Button>
-                    </Space>
-                  ) },
-                ]} />
-            </Space>
-          ),
-        },
+    <div className="bm-page">
+      <PageHead title={t('title')} actions={actions} />
+      <PillTabs label={t('title')} value={tab} onChange={setTab} items={[
+        { key: 'endpoints', label: t('tabs.endpoints') },
+        { key: 'conflicts', label: <>{t('tabs.conflicts')}{pendingConflicts > 0 && <span className="bm-x-tab-n">{pendingConflicts}</span>}</>, testId: 'tab-conflicts' },
+        { key: 'logs', label: t('tabs.logs') },
+        { key: 'clients', label: t('tabs.clients') },
       ]} />
+
+      {tab === 'endpoints' && (
+        <>
+          {(endpoints.data ?? []).length === 0 && !endpoints.isLoading && <div className="bm-x-empty">{t('ep.none')}</div>}
+          {(endpoints.data ?? []).map((e) => (
+            <Section key={e.id}
+              title={<Space wrap><ApiOutlined />{e.code} — {i18n.language === 'en' && e.nameEn ? e.nameEn : e.nameVi}{!e.isEnabled && <Tag>{t('common:status.inactive')}</Tag>}</Space>}
+              hint={t('ep.secretHint')}
+              extra={has('integration.edit') && <XButton onClick={() => setEditing(e)}>{t('common:actions.edit')}</XButton>}
+              foot={(has('integration.edit') || has('integration.sync')) && (
+                <>
+                  {has('integration.edit') && <Button icon={<ApiOutlined />} loading={busy === `test-${e.id}`} onClick={() => void test(e)} data-testid="ep-test">{t('ep.test')}</Button>}
+                  {has('integration.sync') && <Button icon={<SendOutlined />} onClick={() => setPushFor(e)}>{t('ep.push')}</Button>}
+                  {has('integration.sync') && <Button loading={busy === `sync-${e.id}-true`} onClick={() => void sync(e, true)}>{t('ep.fullSync')}</Button>}
+                  {has('integration.sync') && <Button type="primary" icon={<CloudSyncOutlined />} loading={busy === `sync-${e.id}-false`} onClick={() => void sync(e, false)} data-testid="ep-sync">{t('ep.sync')}</Button>}
+                </>
+              )}>
+              <div className="bm-x-grid">
+                <StaticField label={t('ep.baseUrl')} value={e.baseUrl} />
+                <StaticField label={t('ep.authType')} value={t(`ep.auth.${e.authType}`)} />
+                <StaticField label={t('ep.cron')} value={e.syncCron || '—'} />
+                <StaticField label={t('ep.lastSync')} value={fmt.dateTime(e.lastSyncAt) || '—'} />
+                <StaticField label={t('ep.lastSuccess')} value={fmt.dateTime(e.lastSuccessAt) || '—'} />
+              </div>
+            </Section>
+          ))}
+        </>
+      )}
+
+      {tab === 'conflicts' && (
+        <>
+          <div className="bm-x-note" style={{ marginTop: 0 }}>{t('conflict.hint')}</div>
+          {pendingConflicts === 0 && <div className="bm-x-empty">{t('conflict.none')}</div>}
+          {(conflicts.data?.items ?? []).map((c) => {
+            const fl = flatten(c.local);
+            const fr = flatten(c.remote);
+            const diff = [...new Set([...Object.keys(fl), ...Object.keys(fr)])].filter((k) => (fl[k] ?? '') !== (fr[k] ?? '')).length;
+            return (
+              <Section key={c.id} testId="conflict-card" bodyClass="bm-x-sec-table"
+                title={<Space wrap><Tag color="orange">{t(`conflict.${c.entityType}`, { defaultValue: c.entityType })}</Tag>{c.entityCode}</Space>}
+                hint={`${fmt.dateTime(c.detectedAt)} · ${t('conflict.diffCount', { n: diff })}`}
+                extra={has('integration.resolve') && (
+                  <Space wrap>
+                    <Button loading={busy === `res-${c.id}`} onClick={() => void resolve(c, 'local')} data-testid="conflict-keep-local">{t('conflict.keepLocal')}</Button>
+                    <Button type="primary" loading={busy === `res-${c.id}`} onClick={() => void resolve(c, 'remote')} data-testid="conflict-accept-remote">{t('conflict.acceptRemote')}</Button>
+                  </Space>
+                )}>
+                <ConflictDiff c={c} />
+              </Section>
+            );
+          })}
+        </>
+      )}
+
+      {tab === 'logs' && (
+        <Section title={t('tabs.logs')} bodyClass="bm-x-sec-table">
+          <Table<LogRow> rowKey="id" size="small" loading={logs.isFetching} dataSource={logs.data?.items} scroll={{ x: 'max-content' }}
+            pagination={{ current: logPage, pageSize: 30, total: logs.data?.totalItems, onChange: setLogPage, showSizeChanger: false }}
+            expandable={{ expandedRowRender: (l) => <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontSize: 12 }}>{l.requestSummary}{l.error ? `\n${t('log.error')}: ${l.error}` : ''}</pre> }}
+            columns={[
+              { title: t('log.at'), dataIndex: 'startedAt', width: 150, render: fmt.dateTime },
+              { title: t('log.endpoint'), dataIndex: 'endpoint', width: 120 },
+              { title: t('log.operation'), dataIndex: 'operation', width: 170 },
+              { title: t('log.received'), dataIndex: 'recordsReceived', width: 80, align: 'right' },
+              { title: t('log.created'), dataIndex: 'recordsCreated', width: 80, align: 'right' },
+              { title: t('log.updated'), dataIndex: 'recordsUpdated', width: 90, align: 'right' },
+              { title: t('log.conflicts'), dataIndex: 'conflicts', width: 90, align: 'right', render: (v) => (v > 0 ? <Tag color="orange">{v}</Tag> : v) },
+              { title: t('log.duration'), dataIndex: 'durationMs', width: 110, align: 'right', render: (v) => fmt.number(v) },
+              { title: t('log.by'), dataIndex: 'triggeredBy', width: 120, render: (v) => v ?? t('log.scheduled') },
+              { title: t('log.result'), dataIndex: 'success', width: 120, render: (v, l) => <Tag color={v ? 'green' : 'red'}>{v ? t('log.ok') : t('log.fail')}{l.statusCode ? ` ${l.statusCode}` : ''}</Tag> },
+            ]} />
+        </Section>
+      )}
+
+      {tab === 'clients' && (
+        <Section title={t('tabs.clients')} hint={t('client.doc')} bodyClass="bm-x-sec-table">
+          <Table<ClientRow> rowKey="id" size="small" loading={clients.isFetching} dataSource={clients.data} pagination={false} scroll={{ x: 'max-content' }}
+            columns={[
+              { title: t('client.name'), dataIndex: 'name', render: (v) => <b>{v}</b> },
+              { title: t('client.clientId'), dataIndex: 'clientId', render: (v) => <Typography.Text code copyable>{v}</Typography.Text> },
+              { title: t('client.scopes'), dataIndex: 'scopes', render: (v: string) => v.split(' ').map((s) => <Tag key={s}>{s}</Tag>) },
+              { title: t('client.lastUsed'), dataIndex: 'lastUsedAt', width: 150, render: fmt.dateTime },
+              { title: t('client.active'), dataIndex: 'isActive', width: 100, render: (v) => <Tag color={v ? 'green' : 'default'}>{v ? '✓' : '✗'}</Tag> },
+              { key: 'a', width: 200, align: 'right', render: (_, c) => has('integration.edit') && (
+                <Space size={4}>
+                  <Button size="small" icon={<KeyOutlined />} onClick={() => void act(`rot-${c.id}`, async () => { const r = (await http.post<{ clientId: string; clientSecret: string }>(`/integration/clients/${c.id}/rotate`)).data; showSecret(r.clientId, r.clientSecret); })}>{t('client.rotate')}</Button>
+                  <Button size="small" onClick={() => void act(`tog-${c.id}`, async () => { await http.post(`/integration/clients/${c.id}/toggle`); void clients.refetch(); })}>{t('client.toggle')}</Button>
+                </Space>
+              ) },
+            ]} />
+        </Section>
+      )}
+
       {editing && <EndpointForm value={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); void endpoints.refetch(); }} />}
       <Modal open={!!pushFor} title={t('ep.push')} onCancel={() => setPushFor(null)} onOk={() => void push()} confirmLoading={busy === 'push'}>
         <DatePicker.RangePicker value={pushRange} onChange={(v) => v && setPushRange(v as never)} format={DATE_FORMAT} style={{ width: '100%' }} />
@@ -287,6 +296,6 @@ export default function IntegrationPage() {
           </Form.Item>
         </Form>
       </Modal>
-    </Card>
+    </div>
   );
 }

@@ -22,6 +22,7 @@
     "reauthHint": "Backups are AES-256 encrypted; the BACKUP_PASSPHRASE is needed to decrypt when restoring with restore.ps1/.sh.",
     "policy": "Policy: schedule {{cron}}, keep {{d}} daily, {{w}} weekly, {{m}} monthly",
     "restoreHint": "Restore: run deploy/backup/restore.ps1 (Windows) or restore-host.sh (Linux) on the server — see the operations guide.",
+    "history": "Backup history",
     "jobStatus": {
       "Queued": "Queued",
       "Running": "Running",
@@ -38,7 +39,11 @@
     "runtime": ".NET runtime",
     "web": "Web version",
     "webCommit": "Web commit",
-    "changelog": "Changelog"
+    "changelog": "Changelog",
+    "build": "Build information",
+    "version": "Version",
+    "date": "Date",
+    "notes": "Notes"
   },
   "org": {
     "title": "Organization information",
@@ -52,7 +57,11 @@
     "representativeTitle": "Representative title",
     "website": "Website",
     "logo": "Logo",
-    "uploadLogo": "Upload logo (PNG/JPG, ≤ 2 MB)"
+    "uploadLogo": "Upload logo (PNG/JPG, ≤ 2 MB)",
+    "general": "General",
+    "generalHint": "The name and logo appear in the header and on report titles.",
+    "logoHint": "PNG / JPEG / WEBP, up to 2 MB.",
+    "noLogo": "No logo yet — the default BlueMeal logo is used"
   },
   "roles": {
     "title": "Roles",
@@ -72,6 +81,12 @@
     "systemLocked": "The system administrator role always has full access",
     "all": "All",
     "search": "Filter functions…",
+    "pageTitle": "Roles and permissions",
+    "add": "Add role",
+    "editRole": "Edit role",
+    "deleteRole": "Delete role",
+    "activeCount": "{{n}} permissions on · changes apply from the user's next action",
+    "toggleRow": "Click to toggle the whole row",
     "action": {
       "view": "View",
       "create": "Create",
@@ -162,6 +177,8 @@
   "settings": {
     "title": "System settings",
     "saved": "Settings saved",
+    "on": "On",
+    "off": "Off",
     "tabs": {
       "security": "Security",
       "warning": "Warning thresholds",

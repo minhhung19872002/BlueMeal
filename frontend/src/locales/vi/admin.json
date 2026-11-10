@@ -22,6 +22,7 @@
     "reauthHint": "Bản sao lưu được mã hóa AES-256; cần mật khẩu khôi phục (BACKUP_PASSPHRASE) để giải mã khi phục hồi bằng restore.ps1/.sh.",
     "policy": "Chính sách: lịch {{cron}}, giữ {{d}} bản ngày, {{w}} bản tuần, {{m}} bản tháng",
     "restoreHint": "Khôi phục: chạy deploy/backup/restore.ps1 (Windows) hoặc restore-host.sh (Linux) trên máy chủ — xem tài liệu vận hành.",
+    "history": "Lịch sử sao lưu",
     "jobStatus": {
       "Queued": "Đang chờ",
       "Running": "Đang chạy",
@@ -38,7 +39,11 @@
     "runtime": ".NET runtime",
     "web": "Phiên bản giao diện",
     "webCommit": "Commit giao diện",
-    "changelog": "Nhật ký thay đổi"
+    "changelog": "Nhật ký thay đổi",
+    "build": "Thông tin bản dựng",
+    "version": "Phiên bản",
+    "date": "Ngày",
+    "notes": "Nội dung"
   },
   "org": {
     "title": "Thông tin đơn vị",
@@ -52,7 +57,11 @@
     "representativeTitle": "Chức vụ người đại diện",
     "website": "Website",
     "logo": "Logo",
-    "uploadLogo": "Tải logo (PNG/JPG, ≤ 2 MB)"
+    "uploadLogo": "Tải logo (PNG/JPG, ≤ 2 MB)",
+    "general": "Thông tin chung",
+    "generalHint": "Tên và logo hiển thị trên header và tiêu đề báo cáo.",
+    "logoHint": "PNG / JPEG / WEBP, tối đa 2 MB.",
+    "noLogo": "Chưa có logo — đang dùng logo BlueMeal mặc định"
   },
   "roles": {
     "title": "Nhóm quyền",
@@ -72,6 +81,12 @@
     "systemLocked": "Nhóm quản trị hệ thống luôn có toàn quyền",
     "all": "Tất cả",
     "search": "Lọc chức năng…",
+    "pageTitle": "Vai trò và phân quyền",
+    "add": "Thêm vai trò",
+    "editRole": "Sửa vai trò",
+    "deleteRole": "Xóa vai trò",
+    "activeCount": "{{n}} quyền đang bật · thay đổi có hiệu lực ngay ở thao tác tiếp theo của người dùng",
+    "toggleRow": "Bấm để bật/tắt cả hàng",
     "action": {
       "view": "Xem",
       "create": "Thêm",
@@ -162,6 +177,8 @@
   "settings": {
     "title": "Cấu hình hệ thống",
     "saved": "Đã lưu cấu hình",
+    "on": "Đang bật",
+    "off": "Đang tắt",
     "tabs": {
       "security": "Bảo mật",
       "warning": "Ngưỡng cảnh báo",
