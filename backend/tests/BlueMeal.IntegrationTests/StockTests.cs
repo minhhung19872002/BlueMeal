@@ -240,6 +240,15 @@ public sealed class StockTests(ApiFactory f)
         var sampledAt = DateTimeOffset.UtcNow.AddHours(-30);
         (await c.PostAsJsonAsync("/api/v1/food-samples", new { dishId = dish, sampledAt, weightG = 50 })).StatusCode.Should().Be((HttpStatusCode)422);
         var fresh = await J(await c.PostAsJsonAsync("/api/v1/food-samples", new { dishId = dish, sampledAt = DateTimeOffset.UtcNow, weightG = 150 }));
+        // local offsets (+07:00, as the API itself returns) are stored as the same instant, not rejected with 500
+        var local = DateTimeOffset.UtcNow.AddMinutes(-5).ToOffset(TimeSpan.FromHours(7));
+        var withOffset = await J(await c.PostAsJsonAsync("/api/v1/food-samples", new { dishId = dish, sampledAt = local.ToString("yyyy-MM-dd'T'HH:mm:sszzz"), weightG = 150 }));
+        await using (var conn = new Npgsql.NpgsqlConnection(f.OwnerConnectionString))
+        {
+            await conn.OpenAsync();
+            await using var cmd = new Npgsql.NpgsqlCommand($"SELECT sampled_at FROM app.food_sample WHERE id = '{withOffset.GetProperty("id").GetString()}'", conn);
+            ((DateTime)(await cmd.ExecuteScalarAsync())!).Should().BeCloseTo(local.UtcDateTime, TimeSpan.FromSeconds(1));
+        }
         (await c.PostAsJsonAsync($"/api/v1/food-samples/{fresh.GetProperty("id").GetString()}/dispose", new { })).StatusCode.Should().Be((HttpStatusCode)422);
         var old = await J(await c.PostAsJsonAsync("/api/v1/food-samples", new { dishId = dish, sampledAt, weightG = 150, storageTemp = 3 }));
         var oldId = old.GetProperty("id").GetString();

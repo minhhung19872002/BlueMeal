@@ -23,7 +23,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         b.Properties<decimal>().HavePrecision(18, 4);
         b.Properties<decimal?>().HavePrecision(18, 4);
+        // timestamptz accepts only UTC in Npgsql: API clients may send local offsets (+07:00, ASSUMPTIONS A-31).
+        b.Properties<DateTimeOffset>().HaveConversion<UtcDateTimeOffsetConverter>();
+        b.Properties<DateTimeOffset?>().HaveConversion<UtcDateTimeOffsetConverter>();
     }
+
+    private sealed class UtcDateTimeOffsetConverter() : Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<DateTimeOffset, DateTimeOffset>(v => v.ToUniversalTime(), v => v);
 
     protected override void OnModelCreating(ModelBuilder b)
     {
