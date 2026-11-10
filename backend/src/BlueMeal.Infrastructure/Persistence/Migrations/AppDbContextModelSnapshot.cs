@@ -5820,8 +5820,8 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
                         .HasColumnName("created_by");
 
                     b.Property<decimal>("FactorToBase")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)")
+                        .HasPrecision(24, 12)
+                        .HasColumnType("numeric(24,12)")
                         .HasColumnName("factor_to_base");
 
                     b.Property<bool>("IsActive")

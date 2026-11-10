@@ -24,6 +24,7 @@ public sealed partial class Seeder(AppDbContext db, UserManager<AppUser> users, 
         await SeedOrganizationAsync(ct);
         await SeedVersionsAsync(ct);
         await SeedGeoAsync(ct);
+        await SeedWardsAsync(ct);
         await SeedUnitsAsync(ct);
         await SeedNutrientsAsync(ct);
         await SeedFoodGroupsAsync(ct);
@@ -167,17 +168,29 @@ public sealed partial class Seeder(AppDbContext db, UserManager<AppUser> users, 
             foreach (var (c, v, e) in others) db.Add(new Country { Code = c, NameVi = v, NameEn = e, Iso2 = c, SortOrder = i++ });
             await db.SaveChangesAsync(ct);
         }
-        if (await db.Set<Province>().AnyAsync(ct)) return;
+        if (await db.Set<Province>().AnyAsync(ct))
+        {
+            // Quảng Ninh, Bắc Ninh, Đồng Nai became centrally-run cities after 2025 (official DMDVHC list, ASSUMPTIONS A-13).
+            // Only rows still carrying the original seeded name are updated; admin edits are kept.
+            foreach (var (code, name) in new[] { ("22", "Quảng Ninh"), ("24", "Bắc Ninh"), ("75", "Đồng Nai") })
+            {
+                var p = await db.Set<Province>().FirstOrDefaultAsync(x => x.Code == code && x.NameVi == "Tỉnh " + name, ct);
+                if (p is null) continue;
+                p.NameVi = "Thành phố " + name; p.NameEn = name + " City"; p.Kind = "Thành phố";
+            }
+            await db.SaveChangesAsync(ct);
+            return;
+        }
         // 34 provincial-level units after the 2025 reorganization (Resolution 202/2025/QH15) — ASSUMPTIONS A-13.
         var provinces = new (string Code, string Name, string Kind)[]
         {
             ("01", "Hà Nội", "Thành phố"), ("04", "Cao Bằng", "Tỉnh"), ("08", "Tuyên Quang", "Tỉnh"), ("11", "Điện Biên", "Tỉnh"),
             ("12", "Lai Châu", "Tỉnh"), ("14", "Sơn La", "Tỉnh"), ("15", "Lào Cai", "Tỉnh"), ("19", "Thái Nguyên", "Tỉnh"),
-            ("20", "Lạng Sơn", "Tỉnh"), ("22", "Quảng Ninh", "Tỉnh"), ("24", "Bắc Ninh", "Tỉnh"), ("25", "Phú Thọ", "Tỉnh"),
+            ("20", "Lạng Sơn", "Tỉnh"), ("22", "Quảng Ninh", "Thành phố"), ("24", "Bắc Ninh", "Thành phố"), ("25", "Phú Thọ", "Tỉnh"),
             ("31", "Hải Phòng", "Thành phố"), ("33", "Hưng Yên", "Tỉnh"), ("37", "Ninh Bình", "Tỉnh"), ("38", "Thanh Hóa", "Tỉnh"),
             ("40", "Nghệ An", "Tỉnh"), ("42", "Hà Tĩnh", "Tỉnh"), ("44", "Quảng Trị", "Tỉnh"), ("46", "Huế", "Thành phố"),
             ("48", "Đà Nẵng", "Thành phố"), ("51", "Quảng Ngãi", "Tỉnh"), ("52", "Gia Lai", "Tỉnh"), ("56", "Khánh Hòa", "Tỉnh"),
-            ("66", "Đắk Lắk", "Tỉnh"), ("68", "Lâm Đồng", "Tỉnh"), ("75", "Đồng Nai", "Tỉnh"), ("79", "Hồ Chí Minh", "Thành phố"),
+            ("66", "Đắk Lắk", "Tỉnh"), ("68", "Lâm Đồng", "Tỉnh"), ("75", "Đồng Nai", "Thành phố"), ("79", "Hồ Chí Minh", "Thành phố"),
             ("80", "Tây Ninh", "Tỉnh"), ("82", "Đồng Tháp", "Tỉnh"), ("86", "Vĩnh Long", "Tỉnh"), ("91", "An Giang", "Tỉnh"),
             ("92", "Cần Thơ", "Thành phố"), ("96", "Cà Mau", "Tỉnh"),
         };
@@ -185,6 +198,48 @@ public sealed partial class Seeder(AppDbContext db, UserManager<AppUser> users, 
         foreach (var (code, name, kind) in provinces)
             db.Add(new Province { Code = code, NameVi = (kind == "Thành phố" ? "Thành phố " : "Tỉnh ") + name, NameEn = (kind == "Thành phố" ? name + " City" : name + " Province"), Kind = kind, CountryId = vn.Id, SortOrder = ++order });
         await db.SaveChangesAsync(ct);
+    }
+
+    /// <summary>
+    /// 3,321 commune-level units (2,599 xã, 709 phường, 13 đặc khu) from the official list of the Statistics Office
+    /// (danhmuchanhchinh.nso.gov.vn, Decision 19/2025/QĐ-TTg) — SeedData/dvhc-wards.csv, ASSUMPTIONS A-13.
+    /// Adds missing codes only: wards edited or deleted by an admin are never touched or re-created.
+    /// </summary>
+    private async Task SeedWardsAsync(CancellationToken ct)
+    {
+        var provinces = await db.Set<Province>().ToDictionaryAsync(p => p.Code, p => p.Id, ct);
+        var existing = (await db.Set<Ward>().IgnoreQueryFilters().Select(w => w.Code).ToListAsync(ct)).ToHashSet();
+        await using var stream = typeof(Seeder).Assembly.GetManifestResourceStream("BlueMeal.Infrastructure.Persistence.SeedData.dvhc-wards.csv")
+            ?? throw new InvalidOperationException("Embedded resource dvhc-wards.csv is missing");
+        using var reader = new StreamReader(stream);
+        await reader.ReadLineAsync(ct); // header: ma_tinh,ma_xa,ten_xa,loai
+        var order = 0;
+        var added = 0;
+        while (await reader.ReadLineAsync(ct) is { } line)
+        {
+            if (line.Length == 0) continue;
+            order++;
+            var f = line.Split(',');
+            if (existing.Contains(f[1]) || !provinces.TryGetValue(f[0], out var provinceId)) continue;
+            var suffix = f[3] switch { "Phường" => " Ward", "Đặc khu" => " Special Zone", _ => " Commune" };
+            db.Add(new Ward { Code = f[1], NameVi = f[2], NameEn = ToAscii(f[2][(f[3].Length + 1)..]) + suffix, Kind = f[3], ProvinceId = provinceId, SortOrder = order });
+            added++;
+        }
+        if (added == 0) return;
+        await db.SaveChangesAsync(ct);
+        log.LogInformation("Seeded {Count} commune-level administrative units (official list)", added);
+    }
+
+    /// <summary>"Đặc khu Côn Đảo" → "Dac khu Con Dao": diacritics removed, case kept (English display names).</summary>
+    private static string ToAscii(string s)
+    {
+        var sb = new System.Text.StringBuilder(s.Length);
+        foreach (var c in s.Normalize(System.Text.NormalizationForm.FormD))
+        {
+            if (System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) == System.Globalization.UnicodeCategory.NonSpacingMark) continue;
+            sb.Append(c switch { 'đ' => 'd', 'Đ' => 'D', _ => c });
+        }
+        return sb.ToString().Normalize(System.Text.NormalizationForm.FormC);
     }
 
     private async Task SeedUnitsAsync(CancellationToken ct)

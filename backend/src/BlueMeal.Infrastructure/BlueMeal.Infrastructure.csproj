@@ -26,4 +26,7 @@
     <PackageReference Include="MailKit" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Persistence\SeedData\*.csv" LogicalName="BlueMeal.Infrastructure.Persistence.SeedData.%(Filename)%(Extension)" />
+  </ItemGroup>
 </Project>

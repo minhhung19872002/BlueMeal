@@ -49,6 +49,16 @@ public sealed class CatalogTests(ApiFactory f)
     }
 
     [Fact]
+    public async Task Unit_conversion_keeps_microgram_precision()
+    {
+        var c = await f.AdminAsync();
+        var units = (await J(await c.GetAsync("/api/v1/units?pageSize=200"))).GetProperty("items").EnumerateArray()
+            .ToDictionary(u => u.GetProperty("code").GetString()!, u => u.GetProperty("id").GetString());
+        var r = await J(await c.GetAsync($"/api/v1/units/convert?value=2500&from={units["UG"]}&to={units["MG"]}"));
+        r.GetProperty("result").GetDecimal().Should().Be(2.5m);
+    }
+
+    [Fact]
     public async Task Paging_is_server_side_and_capped_at_200()
     {
         var c = await f.AdminAsync();
@@ -56,6 +66,11 @@ public sealed class CatalogTests(ApiFactory f)
         page.GetProperty("items").GetArrayLength().Should().Be(10);
         page.GetProperty("totalItems").GetInt64().Should().Be(34);
         page.GetProperty("items")[0].GetProperty("code").GetString().Should().Be("96");
+        // official commune-level list seeded from SeedData/dvhc-wards.csv
+        (await J(await c.GetAsync("/api/v1/wards?pageSize=1"))).GetProperty("totalItems").GetInt64().Should().BeGreaterThanOrEqualTo(3321);
+        var conDao = (await J(await c.GetAsync("/api/v1/wards?q=dac khu con dao"))).GetProperty("items")[0];
+        conDao.GetProperty("code").GetString().Should().Be("26732");
+        conDao.GetProperty("nameEn").GetString().Should().Be("Con Dao Special Zone");
         var big = await J(await c.GetAsync("/api/v1/provinces?pageSize=100000"));
         big.GetProperty("pageSize").GetInt32().Should().Be(200);
     }
@@ -98,7 +113,7 @@ public sealed class CatalogTests(ApiFactory f)
         commit.GetProperty("created").GetInt32().Should().Be(2);
         commit.GetProperty("skipped").GetInt32().Should().Be(2);
 
-        var list = await J(await c.GetAsync($"/api/v1/wards?provinceId={vn.GetProperty("id").GetString()}&q=hoan kiem"));
+        var list = await J(await c.GetAsync($"/api/v1/wards?provinceId={vn.GetProperty("id").GetString()}&q=p-hoankiem"));
         list.GetProperty("totalItems").GetInt64().Should().Be(1, list.GetRawText());
 
         var export = await c.GetAsync("/api/v1/wards/export");

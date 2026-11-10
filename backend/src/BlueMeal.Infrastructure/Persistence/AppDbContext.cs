@@ -131,6 +131,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         b.Entity<PasswordHistory>().HasIndex(x => new { x.UserId, x.CreatedAt });
         b.Entity<OneTimeToken>().HasIndex(x => x.TokenHash).IsUnique();
         b.Entity<SystemVersion>().HasIndex(x => x.Version).IsUnique();
+        // 1 µg = 0.000001 g: the default numeric(18,4) rounds it to 0 and breaks unit conversion.
+        b.Entity<UnitOfMeasure>().Property(x => x.FactorToBase).HasPrecision(24, 12);
         b.Entity<AppSetting>(e => { e.HasIndex(x => x.Key).IsUnique(); e.Property(x => x.Value).HasColumnType("jsonb"); e.Property(x => x.Key).HasMaxLength(100); });
         b.Entity<UserPreference>(e => { e.HasIndex(x => new { x.UserId, x.Key }).IsUnique(); e.Property(x => x.Value).HasColumnType("jsonb"); });
         b.Entity<Notification>().HasIndex(x => new { x.UserId, x.ReadAt, x.CreatedAt });
