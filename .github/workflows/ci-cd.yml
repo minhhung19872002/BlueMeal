@@ -1,0 +1,123 @@
+name: CI/CD
+
+# CI on every push / PR. CD (push to main only, after CI passes): SSH to the shared VM with a deploy key that is
+# pinned to ~/apps/bluemeal-deploy.sh (deploy/vm/bluemeal-deploy.sh), which builds and restarts the stack.
+# GitHub-hosted runners only: this repository is public, so no self-hosted runner may execute fork code.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-cd-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  backend:
+    name: Backend (build, unit, integration)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: backend/global.json
+      - name: Build
+        run: dotnet build BlueMeal.sln -c Release
+      - name: Unit tests
+        run: dotnet test tests/BlueMeal.UnitTests -c Release --no-build --logger "trx;LogFileName=unit.trx" --results-directory ../test-results
+      # Testcontainers starts PostgreSQL 16 on the runner's Docker.
+      - name: Integration tests
+        run: dotnet test tests/BlueMeal.IntegrationTests -c Release --no-build --logger "trx;LogFileName=integration.trx" --results-directory ../test-results
+      - name: NuGet vulnerability scan
+        run: |
+          dotnet list BlueMeal.sln package --vulnerable --include-transitive | tee ../nuget-vulnerable.txt
+          ! grep -q "has the following vulnerable packages" ../nuget-vulnerable.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-test-results
+          path: test-results
+          retention-days: 14
+
+  frontend:
+    name: Frontend (lint, typecheck, test, build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: i18n key check
+        run: npm run -s i18n:check
+      - name: Lint
+        run: npx eslint .
+      - name: Unit tests
+        run: npx vitest run
+      - name: Build (includes tsc -b)
+        run: npm run build
+      - name: npm audit (production)
+        run: npm audit --omit=dev --audit-level=moderate
+
+  deploy:
+    name: Deploy to VM (bluemeal.bluestar.com.vn)
+    needs: [backend, frontend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment:
+      name: production
+      url: https://bluemeal.bluestar.com.vn
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      - name: Check deploy secrets are set
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          missing=""
+          for n in SSH_HOST SSH_USER SSH_PRIVATE_KEY SSH_KNOWN_HOSTS; do
+            eval "v=\${$n}"; [ -n "$v" ] || missing="$missing $n"
+          done
+          [ -z "$missing" ] || { echo "::error::Missing secrets:$missing (docs/05_HuongDan_CaiDat.md, CI/CD)"; exit 1; }
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          install -m 600 /dev/null ~/.ssh/id_deploy
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_deploy
+          # Pinned host key: never accept an unknown host key.
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Deploy
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+        # The key's forced command ignores everything except the SHA passed here.
+        run: ssh -i ~/.ssh/id_deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=30 "$SSH_USER@$SSH_HOST" "$GITHUB_SHA"
+      - name: Smoke test
+        run: |
+          for i in $(seq 1 12); do
+            curl -fsS https://bluemeal.bluestar.com.vn/health/ready | grep -q Healthy && { echo "Healthy"; exit 0; }
+            sleep 5
+          done
+          echo "::error::https://bluemeal.bluestar.com.vn/health/ready not healthy"; exit 1

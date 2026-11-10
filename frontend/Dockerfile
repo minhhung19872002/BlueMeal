@@ -19,6 +19,7 @@ COPY deploy/nginx/security-headers.conf /etc/nginx/bluemeal/security-headers.con
 COPY deploy/nginx/modsecurity/ /opt/modsecurity/rules/before-crs/
 ENV BM_API_UPSTREAM=api:8080 \
     BM_EDGE_RATE=50r/s \
+    BM_TRUSTED_PROXY=127.0.0.1 \
     ALLOWED_METHODS="GET HEAD POST PUT PATCH DELETE OPTIONS" \
     BLOCKING_PARANOIA=1 \
     ANOMALY_INBOUND=5 \

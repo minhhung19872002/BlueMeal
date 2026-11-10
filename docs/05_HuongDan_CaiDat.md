@@ -182,3 +182,21 @@ Mỗi lần nhập có bước xem trước lỗi theo dòng trước khi ghi.
 
 `docker compose --env-file deploy/.env -f deploy/docker-compose.yml -f deploy/docker-compose.prod.yml down` (giữ dữ liệu).
 Thêm `-v` sẽ **xóa toàn bộ dữ liệu** (CSDL, file, bản sao lưu) — chỉ làm khi đã chuyển bản sao lưu ra ngoài.
+
+## 11. Triển khai sau reverse proxy dùng chung và CI/CD (máy chủ BlueStar)
+
+Bản demo `https://bluemeal.bluestar.com.vn` chạy trên VM dùng chung `14.225.83.93`. Cổng 80/443 ở đó thuộc Caddy chung (`~/proxy`), nên BlueMeal dùng thêm overlay `deploy/docker-compose.proxy.yml`:
+
+- `web` không mở cổng ra máy chủ. Caddy tham gia mạng `bluemeal_frontend`, chuyển tiếp tới `bluemeal-web-1:8080`, cấp chứng chỉ Let's Encrypt và thêm HSTS (`~/proxy/sites/bluemeal.caddy`).
+- nginx chỉ tin `X-Forwarded-For` / `X-Forwarded-Proto` khi yêu cầu đến từ `TRUSTED_PROXY_CIDR` (mặc định `172.16.0.0/12`), nhờ vậy giới hạn tần suất tính theo IP thật và API thấy `https`.
+- PostgreSQL và API được giảm tài nguyên cho máy nhỏ (biến `PG_*`, `API_REPLICAS`, `API_CPUS`, `API_MEMORY` trong `deploy/.env`).
+- Lệnh tắt trên VM: `~/BlueMeal/bm.sh <lệnh compose>` (base + prod + proxy), ví dụ `./bm.sh ps`, `./bm.sh logs -f api`.
+
+**CI/CD** (`.github/workflows/ci-cd.yml`):
+
+- Mọi push và PR đều chạy CI trên runner của GitHub: build backend, unit test, integration test (Testcontainers), quét lỗ hổng NuGet; ở frontend kiểm tra i18n, lint, Vitest, build và `npm audit`.
+- Push lên `main` mà CI đạt thì chạy job `deploy` (environment `production`): runner SSH vào VM bằng khóa riêng. Trong `~/.ssh/authorized_keys`, khóa này bị khóa vào `restrict,command="/home/hung/apps/bluemeal-deploy.sh"`, nên chỉ chạy được script triển khai với tham số là SHA. Script lấy commit → build → sao lưu trước triển khai (`predeploy-<sha>`) → migration → `up --wait` → kiểm tra `/health/ready`.
+- `~/apps/bluemeal-deploy.sh` là **bản sao** của `deploy/vm/bluemeal-deploy.sh`. Khi sửa script trong repo, phải chép lại lên VM bằng tay. Nhờ vậy một commit không thể đổi lệnh mà khóa triển khai được phép chạy.
+- Secret của repository: `SSH_HOST`, `SSH_USER`, `SSH_PRIVATE_KEY`, `SSH_KNOWN_HOSTS` (lấy bằng `ssh-keyscan -t ed25519 <host>`).
+- Repo công khai nên **không dùng self-hosted runner** (vì PR từ fork có thể chạy mã trên VM).
+- Triển khai tay hoặc quay về một commit cũ: `~/apps/bluemeal-deploy.sh <sha>`. Commit đang chạy được ghi ở `~/apps/bluemeal.REVISION`.

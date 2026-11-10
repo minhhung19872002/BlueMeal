@@ -1,0 +1,34 @@
+# Shared-host overlay: BlueMeal behind an existing TLS-terminating reverse proxy (e.g. one Caddy serving
+# several apps on the same VM). Stack on top of the production overlay:
+#   docker compose --env-file deploy/.env -f deploy/docker-compose.yml -f deploy/docker-compose.prod.yml \
+#     -f deploy/docker-compose.proxy.yml up -d
+# - web publishes no host ports; the proxy joins network "bluemeal_frontend" and forwards to bluemeal-web-1:8080.
+# - nginx trusts X-Forwarded-For/-Proto only from TRUSTED_PROXY_CIDR (per-client rate limit, https seen by the API).
+# - PostgreSQL / API sized for a small host (override with the PG_* / API_* variables in deploy/.env).
+services:
+  postgres:
+    command:
+      - postgres
+      - -c
+      - config_file=/etc/postgresql/postgresql.conf
+      - -c
+      - shared_buffers=${PG_SHARED_BUFFERS:-512MB}
+      - -c
+      - effective_cache_size=${PG_EFFECTIVE_CACHE_SIZE:-2GB}
+      - -c
+      - maintenance_work_mem=${PG_MAINTENANCE_WORK_MEM:-256MB}
+      - -c
+      - max_connections=${PG_MAX_CONNECTIONS:-150}
+    shm_size: 512m
+
+  api:
+    deploy:
+      replicas: ${API_REPLICAS:-2}
+      resources:
+        limits: { cpus: "${API_CPUS:-2}", memory: "${API_MEMORY:-1536m}" }
+
+  web:
+    ports: !reset []
+    environment:
+      NGINX_ALWAYS_TLS_REDIRECT: "off"
+      BM_TRUSTED_PROXY: ${TRUSTED_PROXY_CIDR:-172.16.0.0/12}
