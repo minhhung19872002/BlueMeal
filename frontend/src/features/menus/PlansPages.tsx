@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { App, Button, Card, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Select, Space, Table, Tag, Tooltip, Typography } from 'antd';
+import { Page } from '@/shared/components/PageChrome';
 import { CalendarOutlined, CopyOutlined, DeleteOutlined, EditOutlined, PlusOutlined, TeamOutlined, ThunderboltOutlined, WarningFilled } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -65,16 +66,13 @@ export function MenuPlansPage() {
     try { await http.delete(`/menu-plans/${id}`); message.success(t('common:deleted')); void refetch(); } catch (e) { message.error(problemMessage(e)); }
   };
   return (
-    <Card>
-      <div className="bm-page-header">
-        <Typography.Title level={4}>{t('plans.title')}</Typography.Title>
-        {has('menu_plan.create') && <Button type="primary" icon={<PlusOutlined />} onClick={() => void open()} data-testid="plan-add">{t('common:actions.add')}</Button>}
-      </div>
+    <Page title={t('plans.title')} actions={has('menu_plan.create') && <Button type="primary" icon={<PlusOutlined />} onClick={() => void open()} data-testid="plan-add">{t('common:actions.add')}</Button>}>
+      <div className="bm-card">
       <Table<PlanRow>
         rowKey="id" loading={isFetching} dataSource={data?.items} scroll={{ x: 'max-content' }}
         pagination={{ current: page, pageSize: 20, total: data?.totalItems, onChange: setPage, showTotal: (n) => t('common:totalItems', { count: n }) }}
         columns={[
-          { title: t('plans.name'), dataIndex: 'name', render: (v, r) => <a onClick={() => navigate(`/menus/plans/${r.id}`)}>{v}</a> },
+          { title: t('plans.name'), dataIndex: 'name', render: (v, r) => <a onClick={() => navigate(`/menus/plans/${r.id}`)} style={{ fontWeight: 500 }}>{v}</a> },
           { title: t('plans.period'), dataIndex: 'period', width: 100, render: (v) => enumLabel('PlanPeriod', v) },
           { title: t('plans.from'), dataIndex: 'fromDate', width: 110, render: fmt.date },
           { title: t('plans.to'), dataIndex: 'toDate', width: 110, render: fmt.date },
@@ -112,7 +110,8 @@ export function MenuPlansPage() {
           <Form.Item name="note" label={t('note')}><Input.TextArea rows={2} maxLength={1000} /></Form.Item>
         </Form>
       </Modal>
-    </Card>
+      </div>
+    </Page>
   );
 }
 
@@ -200,20 +199,25 @@ export function PlanCalendarPage() {
     }
   };
 
+  const newMenuUrl = (d: dayjs.Dayjs, shiftId: string) =>
+    `/menus/new?date=${isoDate(d)}&shiftId=${shiftId}&planId=${id}${data.plan.subjectGroupId ? `&subjectGroupId=${data.plan.subjectGroupId}` : ''}${data.plan.customerId ? `&customerId=${data.plan.customerId}` : ''}`;
+  const rowClass = (d: dayjs.Dayjs) => (d.day() === 0 ? 'is-sun' : undefined);
+
   return (
-    <Card loading={isFetching && !data}>
-      <div className="bm-page-header">
-        <Typography.Title level={4}>{t('plans.calendar')} — {data.plan.name}</Typography.Title>
-        <Space wrap>
+    <Page
+      title={`${t('plans.calendar')} — ${data.plan.name}`}
+      sub={t('plans.dragHint')}
+      actions={(
+        <>
           <Button onClick={() => navigate('/menus/plans')}>{t('common:actions.back')}</Button>
-          {has('menu.create') && <Button icon={<ThunderboltOutlined />} loading={busy} onClick={() => void generate()}>{t('plans.generate')}</Button>}
+          {has('menu.create') && <Button icon={<ThunderboltOutlined />} className="bm-btn-soft" loading={busy || isFetching} onClick={() => void generate()}>{t('plans.generate')}</Button>}
           {has('menu.create') && <Button icon={<CopyOutlined />} onClick={() => setCopyOpen(true)}>{t('plans.copyWeek')}</Button>}
           {has('menu.create') && <Button icon={<TeamOutlined />} onClick={() => setApplyOpen(true)}>{t('plans.applyCustomers')}</Button>}
-        </Space>
-      </div>
-      <Typography.Paragraph type="secondary">{t('plans.dragHint')}</Typography.Paragraph>
-      <div style={{ overflowX: 'auto' }}>
-        <table className="bm-calendar">
+        </>
+      )}
+    >
+      <div className="bm-card bm-cal-wrap">
+        <table className="bm-cal">
           <thead>
             <tr>
               <th>{t('date')}</th>
@@ -222,33 +226,37 @@ export function PlanCalendarPage() {
           </thead>
           <tbody>
             {days.map((d) => (
-              <tr key={d.toString()} className={d.day() === 0 ? 'bm-calendar-sunday' : undefined}>
-                <th>{fmt.weekday(d, true)} {fmt.date(d.toDate())}</th>
+              <tr key={d.toString()} className={rowClass(d)}>
+                <th>{fmt.weekday(d, true)}<small>{fmt.date(d.toDate())}</small></th>
                 {data.shifts.map((s) => {
                   const cs = cellsAt(d, s.id);
                   return (
                     <td key={s.id}>
                       {cs.length === 0 && (
                         has('menu.create')
-                          ? <Button size="small" type="dashed" icon={<PlusOutlined />} onClick={() => navigate(`/menus/new?date=${isoDate(d)}&shiftId=${s.id}&planId=${id}${data.plan.subjectGroupId ? `&subjectGroupId=${data.plan.subjectGroupId}` : ''}${data.plan.customerId ? `&customerId=${data.plan.customerId}` : ''}`)}>{t('plans.addMenu')}</Button>
-                          : <Typography.Text type="secondary">{t('plans.empty')}</Typography.Text>
+                          ? <button type="button" className="bm-cal-add" aria-label={t('plans.addMenu')} title={t('plans.addMenu')} onClick={() => navigate(newMenuUrl(d, s.id))}>+</button>
+                          : <span className="bm-cal-none">{t('plans.empty')}</span>
                       )}
                       {cs.map((c) => {
                         const canDrop = EDITABLE.includes(c.status) && has('menu.edit');
                         return (
-                          <div key={c.id} className="bm-calendar-cell" onDragOver={(e) => canDrop && e.preventDefault()} onDrop={(e) => void onDrop(e, c)} data-testid="plan-cell">
-                            <Space size={4} style={{ marginBottom: 4 }}>
-                              <a onClick={() => navigate(`/menus/${c.id}`)}><Tag color={MENU_STATUS_COLOR[c.status]} style={{ marginInlineEnd: 0 }}>{enumLabel('MenuStatus', c.status)}</Tag></a>
-                              <Typography.Text type="secondary" style={{ fontSize: 12 }}>{fmt.number(c.energyKcal, 0)} kcal{c.costPerServing != null ? ` · ${fmt.money(c.costPerServing)}` : ''}</Typography.Text>
-                              {c.criticalWarnings > 0 && <Tooltip title={t('critical')}><WarningFilled style={{ color: '#d03b3b' }} /></Tooltip>}
-                            </Space>
-                            {c.items.map((i) => (
-                              <div key={i.id} className="bm-calendar-dish" draggable={canDrop}
-                                onDragStart={(e) => e.dataTransfer.setData('application/x-bluemeal-item', JSON.stringify({ menuId: c.id, itemId: i.id }))}
-                                title={enumLabel('DishType', i.type)}>
-                                {lang === 'en' && i.nameEn ? i.nameEn : i.nameVi}
-                              </div>
-                            ))}
+                          <div key={c.id} className="bm-cal-card" onDragOver={(e) => canDrop && e.preventDefault()} onDrop={(e) => void onDrop(e, c)} data-testid="plan-cell">
+                            <span className="bm-cal-top" role="link" tabIndex={0} onClick={() => navigate(`/menus/${c.id}`)} onKeyDown={(e) => e.key === 'Enter' && navigate(`/menus/${c.id}`)}>
+                              <Tag color={MENU_STATUS_COLOR[c.status]}>{enumLabel('MenuStatus', c.status)}</Tag>
+                              <span className="bm-cal-kcal">
+                                {c.criticalWarnings > 0 && <Tooltip title={t('critical')}><WarningFilled style={{ color: 'var(--danger)', marginRight: 4 }} /></Tooltip>}
+                                {fmt.number(c.energyKcal, 0)} kcal
+                              </span>
+                            </span>
+                            <span className="bm-cal-dishes">
+                              {c.items.map((i) => (
+                                <span key={i.id} className="bm-cal-dish" draggable={canDrop} title={enumLabel('DishType', i.type)}
+                                  onDragStart={(e) => e.dataTransfer.setData('application/x-bluemeal-item', JSON.stringify({ menuId: c.id, itemId: i.id }))}>
+                                  {lang === 'en' && i.nameEn ? i.nameEn : i.nameVi}
+                                </span>
+                              ))}
+                            </span>
+                            {c.costPerServing != null && <span className="bm-cal-none">{fmt.money(c.costPerServing)}</span>}
                           </div>
                         );
                       })}
@@ -271,6 +279,6 @@ export function PlanCalendarPage() {
       <Modal open={applyOpen} title={t('plans.applyCustomers')} onCancel={() => setApplyOpen(false)} onOk={() => void apply()} okButtonProps={{ disabled: customers.length === 0 }}>
         <LookupSelect resource="customers" multiple value={customers} onChange={(v) => setCustomers(v ?? [])} style={{ width: '100%' }} />
       </Modal>
-    </Card>
+    </Page>
   );
 }

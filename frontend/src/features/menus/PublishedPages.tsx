@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { App, Button, Card, DatePicker, Empty, Form, Input, InputNumber, Modal, Popconfirm, Select, Space, Table, Tag, Typography } from 'antd';
+import { App, Button, DatePicker, Empty, Form, Input, InputNumber, Modal, Popconfirm, Select, Skeleton, Space, Table, Tag, Typography } from 'antd';
+import { Page, Section } from '@/shared/components/PageChrome';
 import { DeleteOutlined, EditOutlined, PlusOutlined, PrinterOutlined, SyncOutlined } from '@ant-design/icons';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -31,33 +32,35 @@ export function PublishedMenuPage() {
   const days = [...new Set(menus.map((m) => m.menuDate))].sort();
 
   return (
-    <Card loading={isFetching && !data}>
-      <div className="bm-page-header bm-no-print">
-        <Typography.Title level={4}>{t('published.title')}</Typography.Title>
-        <Space wrap>
+    <Page
+      title={t('published.title')}
+      actions={(
+        <>
           <DatePicker picker="week" value={week} onChange={(v) => v && setWeek(mondayOf(v))} allowClear={false} />
-          <LookupSelect resource="customers" value={customerId} onChange={setCustomerId} placeholder={t('customer')} style={{ width: 240 }} />
+          <LookupSelect resource="customers" value={customerId} onChange={setCustomerId} placeholder={t('customer')} style={{ width: 240, maxWidth: '100%' }} />
           <Button icon={<PrinterOutlined />} onClick={() => window.print()}>{t('print')}</Button>
-        </Space>
-      </div>
-      <div className="bm-print-a4">
+        </>
+      )}
+    >
+      <div className="bm-card bm-pad bm-print-a4">
+        {isFetching && !data && <Skeleton active />}
         <div style={{ textAlign: 'center', marginBottom: 12 }}>
           {data?.organization && <Typography.Text strong>{en && data.organization.nameEn ? data.organization.nameEn : data.organization.name}</Typography.Text>}
           <Typography.Title level={4} style={{ margin: '4px 0' }}>{t('published.subtitle', { from: fmt.date(isoDate(from)), to: fmt.date(isoDate(to)) })}</Typography.Title>
         </div>
         {menus.length === 0 ? <Empty description={t('published.none')} /> : (
-          <table className="bm-calendar bm-published">
+          <div className="bm-cal-wrap"><table className="bm-cal bm-published">
             <thead>
               <tr><th>{t('date')}</th>{shifts.map((s) => <th key={s.key}>{s.name}</th>)}</tr>
             </thead>
             <tbody>
               {days.map((d) => (
                 <tr key={d}>
-                  <th>{fmt.weekday(d)}<br />{fmt.date(d)}</th>
+                  <th>{fmt.weekday(d)}<small>{fmt.date(d)}</small></th>
                   {shifts.map((s) => (
                     <td key={s.key}>
                       {menus.filter((m) => m.menuDate === d && m.shift === s.key).map((m) => (
-                        <div key={m.id} data-testid="published-menu">
+                        <div key={m.id} className="bm-cal-card" data-testid="published-menu">
                           {(m.customer || m.subject) && <Typography.Text type="secondary" style={{ fontSize: 11 }}>{[m.customer, m.subject].filter(Boolean).join(' · ')}</Typography.Text>}
                           <ul style={{ margin: '2px 0', paddingInlineStart: 16 }}>
                             {m.dishes.map((x, i) => <li key={i}>{en && x.nameEn ? x.nameEn : x.nameVi}</li>)}
@@ -70,12 +73,15 @@ export function PublishedMenuPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
       </div>
-    </Card>
+    </Page>
   );
 }
+
+/** Meal order status tones (design BMCatalog "meal-orders"). */
+const ORDER_STATUS_COLOR: Record<string, string> = { Draft: 'default', Confirmed: 'processing', Adjusted: 'orange', Closed: 'green', Cancelled: 'default' };
 
 interface OrderRow { id: string; customerId: string; customer: string; orderDate: string; mealShiftId: string; shift?: string; subjectGroupId?: string; registeredServings: number; actualServings?: number | null; status: string; menuId?: string; note?: string; version: number }
 interface SummaryRow { orderDate: string; mealShiftId: string; registered: number; actual: number; customers: number }
@@ -130,18 +136,19 @@ export function MealOrdersPage() {
   };
 
   return (
-    <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-      <Card>
-        <div className="bm-page-header">
-          <Typography.Title level={4}>{t('orders.title')}</Typography.Title>
-          <Space wrap>
-            {has('menu.edit') && <Button icon={<SyncOutlined />} onClick={() => void applyToMenus()}>{t('orders.applyToMenus')}</Button>}
-            {has('meal_order.create') && <Button type="primary" icon={<PlusOutlined />} onClick={() => open()} data-testid="order-add">{t('common:actions.add')}</Button>}
-          </Space>
-        </div>
+    <Page
+      title={t('orders.title')}
+      actions={(
+        <>
+          {has('menu.edit') && <Button icon={<SyncOutlined />} className="bm-btn-soft" onClick={() => void applyToMenus()}>{t('orders.applyToMenus')}</Button>}
+          {has('meal_order.create') && <Button type="primary" icon={<PlusOutlined />} onClick={() => open()} data-testid="order-add">{t('common:actions.add')}</Button>}
+        </>
+      )}
+    >
+      <div className="bm-card">
         <div className="bm-toolbar">
           <DatePicker.RangePicker value={range} onChange={(v) => v && setRange(v as never)} format={DATE_FORMAT} allowClear={false} />
-          <LookupSelect resource="customers" value={customerId} onChange={setCustomerId} placeholder={t('customer')} style={{ width: 260 }} />
+          <LookupSelect resource="customers" value={customerId} onChange={setCustomerId} placeholder={t('customer')} style={{ width: 260, maxWidth: '100%' }} />
         </div>
         <Table<OrderRow>
           rowKey="id" loading={list.isFetching} dataSource={list.data?.items} scroll={{ x: 'max-content' }} size="middle"
@@ -152,7 +159,7 @@ export function MealOrdersPage() {
             { title: t('customer'), dataIndex: 'customer' },
             { title: t('orders.registered'), dataIndex: 'registeredServings', align: 'right', width: 140, render: (v) => fmt.number(v) },
             { title: t('orders.actual'), dataIndex: 'actualServings', align: 'right', width: 140, render: (v) => fmt.number(v) },
-            { title: t('status'), dataIndex: 'status', width: 130, render: (v) => <Tag>{enumLabel('MealOrderStatus', v)}</Tag> },
+            { title: t('status'), dataIndex: 'status', width: 130, render: (v) => <Tag color={ORDER_STATUS_COLOR[v]}>{enumLabel('MealOrderStatus', v)}</Tag> },
             { title: t('note'), dataIndex: 'note', responsive: ['lg'] },
             { key: 'a', width: 90, render: (_, r) => (
               <Space size={0}>
@@ -162,10 +169,10 @@ export function MealOrdersPage() {
             ) },
           ]}
         />
-      </Card>
-      <Card title={t('orders.summary')} size="small">
+      </div>
+      <Section title={t('orders.summary')}>
         <Table<SummaryRow>
-          rowKey={(r) => r.orderDate + r.mealShiftId} dataSource={summary.data} pagination={false} size="small"
+          rowKey={(r) => r.orderDate + r.mealShiftId} dataSource={summary.data} pagination={false} scroll={{ x: 'max-content' }}
           columns={[
             { title: t('date'), dataIndex: 'orderDate', render: fmt.date },
             { title: t('shift'), dataIndex: 'mealShiftId', render: shiftName },
@@ -174,7 +181,7 @@ export function MealOrdersPage() {
             { title: t('orders.actual'), dataIndex: 'actual', align: 'right', render: (v) => fmt.number(v) },
           ]}
         />
-      </Card>
+      </Section>
       <Modal open={editing !== null} title={t('orders.title')} onCancel={() => setEditing(null)} onOk={() => void save()} destroyOnHidden forceRender>
         <Form form={form} layout="vertical">
           <Form.Item name="customerId" label={t('customer')} rules={[{ required: true, message: t('common:validation.requiredShort') }]}><LookupSelect resource="customers" disabled={editing !== 'new'} /></Form.Item>
@@ -189,6 +196,6 @@ export function MealOrdersPage() {
           <Form.Item name="note" label={t('note')}><Input.TextArea rows={2} maxLength={1000} /></Form.Item>
         </Form>
       </Modal>
-    </Space>
+    </Page>
   );
 }

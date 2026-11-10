@@ -1,4 +1,4 @@
-import { Alert, Card, Descriptions, Empty, Progress, Space, Statistic, Table, Tag, Tooltip, Typography } from 'antd';
+import { Alert, Empty, Progress, Space, Tag, Tooltip, Typography } from 'antd';
 import { CheckCircleFilled, CloseCircleFilled, ExclamationCircleFilled, InfoCircleFilled, WarningFilled } from '@ant-design/icons';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip as RTooltip } from 'recharts';
 import { useTranslation } from 'react-i18next';
@@ -108,56 +108,120 @@ export function WarningList({ warnings }: { warnings: WarningItem[] }) {
   );
 }
 
-/** Realtime nutrition/cost summary used by the recipe editor and menu builders (SPEC §7.3.7, §7.4.4). */
-export function NutritionPanel({ nutrition, cost, warnings, title, compact }: { nutrition?: NutritionView | null; cost?: CostView | null; warnings?: WarningItem[]; title?: string; compact?: boolean }) {
-  const { t } = useTranslation('nutrition');
-  if (!nutrition) return <Card size="small" title={title}><Empty /></Card>;
+/** Adequacy status for one recommendation item: text label + colour (never colour alone). */
+function adequacy(c: ComplianceItem): { key: 'ok' | 'low' | 'high'; color: string } {
+  const pct = c.pct ?? 0;
+  if (c.belowMin || (c.code === 'ENERGY' && c.pct != null && pct < 90)) return { key: 'low', color: c.code === 'ENERGY' && pct < 85 ? 'var(--danger-text)' : 'var(--tag-orange-fg)' };
+  if (c.aboveMax || (c.code === 'ENERGY' && c.pct != null && pct > 110)) return { key: 'high', color: 'var(--tag-orange-fg)' };
+  return { key: 'ok', color: 'var(--primary-text)' };
+}
+
+const costRowClass = (r: { strong?: boolean; bad?: boolean }) => (r.strong ? 'bm-costrow is-strong' : r.bad ? 'bm-costrow is-bad' : 'bm-costrow');
+const DONUT_EMPTY = 'var(--surface-2)';
+
+/**
+ * Realtime nutrition/cost summary used by the recipe editor and menu builders (SPEC §7.3.7, §7.4.4).
+ * Layout from Claude Design BMMenus (DESIGN_HANDOFF §6): 4 headline numbers, P:L:G donut 112px (P = primary, L = warning,
+ * G = info), adequacy bars 6px with a text status, cost rows and tinted warnings.
+ */
+export function NutritionPanel({ nutrition, cost, warnings, title }: { nutrition?: NutritionView | null; cost?: CostView | null; warnings?: WarningItem[]; title?: string; compact?: boolean }) {
+  const { t, i18n } = useTranslation('nutrition');
+  const head = <div className="bm-sec-head"><div className="bm-sec-title">{title ?? t('panelTitle')}</div></div>;
+  if (!nutrition) return <section className="bm-card">{head}<div className="bm-np-body"><Empty image={Empty.PRESENTED_IMAGE_SIMPLE} /></div></section>;
   const n = nutrition;
+  const total = n.proteinPct + n.lipidPct + n.glucidPct;
+  const pp = total > 0 ? (n.proteinPct / total) * 100 : 0;
+  const lp = total > 0 ? (n.lipidPct / total) * 100 : 0;
+  const donut = total > 0 ? `conic-gradient(var(--primary) 0 ${pp}%, var(--warn) ${pp}% ${pp + lp}%, var(--info) ${pp + lp}% 100%)` : DONUT_EMPTY;
+  const legend = [
+    { key: 'P', name: t('protein'), color: 'var(--primary)', pct: n.proteinPct, g: n.proteinG },
+    { key: 'L', name: t('lipid'), color: 'var(--warn)', pct: n.lipidPct, g: n.lipidG },
+    { key: 'G', name: t('glucid'), color: 'var(--info)', pct: n.glucidPct, g: n.glucidG },
+  ];
+  const stats: { key: string; label: string; value: string; unit?: string }[] = [
+    { key: 'e', label: t('energy'), value: fmt.number(n.energyKcal, 0), unit: 'kcal' },
+    ...(n.targetEnergyKcal != null ? [{ key: 't', label: t('target'), value: fmt.number(n.targetEnergyKcal, 0), unit: 'kcal' }] : []),
+    ...(n.score != null ? [{ key: 's', label: t('score'), value: fmt.number(n.score, 0), unit: '/100' }] : []),
+    ...(cost ? [{ key: 'c', label: t('costPerServing'), value: fmt.money(cost.costPerServing) }] : []),
+  ];
+  const over = cost && cost.budget != null ? cost.costPerServing - cost.budget : null;
+  const costRows: { k: string; label: string; v: string; strong?: boolean; bad?: boolean }[] = cost ? [
+    { k: 'food', label: t('foodCost'), v: fmt.money(cost.foodCostPerServing) },
+    ...cost.overheads.map((o) => ({ k: o.code, label: i18n.language === 'en' && o.nameEn ? o.nameEn : o.nameVi, v: fmt.money(o.amount) })),
+    { k: 'total', label: t('costPerServing'), v: fmt.money(cost.costPerServing), strong: true },
+    ...(cost.budget != null ? [{ k: 'budget', label: t('budget'), v: fmt.money(cost.budget) }] : []),
+    ...(over != null ? [{ k: 'var', label: t('variance'), v: (over > 0 ? '+' : '−') + fmt.money(Math.abs(over)), bad: over > 0 }] : []),
+    ...(cost.expectedMarginPerServing != null ? [{ k: 'margin', label: t('margin'), v: fmt.money(cost.expectedMarginPerServing), bad: cost.expectedMarginPerServing < 0 }] : []),
+  ] : [];
+  const order = { Critical: 0, Warning: 1, Info: 2 } as const;
+  const warns = [...(warnings ?? [])].sort((a, b) => order[a.level] - order[b.level]);
   return (
-    <Card size="small" title={title ?? t('panelTitle')}>
-      <Space direction="vertical" style={{ width: '100%' }} size="middle">
-        <Space wrap size="large">
-          <Statistic title={t('energy')} value={fmt.number(n.energyKcal, 0)} suffix="kcal" />
-          {n.targetEnergyKcal != null && <Statistic title={t('target')} value={fmt.number(n.targetEnergyKcal, 0)} suffix="kcal" />}
-          {n.score != null && <Statistic title={t('score')} value={fmt.number(n.score, 0)} suffix="/100" />}
-          {cost && <Statistic title={t('costPerServing')} value={fmt.money(cost.costPerServing)} />}
-        </Space>
-        <Descriptions size="small" column={compact ? 1 : { xs: 1, sm: 2, xxl: 3 }} bordered styles={{ content: { whiteSpace: 'nowrap' } }}>
-          <Descriptions.Item label={t('protein')}>{fmt.number(n.proteinG, 1)} g</Descriptions.Item>
-          <Descriptions.Item label={t('lipid')}>{fmt.number(n.lipidG, 1)} g</Descriptions.Item>
-          <Descriptions.Item label={t('glucid')}>{fmt.number(n.glucidG, 1)} g</Descriptions.Item>
-          <Descriptions.Item label={<Tooltip title={t('animalHint')}>{t('animalProtein')}</Tooltip>}>{fmt.percent(n.animalProteinPct)}</Descriptions.Item>
-          <Descriptions.Item label={t('energyMacros')}>{fmt.number(n.energyFromMacrosKcal, 0)} kcal</Descriptions.Item>
-          <Descriptions.Item label={t('energyTable')}>{fmt.number(n.energyTableKcal, 0)} kcal</Descriptions.Item>
-        </Descriptions>
+    <section className="bm-card">
+      {head}
+      <div className="bm-np-body">
+        <div className="bm-np-stats">
+          {stats.map((x) => (
+            <div key={x.key}>
+              <div className="bm-np-sl">{x.label}</div>
+              <div className="bm-np-sv">{x.value}{x.unit && <small>{x.unit}</small>}</div>
+            </div>
+          ))}
+        </div>
         <div>
-          <Typography.Text strong>{t('plgTitle')}</Typography.Text>
-          <PlgDonut p={n.proteinPct} l={n.lipidPct} g={n.glucidPct} size={compact ? 130 : 160} />
+          <div className="bm-np-h" style={{ marginBottom: 8 }}>{t('plgTitle')}</div>
+          <div className="bm-np-plg">
+            <div className="bm-donut" role="img" aria-label={t('plgTitle')} style={{ background: donut }}><div>P:L:G</div></div>
+            <div className="bm-legend">
+              {legend.map((g) => (
+                <div key={g.key} className="bm-legend-i">
+                  <i style={{ background: g.color }} />
+                  <span>{g.name}</span>
+                  <b>{fmt.percent(g.pct)}</b>
+                  <em>{fmt.number(g.g, 1)} g</em>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="bm-np-sub">
+          <div><Tooltip title={t('animalHint')}><span>{t('animalProtein')}</span></Tooltip> <b>{fmt.percent(n.animalProteinPct)}</b></div>
+          <div><span>{t('energyMacros')}</span> <b>{fmt.number(n.energyFromMacrosKcal, 0)} kcal</b></div>
+          <div><span>{t('energyTable')}</span> <b>{fmt.number(n.energyTableKcal, 0)} kcal</b></div>
         </div>
         {n.compliance && n.compliance.length > 0 && (
-          <div>
-            <Typography.Text strong>{t('compliance')}</Typography.Text>
-            <ComplianceBars items={n.compliance} />
+          <div className="bm-adq">
+            <div className="bm-np-h">{t('compliance')}</div>
+            {n.compliance.map((c) => {
+              const a = adequacy(c);
+              return (
+                <div key={c.code} className="bm-adq-i">
+                  <div className="bm-adq-top">
+                    <span>{t('n.' + c.code, c.code)}</span>
+                    <span>
+                      {fmt.number(c.actual, nd(c.code))}{c.target != null && ` / ${fmt.number(c.target, nd(c.code))}`}{c.pct != null && ` · ${fmt.number(c.pct, 0)}%`} · <b style={{ color: a.color }}>{t('adq.' + a.key)}</b>
+                    </span>
+                  </div>
+                  <div className="bm-track"><div style={{ width: `${Math.min(100, (c.pct ?? 0) / 1.3)}%`, background: a.color }} /></div>
+                </div>
+              );
+            })}
           </div>
         )}
         {cost && (
-          <Table
-            size="small"
-            pagination={false}
-            rowKey="k"
-            dataSource={[
-              { k: 'food', label: t('foodCost'), v: cost.foodCostPerServing },
-              ...cost.overheads.map((o) => ({ k: o.code, label: o.nameVi, v: o.amount })),
-              { k: 'total', label: t('costPerServing'), v: cost.costPerServing },
-              ...(cost.budget != null ? [{ k: 'budget', label: t('budget'), v: cost.budget }] : []),
-              ...(cost.expectedMarginPerServing != null ? [{ k: 'margin', label: t('margin'), v: cost.expectedMarginPerServing }] : []),
-            ]}
-            columns={[{ dataIndex: 'label', key: 'l' }, { dataIndex: 'v', key: 'v', align: 'right', render: (v: number, r) => (r.k === 'total' ? <b>{fmt.money(v)}</b> : fmt.money(v)) }]}
-            showHeader={false}
-          />
+          <div className="bm-costrows">
+            {costRows.map((r) => <div key={r.k} className={costRowClass(r)}><span>{r.label}</span><span>{r.v}</span></div>)}
+          </div>
         )}
-        {warnings && <WarningList warnings={warnings} />}
-      </Space>
-    </Card>
+        {warnings && (
+          <div className="bm-warns">
+            {warns.length === 0 ? <div className="bm-warn is-ok">{t('noWarnings')}</div> : warns.map((w, i) => (
+              <div key={i} className={`bm-warn is-${w.level}`}>
+                <b>{t('level.' + w.level)}</b><small>{w.code}</small><span>{i18n.language === 'en' ? w.messageEn : w.messageVi}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
   );
 }

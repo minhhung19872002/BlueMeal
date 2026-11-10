@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { App, Button, Card, Col, DatePicker, Descriptions, Form, Grid, Input, InputNumber, Modal, Row, Select, Space, Table, Tag, Typography } from 'antd';
+import { App, Button, DatePicker, Form, Grid, Input, InputNumber, Modal, Select, Space, Table, Tag, Typography } from 'antd';
 import { BulbOutlined, CheckOutlined, DeleteOutlined, PlusOutlined, PrinterOutlined, SaveOutlined, ScheduleOutlined } from '@ant-design/icons';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -10,7 +10,8 @@ import { usePermission } from '@/shared/auth/authStore';
 import { LookupSelect, useEnumLabel, type LookupItem } from '@/shared/components/catalog/inputs';
 import { ENUMS } from '@/shared/utils/enums';
 import { DATE_FORMAT, fmt, isoDate } from '@/shared/utils/format';
-import { idemKey, ingName, StatusTag } from './shared';
+import { InfoGrid, LineCell, LineRow, Page, Section, Totals } from '@/shared/components/PageChrome';
+import { DocCards, idemKey, ingName, qtyText, StatusTag } from './shared';
 
 interface IssueRow { id: string; docNo: string; docDate: string; warehouse: string; reason: string; menu?: string; status: string; isPlanned: boolean; totalAmount: number; lineCount: number }
 interface IssueLine { key: string; ingredientId?: string; ingredientCode?: string; ingredientName?: string; ingredientNameEn?: string; unit?: string; lotId?: string | null; lotNo?: string | null; quantity: number; unitCost?: number; amount?: number; available?: number; note?: string }
@@ -55,15 +56,18 @@ export function IssuesPage() {
       message.error(problemMessage(e));
     }
   };
+  const isMobile = !screens.lg;
   return (
-    <Card>
-      <div className="bm-page-header">
-        <Typography.Title level={4}>{t('issues.title')}</Typography.Title>
-        <Space wrap>
-          {has('stock.issue.create') && <Button icon={<ScheduleOutlined />} onClick={() => setMenuOpen(true)} data-testid="issue-from-menu">{t('fromMenu')}</Button>}
+    <Page
+      title={t('issues.title')}
+      actions={(
+        <>
+          {has('stock.issue.create') && <Button icon={<ScheduleOutlined />} className="bm-btn-soft" onClick={() => setMenuOpen(true)} data-testid="issue-from-menu">{t('fromMenu')}</Button>}
           {has('stock.issue.create') && <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/stock/issues/new')}>{t('issues.new')}</Button>}
-        </Space>
-      </div>
+        </>
+      )}
+    >
+      <div className="bm-card">
       <div className="bm-toolbar">
         <DatePicker.RangePicker value={range} onChange={(v) => { setRange(v as never); setPage(1); }} format={DATE_FORMAT} style={{ width: screens.md ? 260 : '100%' }} />
         <Input.Search allowClear placeholder={t('docNo')} onSearch={(v) => set('q', v || undefined)} style={{ width: screens.md ? 200 : '100%' }} />
@@ -71,12 +75,26 @@ export function IssuesPage() {
         <Select allowClear placeholder={t('reason')} value={filters.reason} onChange={(v) => set('reason', v)} style={{ width: screens.md ? 170 : '100%' }} options={ENUMS.IssueReason.map((s) => ({ value: s, label: enumLabel('IssueReason', s) }))} />
         <Select allowClear placeholder={t('status')} value={filters.status} onChange={(v) => set('status', v)} style={{ width: screens.md ? 150 : '100%' }} options={ENUMS.StockDocStatus.map((s) => ({ value: s, label: enumLabel('StockDocStatus', s) }))} />
       </div>
+      {isMobile ? (
+        <DocCards
+          loading={isFetching && !data} items={data?.items} total={data?.totalItems ?? 0} page={page} onPage={setPage}
+          render={(r) => ({
+            key: r.id, onClick: () => navigate(`/stock/issues/${r.id}`), title: r.docNo, sub: fmt.date(r.docDate), tag: <StatusTag enumName="StockDocStatus" status={r.status} />,
+            meta: [
+              { label: t('warehouse'), value: r.warehouse },
+              { label: t('reason'), value: enumLabel('IssueReason', r.reason) },
+              { label: t('menu'), value: r.menu ?? '—' },
+              { label: t('total'), value: fmt.money(r.totalAmount) },
+            ],
+          })}
+        />
+      ) : (
       <Table<IssueRow>
-        rowKey="id" loading={isFetching} dataSource={data?.items} scroll={{ x: 'max-content' }} size={screens.md ? 'middle' : 'small'}
+        rowKey="id" loading={isFetching} dataSource={data?.items} scroll={{ x: 'max-content' }}
         onRow={(r) => ({ onClick: () => navigate(`/stock/issues/${r.id}`), style: { cursor: 'pointer' } })}
         pagination={{ current: page, pageSize: 50, total: data?.totalItems, onChange: setPage, showSizeChanger: false, showTotal: (n) => t('common:totalItems', { count: n }) }}
         columns={[
-          { title: t('docNo'), dataIndex: 'docNo', width: 170, render: (v, r) => <Space size={4}>{v}{r.isPlanned && <Tag color="purple">{t('planned')}</Tag>}</Space> },
+          { title: t('docNo'), dataIndex: 'docNo', width: 170, render: (v, r) => <Space size={4}><b style={{ fontWeight: 600 }}>{v}</b>{r.isPlanned && <Tag color="purple">{t('planned')}</Tag>}</Space> },
           { title: t('docDate'), dataIndex: 'docDate', width: 110, render: fmt.date },
           { title: t('warehouse'), dataIndex: 'warehouse', width: 160 },
           { title: t('reason'), dataIndex: 'reason', width: 150, render: (v) => enumLabel('IssueReason', v) },
@@ -86,11 +104,13 @@ export function IssuesPage() {
           { title: t('status'), dataIndex: 'status', width: 120, render: (v) => <StatusTag enumName="StockDocStatus" status={v} /> },
         ]}
       />
+      )}
+      </div>
       <Modal open={menuOpen} title={t('fromMenu')} onCancel={() => setMenuOpen(false)} onOk={() => void fromMenu()} okButtonProps={{ disabled: !menuId, 'data-testid': 'issue-from-menu-ok' } as never}>
         <Select showSearch optionFilterProp="label" loading={menus.isFetching} value={menuId} onChange={setMenuId} placeholder={t('issues.pickMenu')} style={{ width: '100%' }} data-testid="issue-menu-select"
           options={(menus.data ?? []).map((m) => ({ value: m.id, label: `${fmt.date(m.menuDate)} · ${m.shift} · ${m.code} · ${fmt.number(m.servings)}` }))} />
       </Modal>
-    </Card>
+    </Page>
   );
 }
 
@@ -170,68 +190,74 @@ export function IssueEditorPage() {
   const remove = async () => { try { await http.delete(`/stock-issues/${id}`); navigate('/stock/issues'); } catch (e) { message.error(problemMessage(e)); } };
 
   return (
-    <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-      <Card>
-        <div className="bm-page-header bm-no-print">
-          <Space>
-            <Typography.Title level={4} style={{ margin: 0 }}>{isNew ? t('issues.new') : `${t('issues.detail')} ${data?.docNo ?? ''}`}</Typography.Title>
-            {data && <StatusTag enumName="StockDocStatus" status={data.status} />}
-            {data?.isPlanned && <Tag color="purple">{t('planned')}</Tag>}
-          </Space>
-          <Space wrap>
-            <Button onClick={() => navigate('/stock/issues')}>{t('common:actions.back')}</Button>
-            {!isNew && <Button icon={<PrinterOutlined />} onClick={() => window.print()}>{t('print')}</Button>}
-            {!isNew && editable && has('stock.issue.delete') && <Button danger icon={<DeleteOutlined />} onClick={() => void remove()}>{t('common:actions.delete')}</Button>}
-            {editable && <Button icon={<SaveOutlined />} loading={busy} onClick={() => void save()}>{t('common:actions.save')}</Button>}
-            {editable && has('stock.issue.post') && <Button type="primary" icon={<CheckOutlined />} loading={busy} onClick={post} data-testid="issue-post">{t('post')}</Button>}
-          </Space>
+    <Page
+      title={isNew ? t('issues.new') : `${t('issues.detail')} ${data?.docNo ?? ''}`}
+      tag={<>{data && <StatusTag enumName="StockDocStatus" status={data.status} />}{data?.isPlanned && <Tag color="purple">{t('planned')}</Tag>}</>}
+      actions={(
+        <>
+          <Button onClick={() => navigate('/stock/issues')}>{t('common:actions.back')}</Button>
+          {!isNew && <Button icon={<PrinterOutlined />} onClick={() => window.print()}>{t('print')}</Button>}
+          {!isNew && editable && has('stock.issue.delete') && <Button danger icon={<DeleteOutlined />} onClick={() => void remove()}>{t('common:actions.delete')}</Button>}
+          {editable && <Button icon={<SaveOutlined />} loading={busy} onClick={() => void save()}>{t('common:actions.save')}</Button>}
+          {editable && has('stock.issue.post') && <Button type="primary" icon={<CheckOutlined />} loading={busy} onClick={post} data-testid="issue-post">{t('post')}</Button>}
+        </>
+      )}
+      sub={editable && data?.menu ? `${t('menu')}: ${data.menu.code} · ${fmt.date(data.menu.menuDate)} · ${fmt.number(data.menu.servings)}` : undefined}
+    >
+      <div className="bm-print-only"><Typography.Title level={4} style={{ textAlign: 'center' }}>{t('issues.printTitle')}</Typography.Title></div>
+      {editable ? (
+        <Form layout="vertical" className="bm-formcard">
+          <Form.Item label={t('docDate')} required><DatePicker value={head.docDate} onChange={(v) => setHead({ ...head, docDate: v })} format={DATE_FORMAT} style={{ width: '100%' }} /></Form.Item>
+          <Form.Item label={t('warehouse')} required><LookupSelect resource="warehouses" value={head.warehouseId} onChange={(v) => setHead({ ...head, warehouseId: v })} /></Form.Item>
+          <Form.Item label={t('reason')}><Select value={head.reason} onChange={(v) => setHead({ ...head, reason: v })} options={ENUMS.IssueReason.filter((r) => r !== 'Adjustment').map((r) => ({ value: r, label: enumLabel('IssueReason', r) }))} /></Form.Item>
+          {head.reason === 'Transfer' && <Form.Item label={t('targetWarehouse')} required><LookupSelect resource="warehouses" value={head.targetWarehouseId} onChange={(v) => setHead({ ...head, targetWarehouseId: v })} /></Form.Item>}
+          <Form.Item label={t('note')} className="bm-span-2"><Input maxLength={1000} value={head.note} onChange={(e) => setHead({ ...head, note: e.target.value })} /></Form.Item>
+        </Form>
+      ) : data && (
+        <div className="bm-card bm-pad">
+          <InfoGrid items={[
+            { key: 'no', label: t('docNo'), value: data.docNo },
+            { key: 'd', label: t('docDate'), value: fmt.date(data.docDate) },
+            { key: 'w', label: t('warehouse'), value: data.warehouse },
+            { key: 'r', label: t('reason'), value: enumLabel('IssueReason', data.reason) },
+            ...(data.menu ? [{ key: 'm', label: t('menu'), value: <><a onClick={() => navigate(`/menus/${data.menu!.id}`)}>{data.menu.code}</a> · {fmt.number(data.menu.servings)}</> }] : []),
+            { key: 't', label: t('total'), value: fmt.money(data.totalAmount) },
+            ...(data.note ? [{ key: 'n', label: t('note'), value: data.note }] : []),
+          ]} />
         </div>
-        <div className="bm-print-only"><Typography.Title level={4} style={{ textAlign: 'center' }}>{t('issues.printTitle')}</Typography.Title></div>
-        {editable ? (
-          <Form layout="vertical">
-            <Row gutter={12}>
-              <Col xs={12} md={6}><Form.Item label={t('docDate')} required><DatePicker value={head.docDate} onChange={(v) => setHead({ ...head, docDate: v })} format={DATE_FORMAT} style={{ width: '100%' }} /></Form.Item></Col>
-              <Col xs={12} md={6}><Form.Item label={t('warehouse')} required><LookupSelect resource="warehouses" value={head.warehouseId} onChange={(v) => setHead({ ...head, warehouseId: v })} /></Form.Item></Col>
-              <Col xs={12} md={6}><Form.Item label={t('reason')}><Select value={head.reason} onChange={(v) => setHead({ ...head, reason: v })} options={ENUMS.IssueReason.filter((r) => r !== 'Adjustment').map((r) => ({ value: r, label: enumLabel('IssueReason', r) }))} /></Form.Item></Col>
-              {head.reason === 'Transfer' && <Col xs={12} md={6}><Form.Item label={t('targetWarehouse')} required><LookupSelect resource="warehouses" value={head.targetWarehouseId} onChange={(v) => setHead({ ...head, targetWarehouseId: v })} /></Form.Item></Col>}
-              <Col xs={24} md={head.reason === 'Transfer' ? 24 : 6}><Form.Item label={t('note')}><Input maxLength={1000} value={head.note} onChange={(e) => setHead({ ...head, note: e.target.value })} /></Form.Item></Col>
-            </Row>
-          </Form>
-        ) : data && (
-          <Descriptions size="small" column={{ xs: 1, sm: 2, lg: 4 }}>
-            <Descriptions.Item label={t('docNo')}>{data.docNo}</Descriptions.Item>
-            <Descriptions.Item label={t('docDate')}>{fmt.date(data.docDate)}</Descriptions.Item>
-            <Descriptions.Item label={t('warehouse')}>{data.warehouse}</Descriptions.Item>
-            <Descriptions.Item label={t('reason')}>{enumLabel('IssueReason', data.reason)}</Descriptions.Item>
-            {data.menu && <Descriptions.Item label={t('menu')}><a onClick={() => navigate(`/menus/${data.menu!.id}`)}>{data.menu.code}</a> · {fmt.number(data.menu.servings)}</Descriptions.Item>}
-            <Descriptions.Item label={t('total')}>{fmt.money(data.totalAmount)}</Descriptions.Item>
-            {data.note && <Descriptions.Item label={t('note')}>{data.note}</Descriptions.Item>}
-          </Descriptions>
-        )}
-        {editable && data?.menu && <Typography.Text type="secondary">{t('menu')}: {data.menu.code} · {fmt.date(data.menu.menuDate)} · {fmt.number(data.menu.servings)}</Typography.Text>}
-      </Card>
-      <Card size="small" title={t('lineItems')} extra={editable && <Button size="small" icon={<PlusOutlined />} className="bm-no-print" onClick={() => setLines([...lines, { key: k(), quantity: 1 }])}>{t('addLine')}</Button>}>
-        <Table<IssueLine>
-          rowKey="key" dataSource={lines} pagination={false} size="small" scroll={{ x: 'max-content' }}
-          columns={[
-            { title: t('ingredient'), key: 'ing', width: 280, render: (_, l) => (editable
-              ? <LookupSelect resource="ingredients" value={l.ingredientId} style={{ minWidth: 260 }} onChange={(v, item) => patch(l.key, { ingredientId: v ?? undefined, ingredientCode: (item as LookupItem)?.code, ingredientName: (item as LookupItem)?.nameVi, lotId: null, lotNo: null })} />
-              : ingName(l, i18n.language)) },
-            { title: t('lot'), key: 'lot', width: 130, render: (_, l) => l.lotNo },
-            { title: t('quantity'), key: 'q', width: 120, align: 'right', render: (_, l) => (editable ? <InputNumber size="small" min={0.001} value={l.quantity} onChange={(v) => patch(l.key, { quantity: Number(v) || 0 })} /> : `${fmt.number(l.quantity, 3)} ${l.unit ?? ''}`) },
-            ...(editable ? [{ title: t('available'), key: 'av', width: 110, align: 'right' as const, render: (_: unknown, l: IssueLine) => fmt.number(l.available, 3) }] : []),
-            { title: t('unitCost'), dataIndex: 'unitCost', width: 120, align: 'right', render: (v) => (v ? fmt.money(v) : '') },
-            { title: t('amount'), dataIndex: 'amount', width: 130, align: 'right', render: (v) => (v ? fmt.money(v) : '') },
-            { title: t('note'), key: 'n', width: 180, render: (_, l) => (editable ? <Input size="small" maxLength={500} value={l.note} onChange={(e) => patch(l.key, { note: e.target.value })} /> : l.note) },
-            ...(editable ? [{ key: 'act', width: 80, render: (_: unknown, l: IssueLine) => (
-              <Space size={0}>
-                <Button size="small" type="text" icon={<BulbOutlined />} title={t('suggestLots')} disabled={!l.ingredientId || !head.warehouseId} onClick={() => void suggest(l)} />
-                <Button size="small" type="text" danger icon={<DeleteOutlined />} onClick={() => setLines(lines.filter((x) => x.key !== l.key))} />
-              </Space>
-            ) }] : []),
-          ]}
-        />
-      </Card>
-    </Space>
+      )}
+      <Section title={t('lineItems')} extra={editable && <Button icon={<PlusOutlined />} className="bm-no-print" onClick={() => setLines([...lines, { key: k(), quantity: 1 }])}>{t('addLine')}</Button>}>
+        <div className="bm-lines">
+          {lines.map((l) => {
+            const short = editable && l.available != null && l.quantity > l.available;
+            return (
+              <LineRow key={l.key} actions={editable && (
+                <>
+                  <Button type="text" icon={<BulbOutlined />} title={t('suggestLots')} aria-label={t('suggestLots')} disabled={!l.ingredientId || !head.warehouseId} onClick={() => void suggest(l)} />
+                  <Button type="text" danger icon={<DeleteOutlined />} aria-label={t('common:actions.delete')} onClick={() => setLines(lines.filter((x) => x.key !== l.key))} />
+                </>
+              )}>
+                <LineCell label={t('ingredient')} flex="1 1 220px" static={!editable}>
+                  {editable
+                    ? <LookupSelect resource="ingredients" value={l.ingredientId} onChange={(v, item) => patch(l.key, { ingredientId: v ?? undefined, ingredientCode: (item as LookupItem)?.code, ingredientName: (item as LookupItem)?.nameVi, lotId: null, lotNo: null })} />
+                    : ingName(l, i18n.language)}
+                </LineCell>
+                <LineCell label={t('lot')} flex="0 0 120px" static>{l.lotNo || '—'}</LineCell>
+                <LineCell label={l.unit ? `${t('quantity')} (${l.unit})` : t('quantity')} flex="0 0 110px" static={!editable}>
+                  {editable ? <InputNumber min={0.001} value={l.quantity} status={short ? 'error' : undefined} onChange={(v) => patch(l.key, { quantity: Number(v) || 0 })} /> : qtyText(l.quantity)}
+                </LineCell>
+                {editable && <LineCell label={t('available')} flex="0 0 110px" static color={short ? 'var(--danger-text)' : undefined}>{l.available != null ? fmt.number(l.available, 3) : '—'}</LineCell>}
+                <LineCell label={t('unitCost')} flex="0 0 110px" static>{l.unitCost ? fmt.money(l.unitCost) : '—'}</LineCell>
+                <LineCell label={t('note')} flex="1 1 160px" static={!editable}>
+                  {editable ? <Input maxLength={500} value={l.note} onChange={(e) => patch(l.key, { note: e.target.value })} /> : l.note || '—'}
+                </LineCell>
+                <LineCell label={t('amount')} flex="1 0 110px" static>{l.amount ? fmt.money(l.amount) : '—'}</LineCell>
+              </LineRow>
+            );
+          })}
+        </div>
+        <Totals items={[{ label: t('lines'), value: lines.filter((l) => l.ingredientId).length }, ...(data && !editable ? [{ label: t('total'), value: fmt.money(data.totalAmount) }] : [])]} />
+      </Section>
+    </Page>
   );
 }

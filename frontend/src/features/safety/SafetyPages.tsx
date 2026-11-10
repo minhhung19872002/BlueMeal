@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { App, Button, Card, Checkbox, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Radio, Select, Space, Table, Tabs, Tag, Typography } from 'antd';
+import { App, Button, Checkbox, DatePicker, Form, Grid, Input, InputNumber, Modal, Popconfirm, Radio, Select, Space, Table, Tabs, Tag, Typography } from 'antd';
 import { DeleteOutlined, EditOutlined, PlusOutlined, PrinterOutlined } from '@ant-design/icons';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -9,7 +9,8 @@ import { usePermission } from '@/shared/auth/authStore';
 import { LookupSelect, useEnumLabel } from '@/shared/components/catalog/inputs';
 import { ENUMS } from '@/shared/utils/enums';
 import { DATE_FORMAT, fmt, isoDate } from '@/shared/utils/format';
-import { QcTag } from '@/features/stock/shared';
+import { Page } from '@/shared/components/PageChrome';
+import { DocCards, QcTag } from '@/features/stock/shared';
 
 interface Criterion { code: string; labelVi: string; labelEn: string; type?: string }
 interface FormConfig { step1: Criterion[]; step2: Criterion[]; step3: Criterion[] }
@@ -22,15 +23,24 @@ const DATE_TIME = 'DD/MM/YYYY HH:mm';
 function CriteriaInputs({ items, value, onChange }: { items: Criterion[]; value?: Record<string, unknown>; onChange?: (v: Record<string, unknown>) => void }) {
   const { i18n } = useTranslation();
   const v = value ?? {};
+  const boxes = items.filter((c) => c.type !== 'number');
+  const passed = boxes.filter((c) => v[c.code] === true).length;
   return (
-    <Space direction="vertical" style={{ width: '100%' }}>
+    <div className="bm-checks">
+      {boxes.length > 0 && <div className="bm-checks-sum" style={{ padding: '6px 0', fontSize: 12 }}>{passed}/{boxes.length}</div>}
       {items.map((c) => {
         const label = i18n.language === 'en' ? c.labelEn : c.labelVi;
+        const on = v[c.code] === true;
         return c.type === 'number'
-          ? <Space key={c.code}><span>{label}</span><InputNumber size="small" value={v[c.code] as number | undefined} onChange={(n) => onChange?.({ ...v, [c.code]: n })} /></Space>
-          : <Checkbox key={c.code} checked={v[c.code] === true} onChange={(e) => onChange?.({ ...v, [c.code]: e.target.checked })}>{label}</Checkbox>;
+          ? <div key={c.code} className="bm-check-num"><span>{label}</span><InputNumber value={v[c.code] as number | undefined} onChange={(n) => onChange?.({ ...v, [c.code]: n })} aria-label={label} /></div>
+          : (
+            <button key={c.code} type="button" role="checkbox" aria-checked={on} className={on ? 'bm-check is-on' : 'bm-check'} onClick={() => onChange?.({ ...v, [c.code]: !on })}>
+              <span className="bm-check-box">{on && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6" /></svg>}</span>
+              <span>{label}</span>
+            </button>
+          );
       })}
-    </Space>
+    </div>
   );
 }
 
@@ -39,6 +49,7 @@ export function InspectionsPage() {
   const { t, i18n } = useTranslation('inspection');
   const { message } = App.useApp();
   const { has } = usePermission();
+  const screens = Grid.useBreakpoint();
   const enumLabel = useEnumLabel();
   const [step, setStep] = useState<Step>(1);
   const [range, setRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([dayjs().subtract(7, 'day'), dayjs()]);
@@ -129,24 +140,51 @@ export function InspectionsPage() {
     ...common,
   ];
   const result = Form.useWatch('result', form);
+  const subject = (r: Row) => (step === 1
+    ? `${r.ingredientCode ?? ''} — ${i18n.language === 'en' && r.ingredientNameEn ? r.ingredientNameEn : r.ingredientName ?? ''}`
+    : [r.menuCode, dish(r)].filter(Boolean).join(' · '));
+  const passedOf = (r: Row) => {
+    const c = r.criteria ? (JSON.parse(r.criteria) as Record<string, unknown>) : {};
+    const boxes = (criteria ?? []).filter((x) => x.type !== 'number');
+    return boxes.length ? `${boxes.filter((x) => c[x.code] === true).length}/${boxes.length}` : '—';
+  };
 
   return (
-    <Card>
-      <div className="bm-page-header bm-no-print">
-        <Typography.Title level={4}>{t('title')}</Typography.Title>
-        <Space wrap>
+    <Page
+      title={t('title')}
+      actions={(
+        <>
           <DatePicker.RangePicker value={range} onChange={(v) => v && setRange(v as never)} format={DATE_FORMAT} allowClear={false} />
           <Button icon={<PrinterOutlined />} onClick={() => window.print()}>{t('printForm')}</Button>
           {has('inspection.create') && <Button type="primary" icon={<PlusOutlined />} onClick={() => open()} data-testid="inspection-add">{t('common:actions.add')}</Button>}
-        </Space>
-      </div>
+        </>
+      )}
+    >
       <div className="bm-print-only"><Typography.Title level={5} style={{ textAlign: 'center' }}>{t(`form${step}`)}</Typography.Title><div style={{ textAlign: 'center' }}>{`${fmt.date(range[0].toDate())} – ${fmt.date(range[1].toDate())}`}</div></div>
-      <Tabs className="bm-no-print" activeKey={String(step)} onChange={(k) => { setStep(Number(k) as Step); setPage(1); }}
+      <div className="bm-card">
+      <Tabs className="bm-no-print bm-pilltabs" activeKey={String(step)} onChange={(k) => { setStep(Number(k) as Step); setPage(1); }}
         items={[{ key: '1', label: t('step1') }, { key: '2', label: t('step2') }, { key: '3', label: t('step3') }]} />
+      {!screens.lg ? (
+        <DocCards
+          loading={list.isFetching && !list.data} items={list.data?.items} total={list.data?.totalItems ?? 0} page={page} onPage={setPage}
+          render={(r) => ({
+            key: r.id, onClick: has('inspection.edit') ? () => open(r) : undefined, title: subject(r),
+            sub: step === 1 ? fmt.dateTime(r.inspectedAt) : fmt.date(r.inspectDate), tag: <QcTag value={r.result} />,
+            meta: [
+              { label: t('inspector'), value: r.inspector || '—' },
+              { label: t('criteriaTitle'), value: passedOf(r) },
+              ...(step === 1 ? [{ label: t('temp'), value: fmt.number(r.temperature, 1) || '—' }] : step === 3 ? [{ label: t('temp'), value: fmt.number(r.temperature, 1) || '—' }] : [{ label: t('cookStart'), value: fmt.dateTime(r.cookStart) || '—' }]),
+              ...(r.action ? [{ label: t('action'), value: r.action }] : []),
+            ],
+          })}
+        />
+      ) : (
       <Table<Row>
-        rowKey="id" loading={list.isFetching} dataSource={list.data?.items} scroll={{ x: 'max-content' }} size="small" columns={columns as never}
+        rowKey="id" loading={list.isFetching} dataSource={list.data?.items} scroll={{ x: 'max-content' }} columns={columns as never}
         pagination={{ current: page, pageSize: 50, total: list.data?.totalItems, onChange: setPage, showTotal: (n) => t('common:totalItems', { count: n }) }}
       />
+      )}
+      </div>
       <Modal open={editing !== null} title={t(`step${step}`)} onCancel={() => setEditing(null)} onOk={() => void save()} width={720} destroyOnHidden forceRender okButtonProps={{ 'data-testid': 'inspection-save' } as never}>
         <Form form={form} layout="vertical">
           {step === 1 ? (
@@ -201,7 +239,7 @@ export function InspectionsPage() {
           <Form.Item name="inspector" label={t('inspector')}><Input maxLength={200} /></Form.Item>
         </Form>
       </Modal>
-    </Card>
+    </Page>
   );
 }
 
@@ -214,6 +252,7 @@ export function SamplesPage() {
   const { t, i18n } = useTranslation('inspection');
   const { message } = App.useApp();
   const { has } = usePermission();
+  const screens = Grid.useBreakpoint();
   const [state, setState] = useState<string | undefined>();
   const [page, setPage] = useState(1);
   const [open, setOpen] = useState(false);
@@ -249,25 +288,45 @@ export function SamplesPage() {
       message.error(problemMessage(e));
     }
   };
+  const dishOf = (r: SampleRow) => (i18n.language === 'en' && r.dishNameEn ? r.dishNameEn : r.dishName);
+  const disposeBtn = (r: SampleRow) => r.state !== 'disposed' && has('sample.dispose') && <Button size="small" className={r.state === 'due' ? 'bm-btn-soft' : undefined} onClick={() => setDispose(r)} data-testid="sample-dispose">{t('samples.dispose')}</Button>;
   return (
-    <Card>
-      <div className="bm-page-header bm-no-print">
-        <Typography.Title level={4}>{t('samples.title')}</Typography.Title>
-        <Space wrap>
+    <Page
+      title={t('samples.title')}
+      sub={settings.data && <span className="bm-no-print">{t('samples.rule', { h: settings.data.retentionHours, g: settings.data.minWeightG })}</span>}
+      actions={(
+        <>
           <Select allowClear placeholder={t('samples.state')} value={state} onChange={(v) => { setState(v); setPage(1); }} style={{ width: 160 }}
             options={['kept', 'due', 'disposed'].map((s) => ({ value: s, label: t(`samples.${s}`) }))} />
           <Button icon={<PrinterOutlined />} onClick={() => window.print()}>{t('printForm')}</Button>
           {has('sample.create') && <Button type="primary" icon={<PlusOutlined />} onClick={() => { form.resetFields(); form.setFieldsValue({ sampledAt: dayjs(), weightG: settings.data?.minWeightG ?? 150 }); setOpen(true); }} data-testid="sample-add">{t('samples.new')}</Button>}
-        </Space>
-      </div>
+        </>
+      )}
+    >
       <div className="bm-print-only"><Typography.Title level={5} style={{ textAlign: 'center' }}>{t('samples.printTitle')}</Typography.Title></div>
-      {settings.data && <Typography.Paragraph type="secondary" className="bm-no-print">{t('samples.rule', { h: settings.data.retentionHours, g: settings.data.minWeightG })}</Typography.Paragraph>}
+      <div className="bm-card">
+      {!screens.lg ? (
+        <DocCards
+          loading={isFetching && !data} items={data?.items} total={data?.totalItems ?? 0} page={page} onPage={setPage}
+          render={(r) => ({
+            key: r.id, title: dishOf(r), sub: `${r.code}${r.menuCode ? ` · ${r.menuCode}` : ''}`, tag: <Tag color={STATE_COLOR[r.state]}>{t(`samples.${r.state}`)}</Tag>,
+            meta: [
+              { label: t('samples.sampledAt'), value: fmt.dateTime(r.sampledAt) },
+              { label: t('samples.weight'), value: fmt.number(r.weightG, 0) },
+              { label: t('samples.storageTemp'), value: fmt.number(r.storageTemp, 1) || '—' },
+              { label: t('samples.plannedDispose'), value: fmt.dateTime(r.plannedDisposeAt) },
+              { label: t('samples.sampler'), value: r.sampler || '—' },
+            ],
+            actions: disposeBtn(r) || undefined,
+          })}
+        />
+      ) : (
       <Table<SampleRow>
-        rowKey="id" loading={isFetching} dataSource={data?.items} scroll={{ x: 'max-content' }} size="small"
+        rowKey="id" loading={isFetching} dataSource={data?.items} scroll={{ x: 'max-content' }}
         pagination={{ current: page, pageSize: 50, total: data?.totalItems, onChange: setPage, showTotal: (n) => t('common:totalItems', { count: n }) }}
         columns={[
           { title: t('samples.code'), dataIndex: 'code', width: 160 },
-          { title: t('dish'), key: 'd', render: (_, r) => (i18n.language === 'en' && r.dishNameEn ? r.dishNameEn : r.dishName) },
+          { title: t('dish'), key: 'd', render: (_, r) => <span style={{ fontWeight: 500 }}>{dishOf(r)}</span> },
           { title: t('menu'), dataIndex: 'menuCode', width: 160, responsive: ['lg'] },
           { title: t('samples.sampledAt'), dataIndex: 'sampledAt', width: 140, render: fmt.dateTime },
           { title: t('samples.weight'), dataIndex: 'weightG', width: 100, align: 'right', render: (v) => fmt.number(v, 0) },
@@ -277,9 +336,11 @@ export function SamplesPage() {
           { title: t('samples.disposedAt'), dataIndex: 'disposedAt', width: 140, render: fmt.dateTime },
           { title: t('samples.disposer'), dataIndex: 'disposer', width: 140 },
           { title: t('samples.state'), dataIndex: 'state', width: 120, render: (v) => <Tag color={STATE_COLOR[v]}>{t(`samples.${v}`)}</Tag> },
-          { key: 'a', width: 110, className: 'bm-no-print', render: (_, r) => r.state !== 'disposed' && has('sample.dispose') && <Button size="small" onClick={() => setDispose(r)} data-testid="sample-dispose">{t('samples.dispose')}</Button> },
+          { key: 'a', width: 110, className: 'bm-no-print', render: (_, r) => disposeBtn(r) },
         ]}
       />
+      )}
+      </div>
       <Modal open={open} title={t('samples.new')} onCancel={() => setOpen(false)} onOk={() => void save()} destroyOnHidden forceRender okButtonProps={{ 'data-testid': 'sample-save' } as never}>
         <Form form={form} layout="vertical">
           <Form.Item name="dishMenu" label={t('fromMenus')}>
@@ -300,6 +361,6 @@ export function SamplesPage() {
       <Modal open={!!dispose} title={`${t('samples.dispose')} ${dispose?.code ?? ''}`} onCancel={() => setDispose(null)} onOk={() => void doDispose()}>
         <Input.TextArea rows={2} value={disposeNote} onChange={(e) => setDisposeNote(e.target.value)} placeholder={t('common:fields.note')} maxLength={1000} />
       </Modal>
-    </Card>
+    </Page>
   );
 }
