@@ -17,6 +17,8 @@ export interface PagedResult<T> {
   page: number;
   pageSize: number;
   totalItems: number;
+  /** Catalog lists: counts per active state under the same filters except the state filter. */
+  statusCounts?: { active: number; inactive: number } | null;
 }
 
 export const CSRF_HEADER = 'X-BlueMeal-CSRF';

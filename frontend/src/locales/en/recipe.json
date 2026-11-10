@@ -4,6 +4,7 @@
   "linesHint": "Gross weight per serving (g) · net weight after refuse",
   "netShort": "net {{g}} g",
   "baseInfo": "{{n}} base servings",
+  "costPerServingSuffix": "/serving",
   "title": "Recipes",
   "dish": "Dish",
   "version": "Version",

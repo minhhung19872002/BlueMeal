@@ -69,6 +69,12 @@ public sealed class RecipeTests(ApiFactory f)
         var quick = await J(await c.GetAsync($"/api/v1/dishes/{dish}/quick"));
         quick.GetProperty("recipeId").GetString().Should().Be(v2Id);
         quick.GetProperty("nutrition").GetProperty("proteinG").GetDecimal().Should().Be(11.06m); // 140 g rice × 7.9 / 100
+
+        // the list carries kcal and cost of one serving per version (two versions of the same dish → computed separately)
+        var listed = (await J(await c.GetAsync($"/api/v1/recipes?dishId={dish}"))).GetProperty("items").EnumerateArray().ToDictionary(x => x.GetProperty("id").GetString()!);
+        listed[v2Id!].GetProperty("energyKcal").GetDecimal().Should().Be(Math.Round(quick.GetProperty("nutrition").GetProperty("energyKcal").GetDecimal(), 0));
+        listed[v1Id!].GetProperty("energyKcal").GetDecimal().Should().BeLessThan(listed[v2Id!].GetProperty("energyKcal").GetDecimal()); // 120 g vs 140 g rice
+        listed[v2Id!].GetProperty("costPerServing").GetDecimal().Should().BeGreaterThan(0);
     }
 
     [Fact]

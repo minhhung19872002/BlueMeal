@@ -96,7 +96,20 @@ public abstract class CatalogControllerBase<TEntity, TDto, TUpsert> : ApiControl
         query = Sort(query, q.Sort);
         var items = await Project(query.Skip((q.Page - 1) * q.PageSize).Take(q.PageSize)).ToListAsync(ct);
         await PostProcessAsync(items, false, ct);
-        return new PagedResult<TDto>(items, q.Page, q.PageSize, total);
+        return new PagedResult<TDto>(items, q.Page, q.PageSize, total) { StatusCounts = HasActive ? await StatusCountsAsync(q, ct) : null };
+    }
+
+    /// <summary>Counts for the status chips of the list screen: same filters as <see cref="List"/> without the IsActive filter.</summary>
+    private async Task<IReadOnlyDictionary<string, long>> StatusCountsAsync(PageQuery q, CancellationToken ct)
+    {
+        var state = q.IsActive;
+        q.IsActive = null;
+        try
+        {
+            var rows = await Filtered(q).GroupBy(e => EF.Property<bool>(e, "IsActive")).Select(g => new { g.Key, Count = g.LongCount() }).ToListAsync(ct);
+            return new Dictionary<string, long> { ["active"] = rows.Where(r => r.Key).Sum(r => r.Count), ["inactive"] = rows.Where(r => !r.Key).Sum(r => r.Count) };
+        }
+        finally { q.IsActive = state; }
     }
 
     /// <summary>Lightweight active lookup for comboboxes: id, code, name (cached).</summary>

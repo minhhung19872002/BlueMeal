@@ -141,7 +141,31 @@ public sealed class RecipesController(AppDbContext db, EngineDataService engine,
                 cookingMethod = r.Dish.CookingMethod.ToString(), r.VersionNo, r.IsCurrent, status = r.Status.ToString(), r.BaseServings, r.CookingLossRate,
                 itemCount = r.Items.Count, r.UpdatedAt, r.CreatedAt, r.Version,
             }).ToListAsync(ct);
-        return Ok(new PagedResult<object>(items, q.Page, q.PageSize, total));
+
+        // kcal and food cost of one serving per listed version (same engines as the dish quick view, SPEC §7.3.6).
+        // DishesAsync takes one recipe per dish, so versions of the same dish are computed in successive rounds.
+        var nutritionEngine = await engine.NutritionEngineAsync(ct);
+        var perServing = new Dictionary<Guid, (decimal Kcal, decimal Cost)>();
+        var pending = items.Select(i => (i.Id, i.DishId)).ToList();
+        while (pending.Count > 0)
+        {
+            var round = pending.GroupBy(p => p.DishId).Select(g => g.First()).ToList();
+            var dishes = await engine.DishesAsync(round.Select(r => r.DishId), round.ToDictionary(r => r.DishId, r => (Guid?)r.Id), ct);
+            foreach (var (recipeId, rDish) in round)
+                if (dishes.TryGetValue(rDish, out var d))
+                    perServing[recipeId] = (NutritionEngine.Summarize([nutritionEngine.ComputeDish(d.Dish, 1, d.CookingLoss)]).ToView().EnergyKcal,
+                        CostEngine.ComputeMenu([new MenuDish(d.Dish)], []).ToView().FoodCostPerServing);
+            pending = pending.Except(round).ToList();
+        }
+        var canCost = CanSeeCost;
+        var rows = items.Select(i => new
+        {
+            i.Id, i.DishId, i.dishCode, i.dishNameVi, i.dishNameEn, i.dishType, i.cookingMethod, i.VersionNo, i.IsCurrent, i.status, i.BaseServings, i.CookingLossRate,
+            i.itemCount, i.UpdatedAt, i.CreatedAt, i.Version,
+            energyKcal = perServing.TryGetValue(i.Id, out var v) ? Math.Round(v.Kcal, 0) : (decimal?)null,
+            costPerServing = canCost && perServing.TryGetValue(i.Id, out var c) ? Math.Round(c.Cost, 0) : (decimal?)null,
+        }).ToList();
+        return Ok(new PagedResult<object>(rows, q.Page, q.PageSize, total));
     }
 
     [HttpGet("{id:guid}"), HasPermission(Permissions.Recipe.View)]

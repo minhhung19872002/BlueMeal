@@ -12,6 +12,8 @@
 .bm-rrow-name{font-weight:600}
 .bm-rrow-sub{font-size:12px;color:var(--ink-3)}
 .bm-rrow-info{font-variant-numeric:tabular-nums;color:var(--ink-2);font-size:13px}
+.bm-rrow-nums{display:flex;gap:16px;font-variant-numeric:tabular-nums;color:var(--ink-2);font-size:13px;white-space:nowrap}
+.bm-rrow-nums b{color:var(--ink);font-weight:600}
 .bm-rrow-tags{display:flex;gap:6px;flex-wrap:wrap}
 
 /* ---- 2. recipe editor ---- */

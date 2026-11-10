@@ -4,6 +4,7 @@
   "linesHint": "Khối lượng sống cho 1 suất (g) · khối lượng sạch theo tỷ lệ thải bỏ",
   "netShort": "sạch {{g}} g",
   "baseInfo": "{{n}} suất cơ sở",
+  "costPerServingSuffix": "/suất",
   "title": "Công thức món ăn",
   "dish": "Món ăn",
   "version": "Phiên bản",

@@ -2,7 +2,11 @@ using System.Globalization;
 
 namespace BlueMeal.Application.Common;
 
-public sealed record PagedResult<T>(IReadOnlyList<T> Items, int Page, int PageSize, long TotalItems);
+public sealed record PagedResult<T>(IReadOnlyList<T> Items, int Page, int PageSize, long TotalItems)
+{
+    /// <summary>Catalog lists: counts per IsActive state ("active"/"inactive") under the same filters except the state filter.</summary>
+    public IReadOnlyDictionary<string, long>? StatusCounts { get; init; }
+}
 
 /// <summary>Standard list query: ?page=&amp;pageSize=&amp;sort=&amp;q= (SPEC §8). Sort: "field" or "-field" (desc), comma separated.</summary>
 public class PageQuery

@@ -65,6 +65,12 @@ public sealed class CatalogTests(ApiFactory f)
         var page = await J(await c.GetAsync("/api/v1/provinces?page=1&pageSize=10&sort=-code"));
         page.GetProperty("items").GetArrayLength().Should().Be(10);
         page.GetProperty("totalItems").GetInt64().Should().Be(34);
+        page.GetProperty("statusCounts").GetProperty("active").GetInt64().Should().Be(34);
+        page.GetProperty("statusCounts").GetProperty("inactive").GetInt64().Should().Be(0);
+        // counts ignore the state filter but keep the others (search)
+        var filtered = await J(await c.GetAsync("/api/v1/provinces?q=ha noi&isActive=false"));
+        filtered.GetProperty("totalItems").GetInt64().Should().Be(0);
+        filtered.GetProperty("statusCounts").GetProperty("active").GetInt64().Should().Be(1);
         page.GetProperty("items")[0].GetProperty("code").GetString().Should().Be("96");
         // official commune-level list seeded from SeedData/dvhc-wards.csv
         (await J(await c.GetAsync("/api/v1/wards?pageSize=1"))).GetProperty("totalItems").GetInt64().Should().BeGreaterThanOrEqualTo(3321);

@@ -249,6 +249,12 @@ export function CatalogPage<T extends Row>({ config }: { config: CatalogConfig<T
     return c.render ? c.render(v, r) : v === null || v === undefined || v === '' ? '—' : String(v);
   };
   const chips: [string | undefined, string][] = [[undefined, 'status.all'], ['true', 'status.active'], ['false', 'status.inactive']];
+  // per-state counts come from the API (statusCounts, same filters except the state); older APIs: only the selected chip
+  const chipCount = (v: string | undefined): number | undefined => {
+    const c = data?.statusCounts;
+    if (!c) return active === v ? data?.totalItems : undefined;
+    return v === undefined ? c.active + c.inactive : v === 'true' ? c.active : c.inactive;
+  };
   const drawerWidth = isMobile ? '100%' : config.detailTabs || (config.formWidth ?? 0) > 460 ? Math.min(config.formWidth ?? 760, 960) : 460;
 
   return (
@@ -333,7 +339,7 @@ export function CatalogPage<T extends Row>({ config }: { config: CatalogConfig<T
                 }}
               >
                 {t(label)}
-                {active === v && data && <span className="bm-chip-n">{data.totalItems}</span>}
+                {chipCount(v) != null && <span className="bm-chip-n">{chipCount(v)}</span>}
               </button>
             ))}
           </div>

@@ -11,7 +11,7 @@ import { Page } from '@/shared/components/PageChrome';
 import { ENUMS } from '@/shared/utils/enums';
 import { fmt } from '@/shared/utils/format';
 
-interface RecipeRow { id: string; dishId: string; dishCode: string; dishNameVi: string; dishNameEn?: string; dishType: string; versionNo: number; isCurrent: boolean; status: string; baseServings: number; itemCount: number; updatedAt?: string; createdAt: string }
+interface RecipeRow { id: string; dishId: string; dishCode: string; dishNameVi: string; dishNameEn?: string; dishType: string; versionNo: number; isCurrent: boolean; status: string; baseServings: number; itemCount: number; updatedAt?: string; createdAt: string; energyKcal?: number | null; costPerServing?: number | null }
 
 export const statusColor: Record<string, string> = { Draft: 'default', Active: 'green', Archived: 'purple' };
 /** Design pill tone per recipe status (BMMenus "recipes": Đang dùng green, Lưu trữ orange, Nháp neutral). */
@@ -53,6 +53,10 @@ export default function RecipesPage() {
                 <div className="bm-rrow-main">
                   <div className="bm-rrow-name">{i18n.language === 'en' && r.dishNameEn ? r.dishNameEn : r.dishNameVi}</div>
                   <div className="bm-rrow-sub">{t('rowMeta', { code: r.dishCode, v: r.versionNo, n: r.itemCount })} · {enumLabel('DishType', r.dishType)}</div>
+                </div>
+                <div className="bm-rrow-nums">
+                  {r.energyKcal != null && <span><b>{fmt.number(r.energyKcal, 0)}</b> kcal</span>}
+                  {r.costPerServing != null && <span><b>{fmt.money(r.costPerServing)}</b>{t('costPerServingSuffix')}</span>}
                 </div>
                 <div className="bm-rrow-info">{t('baseInfo', { n: fmt.number(r.baseServings, 0) })} · {fmt.dateTime(r.updatedAt ?? r.createdAt)}</div>
                 <div className="bm-rrow-tags">
