@@ -1,4 +1,9 @@
 {
+  "listSub": "Định lượng nguyên liệu cho 1 suất; đổi công thức đang dùng bằng cách tạo phiên bản mới rồi kích hoạt.",
+  "rowMeta": "{{code}} · phiên bản {{v}} · {{n}} nguyên liệu",
+  "linesHint": "Khối lượng sống cho 1 suất (g) · khối lượng sạch theo tỷ lệ thải bỏ",
+  "netShort": "sạch {{g}} g",
+  "baseInfo": "{{n}} suất cơ sở",
   "title": "Công thức món ăn",
   "dish": "Món ăn",
   "version": "Phiên bản",

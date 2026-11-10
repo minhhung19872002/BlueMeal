@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, App, Button, Card, Col, Drawer, Dropdown, Form, Grid, Input, InputNumber, Row, Select, Space, Table, Tag, Tooltip, Typography } from 'antd';
+import { Alert, App, Button, Col, Drawer, Dropdown, Form, Grid, Input, InputNumber, Row, Select, Space, Table, Tooltip, Typography } from 'antd';
 import { CopyOutlined, DeleteOutlined, DiffOutlined, MoreOutlined, PlusOutlined, SaveOutlined, CheckOutlined, CalculatorOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
@@ -13,7 +13,8 @@ import { LookupSelect, useEnumLabel, type LookupItem } from '@/shared/components
 import { NutritionPanel, type CostView, type NutritionView, type WarningItem } from '@/shared/components/nutrition/NutritionPanel';
 import { useBeforeUnload } from '@/shared/hooks/useTablePrefs';
 import { fmt } from '@/shared/utils/format';
-import { statusColor } from './RecipesPage';
+import { LineCell, LineRow, Page, Section } from '@/shared/components/PageChrome';
+import { statusTone } from './RecipesPage';
 
 const lineSchema = z.object({
   ingredientId: z.string({ message: 'common:validation.requiredShort' }).min(1, 'common:validation.requiredShort'),
@@ -138,130 +139,159 @@ export default function RecipeEditorPage() {
 
   const scaled = computed.data?.scaled;
 
+  const tags = detail && (
+    <>
+      <span className="bm-tag t-neutral">v{detail.versionNo}</span>
+      <span className={`bm-tag ${statusTone[detail.status] ?? 't-neutral'}`}>{enumLabel('RecipeStatus', detail.status)}</span>
+      {detail.isCurrent && <span className="bm-tag t-info">{t('current')}</span>}
+    </>
+  );
+  const dishName = detail ? (i18n.language === 'en' && detail.dish.nameEn ? detail.dish.nameEn : detail.dish.nameVi) : null;
+  const lineOf = (idx: number) => (computed.data?.nutrition as any)?.dishes?.[0]?.lines?.[idx] as { netG: number; missingFood?: boolean } | undefined;
+
   return (
-    <Row gutter={16}>
-      <Col xs={24} xl={15}>
-        <Card
-          title={<Space wrap>{t('editor')}{detail && <><Tag>v{detail.versionNo}</Tag><Tag color={statusColor[detail.status]}>{enumLabel('RecipeStatus', detail.status)}</Tag>{detail.isCurrent && <Tag color="green">{t('current')}</Tag>}</>}</Space>}
-          extra={
-            <Space wrap>
-              {canEdit && <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={() => void onSave()} data-testid="recipe-save">{t('save')}</Button>}
-              {!isNew && detail && !detail.isCurrent && has('recipe.approve') && (
-                <Button icon={<CheckOutlined />} disabled={dirty} onClick={() => void run(async () => { await http.post(`/recipes/${id}/activate`); await refetch(); void versions.refetch(); }, t('activated'))} data-testid="recipe-activate">{t('activate')}</Button>
+    <Page
+      title={dishName ? `${t('editor')} · ${dishName}` : t('editor')}
+      tag={tags}
+      actions={(
+        <>
+          <Button onClick={() => navigate('/recipes')}>{t('common:actions.back')}</Button>
+          {!isNew && (
+            <Dropdown trigger={['click']} menu={{ items: [
+              ...(has('recipe.create') ? [{ key: 'v', icon: <CopyOutlined />, label: t('newVersion'), onClick: () => void run(async () => { const r = await http.post<{ id: string }>(`/recipes/${id}/clone`, {}); navigate(`/recipes/${r.data.id}`); }) }] : []),
+              ...(has('recipe.create') ? [{ key: 'c', icon: <CopyOutlined />, label: t('cloneTo'), onClick: () => {
+                let target: string | undefined;
+                modal.confirm({ title: t('cloneTo'), content: <LookupSelect resource="dishes" onChange={(v) => (target = v ?? undefined)} />, onOk: () => run(async () => { const r = await http.post<{ id: string }>(`/recipes/${id}/clone`, { targetDishId: target }); navigate(`/recipes/${r.data.id}`); }) });
+              } }] : []),
+              { key: 'cmp', icon: <DiffOutlined />, label: t('compare'), onClick: () => setCompareOpen(true) },
+              ...(has('recipe.delete') && detail && !detail.isCurrent ? [{ key: 'd', icon: <DeleteOutlined />, danger: true, label: t('common:actions.delete'), onClick: () => modal.confirm({ title: t('common:confirmDelete'), onOk: () => run(async () => { await http.delete(`/recipes/${id}`); reset(getValues()); navigate('/recipes'); }) }) }] : []),
+            ] }}>
+              <Button icon={<MoreOutlined />} aria-label={t('common:actions.more')} />
+            </Dropdown>
+          )}
+          {!isNew && detail && !detail.isCurrent && has('recipe.approve') && (
+            <Button className="bm-btn-soft" icon={<CheckOutlined />} disabled={dirty} onClick={() => void run(async () => { await http.post(`/recipes/${id}/activate`); await refetch(); void versions.refetch(); }, t('activated'))} data-testid="recipe-activate">{t('activate')}</Button>
+          )}
+          {canEdit && <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={() => void onSave()} data-testid="recipe-save">{t('save')}</Button>}
+        </>
+      )}
+    >
+      {!editable && <div className="bm-note is-info">{t('readOnly')}</div>}
+      <Form layout="vertical" disabled={!canEdit} className="bm-formcard is-tight">
+        <Controller control={control} name="dishId" render={({ field, fieldState }) => (
+          <Form.Item label={t('dish')} required className="bm-span-2" validateStatus={fieldState.error ? 'error' : undefined} help={fieldState.error && t(fieldState.error.message ?? '')}>
+            <LookupSelect resource="dishes" value={field.value || undefined} onChange={(v) => field.onChange(v ?? '')} disabled={!isNew} data-testid="recipe-dish" />
+          </Form.Item>
+        )} />
+        <Controller control={control} name="baseServings" render={({ field }) => (
+          <Form.Item label={t('baseServings')} tooltip={t('perServing')}><InputNumber min={1} max={10000} value={field.value} onChange={(v) => field.onChange(Number(v ?? 1))} style={{ width: '100%' }} /></Form.Item>
+        )} />
+        <Controller control={control} name="cookingLossRate" render={({ field }) => (
+          <Form.Item label={t('cookingLoss')}><InputNumber min={0} max={90} value={field.value} onChange={(v) => field.onChange(Number(v ?? 0))} style={{ width: '100%' }} decimalSeparator="," /></Form.Item>
+        )} />
+        <Controller control={control} name="prepTimeMinutes" render={({ field }) => (
+          <Form.Item label={t('prepTime')}><InputNumber min={0} max={1440} value={field.value ?? undefined} onChange={(v) => field.onChange(v === null ? null : Number(v))} style={{ width: '100%' }} /></Form.Item>
+        )} />
+        {dishQ.data && (
+          <div className="bm-span-all bm-dchips">
+            <span className="bm-tag t-neutral">{enumLabel('DishType', dishQ.data.dishType)}</span>
+            <span className="bm-tag t-neutral">{enumLabel('CookingMethod', dishQ.data.cookingMethod)}</span>
+            {dishQ.data.allergens && <span className="bm-tag t-orange">{dishQ.data.allergens}</span>}
+          </div>
+        )}
+      </Form>
+
+      <div className="bm-2col">
+        <div className="bm-2col-main">
+          <Form layout="vertical" disabled={!canEdit} component={false}>
+            <Section
+              title={t('ingredient')} hint={t('linesHint')}
+              extra={canEdit && <Button icon={<PlusOutlined />} onClick={() => append({ ingredientId: '', grossG: 0, netGOverride: null, prepNote: '' })} data-testid="recipe-add-line">{t('addLine')}</Button>}
+            >
+              {formState.errors.items?.message && <div className="bm-note is-red" style={{ margin: '12px 16px 0' }}>{t(formState.errors.items.message)}</div>}
+              {fields.length === 0 ? <div className="bm-noRows">{t('common:noData')}</div> : (
+                <div className="bm-lines">
+                  {fields.map((f, idx) => {
+                    const line = lineOf(idx);
+                    return (
+                      <LineRow key={f.id} actions={canEdit && <Button type="text" danger icon={<DeleteOutlined />} onClick={() => remove(idx)} aria-label={t('common:actions.delete')} />}>
+                        <LineCell label={t('ingredient')} flex="2 1 160px">
+                          <Controller control={control} name={`items.${idx}.ingredientId`} render={({ field, fieldState }) => (
+                            <>
+                              <LookupSelect resource="ingredients" value={field.value || undefined} onChange={(v, item) => { field.onChange(v ?? ''); setValue(`items.${idx}.ingredientLabel`, item && !Array.isArray(item) ? `${(item as LookupItem).code} — ${(item as LookupItem).nameVi}` : '', { shouldDirty: true }); }} data-testid={`line-ingredient-${idx}`} />
+                              {fieldState.error && <span className="bm-lcell-err">{t(fieldState.error.message ?? '')}</span>}
+                            </>
+                          )} />
+                        </LineCell>
+                        <LineCell label={t('gross')} flex="0 0 88px">
+                          <Controller control={control} name={`items.${idx}.grossG`} render={({ field }) => (
+                            <InputNumber min={0} value={field.value} onChange={(v) => field.onChange(v === null ? 0 : Number(v))} decimalSeparator="," data-testid={`line-gross-${idx}`} />
+                          )} />
+                        </LineCell>
+                        <LineCell label={t('net')} flex="0 0 64px" static color={line?.missingFood ? 'var(--danger-text)' : undefined}>
+                          {line ? <Tooltip title={line.missingFood ? t('noFood') : undefined}><span>{fmt.number(line.netG, 1)}</span></Tooltip> : '—'}
+                        </LineCell>
+                        <LineCell label={t('netOverride')} flex="0 0 88px">
+                          <Controller control={control} name={`items.${idx}.netGOverride`} render={({ field }) => (
+                            <InputNumber min={0} value={field.value ?? undefined} onChange={(v) => field.onChange(v === null ? null : Number(v))} decimalSeparator="," />
+                          )} />
+                        </LineCell>
+                        <LineCell label={t('prepNote')} flex="1 1 100px">
+                          <Controller control={control} name={`items.${idx}.prepNote`} render={({ field }) => <Input value={field.value ?? ''} onChange={field.onChange} />} />
+                        </LineCell>
+                      </LineRow>
+                    );
+                  })}
+                </div>
               )}
-              {!isNew && (
-                <Dropdown trigger={['click']} menu={{ items: [
-                  ...(has('recipe.create') ? [{ key: 'v', icon: <CopyOutlined />, label: t('newVersion'), onClick: () => void run(async () => { const r = await http.post<{ id: string }>(`/recipes/${id}/clone`, {}); navigate(`/recipes/${r.data.id}`); }) }] : []),
-                  ...(has('recipe.create') ? [{ key: 'c', icon: <CopyOutlined />, label: t('cloneTo'), onClick: () => {
-                    let target: string | undefined;
-                    modal.confirm({ title: t('cloneTo'), content: <LookupSelect resource="dishes" onChange={(v) => (target = v ?? undefined)} />, onOk: () => run(async () => { const r = await http.post<{ id: string }>(`/recipes/${id}/clone`, { targetDishId: target }); navigate(`/recipes/${r.data.id}`); }) });
-                  } }] : []),
-                  { key: 'cmp', icon: <DiffOutlined />, label: t('compare'), onClick: () => setCompareOpen(true) },
-                  ...(has('recipe.delete') && detail && !detail.isCurrent ? [{ key: 'd', icon: <DeleteOutlined />, danger: true, label: t('common:actions.delete'), onClick: () => modal.confirm({ title: t('common:confirmDelete'), onOk: () => run(async () => { await http.delete(`/recipes/${id}`); reset(getValues()); navigate('/recipes'); }) }) }] : []),
-                ] }}>
-                  <Button icon={<MoreOutlined />} />
-                </Dropdown>
-              )}
-            </Space>
-          }
-        >
-          {!editable && <Alert type="info" showIcon message={t('readOnly')} style={{ marginBottom: 12 }} />}
-          <Form layout="vertical" disabled={!canEdit}>
-            <Row gutter={12}>
-              <Col xs={24} md={12}>
-                <Controller control={control} name="dishId" render={({ field, fieldState }) => (
-                  <Form.Item label={t('dish')} required validateStatus={fieldState.error ? 'error' : undefined} help={fieldState.error && t(fieldState.error.message ?? '')}>
-                    <LookupSelect resource="dishes" value={field.value || undefined} onChange={(v) => field.onChange(v ?? '')} disabled={!isNew} data-testid="recipe-dish" />
-                  </Form.Item>
-                )} />
-              </Col>
-              <Col xs={8} md={4}>
-                <Controller control={control} name="baseServings" render={({ field }) => (
-                  <Form.Item label={t('baseServings')} tooltip={t('perServing')}><InputNumber min={1} max={10000} value={field.value} onChange={(v) => field.onChange(Number(v ?? 1))} style={{ width: '100%' }} /></Form.Item>
-                )} />
-              </Col>
-              <Col xs={8} md={4}>
-                <Controller control={control} name="cookingLossRate" render={({ field }) => (
-                  <Form.Item label={t('cookingLoss')}><InputNumber min={0} max={90} value={field.value} onChange={(v) => field.onChange(Number(v ?? 0))} style={{ width: '100%' }} decimalSeparator="," /></Form.Item>
-                )} />
-              </Col>
-              <Col xs={8} md={4}>
-                <Controller control={control} name="prepTimeMinutes" render={({ field }) => (
-                  <Form.Item label={t('prepTime')}><InputNumber min={0} max={1440} value={field.value ?? undefined} onChange={(v) => field.onChange(v === null ? null : Number(v))} style={{ width: '100%' }} /></Form.Item>
-                )} />
-              </Col>
-            </Row>
-            {dishQ.data && <Space style={{ marginBottom: 12 }} wrap><Tag>{enumLabel('DishType', dishQ.data.dishType)}</Tag><Tag>{enumLabel('CookingMethod', dishQ.data.cookingMethod)}</Tag>{dishQ.data.allergens && <Tag color="orange">{dishQ.data.allergens}</Tag>}</Space>}
-            <Table
-              size="small" rowKey="id" dataSource={fields} pagination={false} scroll={{ x: 760 }}
-              columns={[
-                { title: t('ingredient'), key: 'i', width: 280, render: (_, _f, idx) => (
-                  <Controller control={control} name={`items.${idx}.ingredientId`} render={({ field, fieldState }) => (
-                    <Space direction="vertical" size={0} style={{ width: '100%' }}>
-                      <LookupSelect resource="ingredients" value={field.value || undefined} onChange={(v, item) => { field.onChange(v ?? ''); setValue(`items.${idx}.ingredientLabel`, item && !Array.isArray(item) ? `${(item as LookupItem).code} — ${(item as LookupItem).nameVi}` : '', { shouldDirty: true }); }} data-testid={`line-ingredient-${idx}`} />
-                      {fieldState.error && <Typography.Text type="danger">{t(fieldState.error.message ?? '')}</Typography.Text>}
-                    </Space>
-                  )} />
-                ) },
-                { title: t('gross'), key: 'g', width: 120, render: (_, _f, idx) => (
-                  <Controller control={control} name={`items.${idx}.grossG`} render={({ field }) => (
-                    <InputNumber min={0} value={field.value} onChange={(v) => field.onChange(v === null ? 0 : Number(v))} style={{ width: '100%' }} decimalSeparator="," data-testid={`line-gross-${idx}`} />
-                  )} />
-                ) },
-                { title: t('net'), key: 'n', width: 100, align: 'right', render: (_, _f, idx) => {
-                  const line = (computed.data?.nutrition as any)?.dishes?.[0]?.lines?.[idx];
-                  return line ? <Tooltip title={line.missingFood ? t('noFood') : undefined}><span className="bm-num" style={{ color: line.missingFood ? '#c8463d' : undefined }}>{fmt.number(line.netG, 1)}</span></Tooltip> : null;
-                } },
-                { title: t('netOverride'), key: 'o', width: 120, render: (_, _f, idx) => (
-                  <Controller control={control} name={`items.${idx}.netGOverride`} render={({ field }) => (
-                    <InputNumber min={0} value={field.value ?? undefined} onChange={(v) => field.onChange(v === null ? null : Number(v))} style={{ width: '100%' }} decimalSeparator="," />
-                  )} />
-                ) },
-                { title: t('prepNote'), key: 'p', render: (_, _f, idx) => (
-                  <Controller control={control} name={`items.${idx}.prepNote`} render={({ field }) => <Input value={field.value ?? ''} onChange={field.onChange} />} />
-                ) },
-                { title: '', key: 'x', width: 44, render: (_, _f, idx) => canEdit && <Button type="text" danger icon={<DeleteOutlined />} onClick={() => remove(idx)} aria-label={t('common:actions.delete')} /> },
-              ]}
-            />
-            {canEdit && <Button icon={<PlusOutlined />} style={{ marginTop: 8 }} onClick={() => append({ ingredientId: '', grossG: 0, netGOverride: null, prepNote: '' })} data-testid="recipe-add-line">{t('addLine')}</Button>}
-            {formState.errors.items?.message && <Typography.Text type="danger">{t(formState.errors.items.message)}</Typography.Text>}
-            <Row gutter={12} style={{ marginTop: 16 }}>
-              <Col xs={24}>
+            </Section>
+
+            <Section title={t('instructions')}>
+              <div className="bm-pad">
                 <Controller control={control} name="instructions" render={({ field }) => (
-                  <Form.Item label={t('instructions')}><Input.TextArea rows={4} value={field.value ?? ''} onChange={field.onChange} maxLength={8000} showCount /></Form.Item>
+                  <Input.TextArea rows={4} value={field.value ?? ''} onChange={field.onChange} maxLength={8000} showCount aria-label={t('instructions')} />
                 )} />
-              </Col>
-            </Row>
+              </div>
+            </Section>
           </Form>
-          <Card size="small" title={<Space><CalculatorOutlined />{t('scale')}</Space>} style={{ marginTop: 8 }}>
-            <Space wrap style={{ marginBottom: 8 }}>
-              <Typography.Text>{t('servings')}</Typography.Text>
-              <InputNumber min={1} max={100000} value={servings ?? undefined} onChange={(v) => setServings(v === null ? null : Number(v))} placeholder="350" data-testid="recipe-servings" />
-            </Space>
-            {scaled && (
+
+          <Section
+            title={<span className="bm-sec-ico"><CalculatorOutlined />{t('scale')}</span>}
+            extra={(
+              <span className="bm-scale-in">
+                <span>{t('servings')}</span>
+                <InputNumber min={1} max={100000} value={servings ?? undefined} onChange={(v) => setServings(v === null ? null : Number(v))} placeholder="350" data-testid="recipe-servings" />
+              </span>
+            )}
+          >
+            {scaled ? (
               <Table size="small" rowKey="ingredientId" dataSource={scaled} pagination={false} scroll={{ x: 520 }}
                 columns={[{ title: t('ingredient'), key: 'n', render: (_, r) => `${r.code} — ${r.name}` }, { title: t('gross'), dataIndex: 'grossG', align: 'right', render: (v) => fmt.number(v, 0) },
-                  { title: t('net'), dataIndex: 'netG', align: 'right', render: (v) => fmt.number(v, 0) }, { title: t('purchaseUnits'), dataIndex: 'purchaseUnits', align: 'right', render: (v) => fmt.number(v, 2) }]} />
-            )}
-          </Card>
-        </Card>
-        {versions.data && versions.data.length > 1 && (
-          <Card size="small" title={t('versions')} style={{ marginTop: 16 }}>
-            <Space wrap>{versions.data.map((v) => (
-              <Button key={v.id} type={v.id === id ? 'primary' : 'default'} size="small" onClick={() => navigate(`/recipes/${v.id}`)}>
-                v{v.versionNo} · {enumLabel('RecipeStatus', v.status)}
-              </Button>
-            ))}</Space>
-          </Card>
-        )}
-      </Col>
-      <Col xs={24} xl={9}>
-        <div style={{ position: screens.xl ? 'sticky' : undefined, top: 72 }}>
-          <NutritionPanel nutrition={computed.data?.nutrition} cost={computed.data?.cost} warnings={computed.data?.warnings} />
+                  { title: t('net'), dataIndex: 'netG', align: 'right', render: (v) => fmt.number(v, 0) }, { title: t('purchaseUnits'), dataIndex: 'purchaseUnits', align: 'right', render: (v) => <b style={{ fontWeight: 600 }}>{fmt.number(v, 2)}</b> }]} />
+            ) : <div className="bm-noRows">{t('servings')}</div>}
+          </Section>
+
+          {versions.data && versions.data.length > 1 && (
+            <Section title={t('versions')}>
+              <div className="bm-pad bm-dchips">
+                {versions.data.map((v) => (
+                  <button key={v.id} type="button" className={v.id === id ? 'bm-chip is-on' : 'bm-chip'} onClick={() => navigate(`/recipes/${v.id}`)}>
+                    v{v.versionNo} · {enumLabel('RecipeStatus', v.status)}
+                  </button>
+                ))}
+              </div>
+            </Section>
+          )}
         </div>
-      </Col>
+        <div className="bm-2col-side">
+          <div style={{ position: screens.xl ? 'sticky' : undefined, top: 72 }}>
+            <NutritionPanel nutrition={computed.data?.nutrition} cost={computed.data?.cost} warnings={computed.data?.warnings} />
+            {computed.isError && <div className="bm-note is-red" style={{ marginTop: 8 }}>{problemMessage(computed.error)}</div>}
+          </div>
+        </div>
+      </div>
       {compareOpen && detail && <CompareDrawer recipeId={detail.id} options={versions.data ?? []} onClose={() => setCompareOpen(false)} lang={i18n.language} />}
-    </Row>
+    </Page>
   );
 }
 
@@ -270,7 +300,7 @@ function CompareDrawer({ recipeId, options, onClose }: { recipeId: string; optio
   const [other, setOther] = useState<string | undefined>(options.find((o) => o.id !== recipeId)?.id);
   const { data } = useQuery({ queryKey: ['recipe-compare', recipeId, other], enabled: !!other, queryFn: async () => (await http.get<any>('/recipes/compare', { params: { a: recipeId, b: other } })).data });
   return (
-    <Drawer open onClose={onClose} title={t('compare')} width={Math.min(900, window.innerWidth)}>
+    <Drawer open onClose={onClose} title={t('compare')} width={Math.min(900, window.innerWidth)} rootClassName="bm-drawer">
       <Space style={{ marginBottom: 12 }}>
         <Typography.Text>{t('b')}</Typography.Text>
         <Select style={{ width: 220 }} value={other} onChange={setOther} options={options.filter((o) => o.id !== recipeId).map((o) => ({ value: o.id, label: `v${o.versionNo} (${o.status})` }))} />
@@ -281,7 +311,7 @@ function CompareDrawer({ recipeId, options, onClose }: { recipeId: string; optio
             columns={[{ title: t('ingredient'), key: 'n', render: (_, r: any) => `${r.code} — ${r.name}` },
               { title: `${t('a')} (v${data.a.versionNo})`, dataIndex: 'a', align: 'right', render: (v) => fmt.number(v, 1) },
               { title: `${t('b')} (v${data.b.versionNo})`, dataIndex: 'b', align: 'right', render: (v) => fmt.number(v, 1) },
-              { title: t('diff'), dataIndex: 'diff', align: 'right', render: (v: number) => <span style={{ color: v > 0 ? '#3f8f5a' : v < 0 ? '#c8463d' : undefined }}>{v > 0 ? '+' : ''}{fmt.number(v, 1)}</span> }]} />
+              { title: t('diff'), dataIndex: 'diff', align: 'right', render: (v: number) => <span style={{ color: v > 0 ? 'var(--primary-text)' : v < 0 ? 'var(--danger-text)' : undefined, fontWeight: 600 }}>{v > 0 ? '+' : ''}{fmt.number(v, 1)}</span> }]} />
           <Row gutter={12}>
             <Col xs={24} md={12}><NutritionPanel compact title={`${t('a')} — v${data.a.versionNo}`} nutrition={data.a.computed.nutrition} cost={data.a.computed.cost} /></Col>
             <Col xs={24} md={12}><NutritionPanel compact title={`${t('b')} — v${data.b.versionNo}`} nutrition={data.b.computed.nutrition} cost={data.b.computed.cost} /></Col>

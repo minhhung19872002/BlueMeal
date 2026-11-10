@@ -1,4 +1,9 @@
 {
+  "listSub": "Ingredient quantities per serving; to change the current recipe create a new version and activate it.",
+  "rowMeta": "{{code}} · version {{v}} · {{n}} ingredients",
+  "linesHint": "Gross weight per serving (g) · net weight after refuse",
+  "netShort": "net {{g}} g",
+  "baseInfo": "{{n}} base servings",
   "title": "Recipes",
   "dish": "Dish",
   "version": "Version",

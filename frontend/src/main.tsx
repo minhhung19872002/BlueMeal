@@ -11,6 +11,7 @@ import './app/layout/pages.css';
 import './app/layout/pages-menus-ops.css';
 import './index.css';
 import './app/layout/pages-analysis-admin.css';
+import './app/layout/pages-stock-recipes.css';
 import { AppProviders } from '@/app/providers';
 import { router } from '@/app/router';
 

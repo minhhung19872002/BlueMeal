@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { App, Button, Card, Checkbox, Col, DatePicker, Empty, Form, Grid, Input, InputNumber, Modal, Popconfirm, Row, Space, Statistic, Table, Tabs, Tag, Typography } from 'antd';
+import { App, Button, Card, Checkbox, DatePicker, Empty, Form, Grid, Input, InputNumber, Modal, Popconfirm, Space, Table, Tabs, Typography } from 'antd';
 import { CheckOutlined, LockOutlined, PlusOutlined, SaveOutlined, UnlockOutlined } from '@ant-design/icons';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -9,8 +9,12 @@ import { http, problemMessage, type PagedResult } from '@/shared/api/http';
 import { usePermission } from '@/shared/auth/authStore';
 import { LookupSelect, useEnumLabel } from '@/shared/components/catalog/inputs';
 import { DATE_FORMAT, fmt, isoDate } from '@/shared/utils/format';
-import { InfoGrid, Page, Section, Totals } from '@/shared/components/PageChrome';
-import { idemKey, ingName, StatusTag } from './shared';
+import { InfoGrid, LineCell, LineRow, Page, Section, Totals } from '@/shared/components/PageChrome';
+import { Tile } from '@/app/layout/designKit';
+import { DocCards, idemKey, ingName, qtyText, StatusTag } from './shared';
+
+/** Signed quantity: +1,5 / -2 / 0. */
+const signed = (v: number) => (v > 0 ? '+' : '') + qtyText(v);
 
 // ================================================================== stock takes
 
@@ -23,6 +27,7 @@ export function StockTakesPage() {
   const { message } = App.useApp();
   const navigate = useNavigate();
   const { has } = usePermission();
+  const screens = Grid.useBreakpoint();
   const [page, setPage] = useState(1);
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
@@ -39,18 +44,28 @@ export function StockTakesPage() {
   return (
     <Page title={t('takes.title')} actions={has('stock.take.create') && <Button type="primary" icon={<PlusOutlined />} onClick={() => { form.setFieldsValue({ takeDate: dayjs() }); setOpen(true); }} data-testid="take-new">{t('takes.new')}</Button>}>
       <div className="bm-card">
+      {!screens.lg ? (
+        <DocCards
+          loading={isFetching && !data} items={data?.items} total={data?.totalItems ?? 0} page={page} pageSize={30} onPage={setPage}
+          render={(r) => ({
+            key: r.id, onClick: () => navigate(`/stock/takes/${r.id}`), title: r.docNo, sub: fmt.date(r.takeDate), tag: <StatusTag enumName="StockTakeStatus" status={r.status} />,
+            meta: [{ label: t('warehouse'), value: r.warehouse }, { label: t('takes.counted'), value: `${r.counted}/${r.lineCount}` }, { label: t('takes.diff'), value: r.differences }],
+          })}
+        />
+      ) : (
       <Table<TakeRow>
         rowKey="id" loading={isFetching} dataSource={data?.items} scroll={{ x: 'max-content' }} onRow={(r) => ({ onClick: () => navigate(`/stock/takes/${r.id}`), style: { cursor: 'pointer' } })}
         pagination={{ current: page, pageSize: 30, total: data?.totalItems, onChange: setPage, showTotal: (n) => t('common:totalItems', { count: n }) }}
         columns={[
-          { title: t('docNo'), dataIndex: 'docNo', width: 170 },
+          { title: t('docNo'), dataIndex: 'docNo', width: 170, render: (v) => <b style={{ fontWeight: 600 }}>{v}</b> },
           { title: t('docDate'), dataIndex: 'takeDate', width: 110, render: fmt.date },
           { title: t('warehouse'), dataIndex: 'warehouse' },
           { title: t('takes.counted'), key: 'c', width: 110, align: 'right', render: (_, r) => `${r.counted}/${r.lineCount}` },
-          { title: t('takes.diff'), dataIndex: 'differences', width: 100, align: 'right' },
+          { title: t('takes.diff'), dataIndex: 'differences', width: 100, align: 'right', render: (v) => <span style={{ fontWeight: v ? 600 : undefined, color: v ? 'var(--danger-text)' : undefined }}>{v}</span> },
           { title: t('status'), dataIndex: 'status', width: 130, render: (v) => <StatusTag enumName="StockTakeStatus" status={v} /> },
         ]}
       />
+      )}
       <Modal open={open} title={t('takes.new')} onCancel={() => setOpen(false)} onOk={() => void start()} destroyOnHidden forceRender okButtonProps={{ 'data-testid': 'take-start' } as never}>
         <Form form={form} layout="vertical">
           <Form.Item name="warehouseId" label={t('warehouse')} rules={[{ required: true, message: t('common:validation.requiredShort') }]}><LookupSelect resource="warehouses" data-testid="take-warehouse" /></Form.Item>
@@ -114,6 +129,8 @@ export function StockTakeDetailPage() {
     },
   });
   const counted = lines.filter((l) => l.actualQty != null).length;
+  const diffLines = lines.filter((l) => l.actualQty != null && l.difference !== 0);
+  const diffValue = diffLines.reduce((sum, l) => sum + l.difference * l.unitCost, 0);
   return (
     <Page
       title={`${t('takes.title')} ${data.docNo}`}
@@ -126,35 +143,60 @@ export function StockTakeDetailPage() {
         </>
       )}
     >
+      <div className="bm-x-tiles">
+        <Tile label={t('takes.counted')} value={`${counted}/${lines.length}`} />
+        <Tile label={t('takes.lineDiff')} value={diffLines.length} bad={diffLines.length > 0} />
+        <Tile label={t('takes.diffValue')} value={fmt.money(diffValue)} bad={diffValue < 0} />
+      </div>
       <div className="bm-card bm-pad bm-stack">
         <InfoGrid items={[
           { key: 'w', label: t('warehouse'), value: data.warehouse },
           { key: 'd', label: t('docDate'), value: fmt.date(data.takeDate) },
-          { key: 'c', label: t('takes.counted'), value: `${counted}/${lines.length}` },
           ...(data.adjustDocs.length > 0 ? [{ key: 'a', label: t('takes.adjustDocs'), value: data.adjustDocs.join(', ') }] : []),
         ]} />
         {editable ? <Input.TextArea rows={1} value={members} onChange={(e) => setMembers(e.target.value)} placeholder={t('takes.members')} maxLength={1000} /> : data.members && <div className="bm-info-l">{t('takes.members')}: <span style={{ color: 'var(--ink)' }}>{data.members}</span></div>}
       </div>
       <Section title={t('lineItems')} extra={editable && (
         <Space wrap>
-          <LookupSelect resource="ingredients" value={extra.ingredientId} onChange={(v) => setExtra({ ...extra, ingredientId: v })} placeholder={t('takes.addItem')} style={{ width: 240 }} />
+          <LookupSelect resource="ingredients" value={extra.ingredientId} onChange={(v) => setExtra({ ...extra, ingredientId: v })} placeholder={t('takes.addItem')} style={{ width: screens.md ? 240 : 220 }} />
           <InputNumber min={0} value={extra.actualQty} onChange={(v) => setExtra({ ...extra, actualQty: v ?? undefined })} placeholder={t('takes.actual')} />
           <Button icon={<PlusOutlined />} disabled={!extra.ingredientId || extra.actualQty == null} onClick={() => void save([{ ingredientId: extra.ingredientId!, actualQty: extra.actualQty! }]).then((ok) => ok && setExtra({}))} />
         </Space>
       )}>
+        {!screens.lg ? (
+          <div className="bm-lines">
+            {lines.map((l) => (
+              <LineRow key={l.id}>
+                <LineCell label={t('ingredient')} flex="1 1 100%" static><span className="bm-take-ing">{ingName(l, i18n.language)}{l.lotNo && <span className="bm-take-lot"> · {l.lotNo}</span>}</span></LineCell>
+                <LineCell label={t('takes.book')} flex="1 1 90px" static>{qtyText(l.bookQty)} {l.unit ?? ''}</LineCell>
+                <LineCell label={t('takes.actual')} flex="1 1 110px" static={!editable}>
+                  {editable ? <InputNumber min={0} value={l.actualQty ?? undefined} onChange={(v) => patch(l.id, { actualQty: v ?? null })} inputMode="decimal" data-testid="take-actual" /> : qtyText(l.actualQty)}
+                </LineCell>
+                <LineCell label={t('takes.diff')} flex="1 1 80px" static color={l.difference ? 'var(--danger-text)' : undefined}>{signed(l.difference)}</LineCell>
+                {(editable || l.cause) && (
+                  <LineCell label={t('takes.cause')} flex="1 1 100%" static={!editable}>
+                    {editable ? <Input maxLength={500} value={l.cause} onChange={(e) => patch(l.id, { cause: e.target.value })} /> : l.cause}
+                  </LineCell>
+                )}
+              </LineRow>
+            ))}
+          </div>
+        ) : (
         <Table<TakeLine>
           rowKey="id" dataSource={lines} pagination={false} size="small" scroll={{ x: 'max-content' }}
+          rowClassName={(l) => (l.actualQty != null && l.difference !== 0 ? 'bm-row-diff' : '')}
           columns={[
             { title: t('ingredient'), key: 'ing', render: (_, l) => <>{ingName(l, i18n.language)}{l.lotNo && <Typography.Text type="secondary"> · {l.lotNo}</Typography.Text>}</> },
             { title: t('takes.book'), dataIndex: 'bookQty', width: 110, align: 'right', render: (v, l) => `${fmt.number(v, 3)} ${l.unit ?? ''}` },
             { title: t('takes.actual'), key: 'a', width: 130, align: 'right', render: (_, l) => (editable
               ? <InputNumber size={screens.md ? 'small' : 'middle'} min={0} value={l.actualQty ?? undefined} onChange={(v) => patch(l.id, { actualQty: v ?? null })} inputMode="decimal" data-testid="take-actual" />
               : fmt.number(l.actualQty, 3)) },
-            { title: t('takes.diff'), key: 'd', width: 100, align: 'right', render: (_, l) => <span style={{ fontWeight: 600, color: l.difference ? 'var(--danger-text)' : undefined }}>{l.difference > 0 ? '+' : ''}{fmt.number(l.difference, 3)}</span> },
+            { title: t('takes.diff'), key: 'd', width: 100, align: 'right', render: (_, l) => <span style={{ fontWeight: 600, color: l.difference ? 'var(--danger-text)' : undefined }}>{signed(l.difference)}</span> },
             { title: t('takes.cause'), key: 'c', width: 200, render: (_, l) => (editable ? <Input size="small" maxLength={500} value={l.cause} onChange={(e) => patch(l.id, { cause: e.target.value })} /> : l.cause) },
             { title: t('takes.resolution'), key: 'r', width: 200, responsive: ['lg'], render: (_, l) => (editable ? <Input size="small" maxLength={500} value={l.resolution} onChange={(e) => patch(l.id, { resolution: e.target.value })} /> : l.resolution) },
           ]}
         />
+        )}
       </Section>
     </Page>
   );
@@ -184,55 +226,97 @@ export function StockBalancePage() {
     queryKey: ['stock-lots', warehouseId, days, params.get('ingredientId')],
     queryFn: async () => (await http.get<LotRow[]>('/stock/lots', { params: { warehouseId, expiringDays: days ?? undefined, ingredientId: params.get('ingredientId') ?? undefined } })).data,
   });
+  const isMobile = !screens.lg;
+  const today = dayjs().startOf('day');
+  /** Design state tag: expired / expiring (≤ 3 days) / below minimum / OK. */
+  const state = (r: BalanceRow) => {
+    const left = r.nearestExpiry ? dayjs(r.nearestExpiry).diff(today, 'day') : null;
+    if (left != null && left < 0) return { cls: 't-red', label: t('balance.expired') };
+    if (left != null && left <= 3) return { cls: 't-orange', label: t('balance.soon') };
+    if (r.belowMin) return { cls: 't-orange', label: t('balance.belowMin') };
+    return { cls: 't-green', label: t('balance.ok') };
+  };
+  const stateTag = (r: BalanceRow) => { const s = state(r); return <span className={`bm-tag ${s.cls}`}>{s.label}</span>; };
+  const lotTone = (v?: number | null) => (v == null ? '' : v < 0 ? 't-red' : v <= 3 ? 't-orange' : 't-neutral');
+  const cardLink = (r: BalanceRow) => <Link to={`/stock/card?ingredientId=${r.ingredientId}&warehouseId=${r.warehouseId}`}>{t('balance.card')}</Link>;
+  const expiringLots = (lots.data ?? []).filter((l) => l.daysLeft != null);
   return (
     <Page title={t('balance.title')}>
-      <div className="bm-card bm-pad">
+      <div className="bm-x-tiles">
+        <Tile label={t('balance.totalValue')} value={fmt.money(data?.totalValue ?? 0)} />
+        <Tile label={t('balance.items')} value={fmt.number(data?.totalItems ?? 0)} />
+        <Tile label={t('balance.lots')} value={expiringLots.length} extra={days != null ? `${t('balance.expiring')}: ${days}` : undefined} bad={expiringLots.some((l) => (l.daysLeft ?? 99) <= 3)} />
+      </div>
+      <div className="bm-card">
       <div className="bm-toolbar">
         <LookupSelect resource="warehouses" placeholder={t('warehouse')} value={warehouseId} onChange={(v) => { setWarehouseId(v); setPage(1); }} style={{ width: screens.md ? 200 : '100%' }} />
-        <DatePicker placeholder={t('balance.atDate')} value={date} onChange={(v) => { setDate(v); setPage(1); }} format={DATE_FORMAT} />
+        <DatePicker placeholder={t('balance.atDate')} value={date} onChange={(v) => { setDate(v); setPage(1); }} format={DATE_FORMAT} style={{ width: screens.md ? undefined : '100%' }} />
         <Input.Search allowClear placeholder={t('ingredient')} onSearch={(v) => { setQ(v); setPage(1); }} style={{ width: screens.md ? 220 : '100%' }} />
         <Checkbox checked={belowMin} onChange={(e) => { setBelowMin(e.target.checked); setPage(1); }}>{t('balance.belowMin')}</Checkbox>
       </div>
-      <Tabs items={[
+      <Tabs className="bm-pilltabs" items={[
         {
           key: 'balance', label: t('balance.title'),
-          children: (
-            <>
-              <Statistic title={t('balance.totalValue')} value={fmt.money(data?.totalValue ?? 0)} style={{ marginBottom: 12 }} />
-              <Table<BalanceRow>
-                rowKey={(r) => r.warehouseId + r.ingredientId} loading={isFetching} dataSource={data?.items} scroll={{ x: 'max-content' }} size="middle"
-                pagination={{ current: page, pageSize: 50, total: data?.totalItems, onChange: setPage, showSizeChanger: false }}
-                columns={[
-                  { title: t('ingredient'), key: 'i', render: (_, r) => ingName(r, i18n.language) },
-                  { title: t('warehouse'), dataIndex: 'warehouse', width: 150 },
-                  { title: t('quantity'), key: 'q', align: 'right', width: 130, render: (_, r) => <Typography.Text type={r.belowMin ? 'danger' : undefined}>{fmt.number(r.quantity, 3)} {r.unit}</Typography.Text> },
-                  { title: t('balance.avg'), dataIndex: 'averageCost', align: 'right', width: 130, render: fmt.money },
-                  { title: t('balance.value'), dataIndex: 'value', align: 'right', width: 140, render: fmt.money },
-                  { title: t('balance.min'), dataIndex: 'minStock', align: 'right', width: 110, render: (v) => fmt.number(v, 3) },
-                  { title: t('balance.nearestExpiry'), dataIndex: 'nearestExpiry', width: 120, render: fmt.date },
-                  { key: 'card', width: 90, render: (_, r) => <Link to={`/stock/card?ingredientId=${r.ingredientId}&warehouseId=${r.warehouseId}`}>{t('balance.card')}</Link> },
-                ]}
-              />
-            </>
+          children: isMobile ? (
+            <DocCards
+              loading={isFetching && !data} items={data?.items} total={data?.totalItems ?? 0} page={page} onPage={setPage}
+              render={(r) => ({
+                key: r.warehouseId + r.ingredientId, title: ingName(r, i18n.language), sub: r.warehouse, tag: stateTag(r),
+                meta: [
+                  { label: t('quantity'), value: <span style={{ color: r.belowMin ? 'var(--danger-text)' : undefined }}>{qtyText(r.quantity)} {r.unit}</span> },
+                  { label: t('balance.value'), value: fmt.money(r.value) },
+                  { label: t('balance.min'), value: qtyText(r.minStock) },
+                  { label: t('balance.nearestExpiry'), value: fmt.date(r.nearestExpiry) || '—' },
+                ],
+                actions: cardLink(r),
+              })}
+            />
+          ) : (
+            <Table<BalanceRow>
+              rowKey={(r) => r.warehouseId + r.ingredientId} loading={isFetching} dataSource={data?.items} scroll={{ x: 'max-content' }} size="middle"
+              pagination={{ current: page, pageSize: 50, total: data?.totalItems, onChange: setPage, showSizeChanger: false, showTotal: (n) => t('common:totalItems', { count: n }) }}
+              columns={[
+                { title: t('ingredient'), key: 'i', render: (_, r) => <span style={{ fontWeight: 500 }}>{ingName(r, i18n.language)}</span> },
+                { title: t('warehouse'), dataIndex: 'warehouse', width: 150 },
+                { title: t('quantity'), key: 'q', align: 'right', width: 130, render: (_, r) => <span style={{ color: r.belowMin ? 'var(--danger-text)' : undefined, fontWeight: 600 }}>{qtyText(r.quantity)} {r.unit}</span> },
+                { title: t('balance.avg'), dataIndex: 'averageCost', align: 'right', width: 130, render: fmt.money },
+                { title: t('balance.value'), dataIndex: 'value', align: 'right', width: 140, render: fmt.money },
+                { title: t('balance.min'), dataIndex: 'minStock', align: 'right', width: 110, render: (v) => qtyText(v) },
+                { title: t('balance.nearestExpiry'), dataIndex: 'nearestExpiry', width: 120, render: fmt.date },
+                { title: t('balance.state'), key: 's', width: 140, render: (_, r) => stateTag(r) },
+                { key: 'card', width: 90, render: (_, r) => cardLink(r) },
+              ]}
+            />
           ),
         },
         {
           key: 'lots', label: t('balance.lots'),
           children: (
             <>
-              <Space style={{ marginBottom: 8 }}><span>{t('balance.expiring')}</span><InputNumber min={0} value={days ?? undefined} onChange={(v) => setDays(v ?? null)} /></Space>
-              <Table<LotRow>
-                rowKey="id" loading={lots.isFetching} dataSource={lots.data} scroll={{ x: 'max-content' }} size="small" pagination={{ pageSize: 50 }}
-                columns={[
-                  { title: t('ingredient'), key: 'i', render: (_, r) => ingName(r, i18n.language) },
-                  { title: t('warehouse'), dataIndex: 'warehouse', width: 150 },
-                  { title: t('lot'), dataIndex: 'lotNo', width: 120 },
-                  { title: t('expiry'), dataIndex: 'expiryDate', width: 110, render: fmt.date },
-                  { title: t('balance.daysLeft'), dataIndex: 'daysLeft', width: 100, align: 'right', render: (v) => (v == null ? '' : <Tag color={v < 0 ? 'red' : v <= 3 ? 'orange' : 'default'}>{v}</Tag>) },
-                  { title: t('quantity'), key: 'q', width: 120, align: 'right', render: (_, r) => `${fmt.number(r.quantity, 3)} ${r.unit ?? ''}` },
-                  { title: t('unitPrice'), dataIndex: 'unitCost', width: 120, align: 'right', render: fmt.money },
-                ]}
-              />
+              <div className="bm-toolbar"><span>{t('balance.expiring')}</span><InputNumber min={0} value={days ?? undefined} onChange={(v) => setDays(v ?? null)} /></div>
+              {isMobile ? (
+                <DocCards
+                  loading={lots.isFetching && !lots.data} items={lots.data} total={lots.data?.length ?? 0} page={1} pageSize={Math.max(1, lots.data?.length ?? 1)} onPage={() => undefined}
+                  render={(r) => ({
+                    key: r.id, title: ingName(r, i18n.language), sub: `${r.warehouse} · ${t('lot')} ${r.lotNo ?? '—'}`,
+                    tag: r.daysLeft != null ? <span className={`bm-tag ${lotTone(r.daysLeft)}`}>{r.daysLeft}</span> : undefined,
+                    meta: [{ label: t('expiry'), value: fmt.date(r.expiryDate) || '—' }, { label: t('quantity'), value: `${qtyText(r.quantity)} ${r.unit ?? ''}` }, { label: t('unitPrice'), value: fmt.money(r.unitCost) }],
+                  })}
+                />
+              ) : (
+                <Table<LotRow>
+                  rowKey="id" loading={lots.isFetching} dataSource={lots.data} scroll={{ x: 'max-content' }} size="small" pagination={{ pageSize: 50 }}
+                  columns={[
+                    { title: t('ingredient'), key: 'i', render: (_, r) => ingName(r, i18n.language) },
+                    { title: t('warehouse'), dataIndex: 'warehouse', width: 150 },
+                    { title: t('lot'), dataIndex: 'lotNo', width: 120 },
+                    { title: t('expiry'), dataIndex: 'expiryDate', width: 110, render: fmt.date },
+                    { title: t('balance.daysLeft'), dataIndex: 'daysLeft', width: 100, align: 'right', render: (v) => (v == null ? '' : <span className={`bm-tag ${lotTone(v)}`}>{v}</span>) },
+                    { title: t('quantity'), key: 'q', width: 120, align: 'right', render: (_, r) => `${qtyText(r.quantity)} ${r.unit ?? ''}` },
+                    { title: t('unitPrice'), dataIndex: 'unitCost', width: 120, align: 'right', render: fmt.money },
+                  ]}
+                />
+              )}
             </>
           ),
         },
@@ -259,39 +343,53 @@ export function StockCardPage() {
     queryKey: ['stock-card', ingredientId, warehouseId, isoDate(range[0]), isoDate(range[1])], enabled: !!ingredientId,
     queryFn: async () => (await http.get<CardResult>('/stock/card', { params: { ingredientId, warehouseId, from: isoDate(range[0]), to: isoDate(range[1]) } })).data,
   });
+  const screens = Grid.useBreakpoint();
+  const unit = data?.ingredient.unit ?? '';
+  const docLink = (r: CardResult['rows'][number]) => <Link to={r.docType === 'Receipt' ? `/stock/receipts/${r.docId}` : `/stock/issues/${r.docId}`}>{r.docNo}</Link>;
   return (
-    <Page title={t('card.title')}>
-      <div className="bm-card bm-pad">
+    <Page title={t('card.title')} sub={data ? `${data.ingredient.code} — ${data.ingredient.name}` : undefined}>
+      <div className="bm-card">
       <div className="bm-toolbar bm-no-print">
-        <LookupSelect resource="ingredients" value={ingredientId} onChange={setIngredientId} placeholder={t('ingredient')} style={{ width: 300 }} data-testid="card-ingredient" />
-        <LookupSelect resource="warehouses" value={warehouseId} onChange={setWarehouseId} placeholder={t('warehouse')} style={{ width: 200 }} />
-        <DatePicker.RangePicker value={range} onChange={(v) => v && setRange(v as never)} format={DATE_FORMAT} allowClear={false} />
+        <LookupSelect resource="ingredients" value={ingredientId} onChange={setIngredientId} placeholder={t('ingredient')} style={{ width: screens.md ? 300 : '100%' }} data-testid="card-ingredient" />
+        <LookupSelect resource="warehouses" value={warehouseId} onChange={setWarehouseId} placeholder={t('warehouse')} style={{ width: screens.md ? 200 : '100%' }} />
+        <DatePicker.RangePicker value={range} onChange={(v) => v && setRange(v as never)} format={DATE_FORMAT} allowClear={false} style={{ width: screens.md ? undefined : '100%' }} />
       </div>
-      {!ingredientId ? <Empty description={t('card.pick')} /> : (
+      {!ingredientId ? <div className="bm-pad"><Empty description={t('card.pick')} /></div> : (
         <>
           {data && (
-            <Row gutter={16} style={{ marginBottom: 12 }}>
-              <Col xs={12} md={6}><Statistic title={t('card.opening')} value={`${fmt.number(data.opening.quantity, 3)} ${data.ingredient.unit ?? ''}`} /></Col>
-              <Col xs={12} md={6}><Statistic title={t('card.in')} value={fmt.number(data.totals.inQty, 3)} /></Col>
-              <Col xs={12} md={6}><Statistic title={t('card.out')} value={fmt.number(data.totals.outQty, 3)} /></Col>
-              <Col xs={12} md={6}><Statistic title={t('card.closing')} value={`${fmt.number(data.closing.quantity, 3)} · ${fmt.money(data.closing.value)}`} /></Col>
-            </Row>
+            <div className="bm-x-tiles bm-pad">
+              <Tile label={t('card.opening')} value={`${qtyText(data.opening.quantity)} ${unit}`} extra={fmt.money(data.opening.value)} />
+              <Tile label={t('card.in')} value={qtyText(data.totals.inQty)} extra={unit} />
+              <Tile label={t('card.out')} value={qtyText(data.totals.outQty)} extra={unit} />
+              <Tile label={t('card.closing')} value={`${qtyText(data.closing.quantity)} ${unit}`} extra={fmt.money(data.closing.value)} />
+            </div>
           )}
+          {!screens.lg ? (
+            <DocCards
+              loading={isFetching && !data} items={data?.rows} total={data?.rows.length ?? 0} page={1} pageSize={Math.max(1, data?.rows.length ?? 1)} onPage={() => undefined}
+              render={(r) => ({
+                key: r.id, title: docLink(r), sub: `${fmt.date(r.docDate)} · ${enumLabel('LedgerType', r.type)}`,
+                tag: <span className={`bm-tag ${r.inQty ? 't-green' : 't-orange'}`}>{r.inQty ? `+${qtyText(r.inQty)}` : `−${qtyText(r.outQty)}`}</span>,
+                meta: [{ label: t('lot'), value: r.lotNo ?? '—' }, { label: t('amount'), value: fmt.money(r.amount) }, { label: t('card.balanceQty'), value: `${qtyText(r.balanceQty)} ${unit}` }],
+              })}
+            />
+          ) : (
           <Table
             rowKey="id" loading={isFetching} dataSource={data?.rows} pagination={false} size="small" scroll={{ x: 'max-content' }}
             columns={[
               { title: t('docDate'), dataIndex: 'docDate', width: 110, render: fmt.date },
-              { title: t('docNo'), dataIndex: 'docNo', width: 170, render: (v, r) => <Link to={r.docType === 'Receipt' ? `/stock/receipts/${r.docId}` : `/stock/issues/${r.docId}`}>{v}</Link> },
+              { title: t('docNo'), dataIndex: 'docNo', width: 170, render: (_, r) => docLink(r) },
               { title: t('card.movement'), dataIndex: 'type', width: 150, render: (v) => enumLabel('LedgerType', v) },
               { title: t('lot'), dataIndex: 'lotNo', width: 110 },
-              { title: t('card.in'), dataIndex: 'inQty', width: 100, align: 'right', render: (v) => (v ? fmt.number(v, 3) : '') },
-              { title: t('card.out'), dataIndex: 'outQty', width: 100, align: 'right', render: (v) => (v ? fmt.number(v, 3) : '') },
+              { title: t('card.in'), dataIndex: 'inQty', width: 100, align: 'right', render: (v) => (v ? qtyText(v) : '') },
+              { title: t('card.out'), dataIndex: 'outQty', width: 100, align: 'right', render: (v) => (v ? qtyText(v) : '') },
               { title: t('unitPrice'), dataIndex: 'unitCost', width: 120, align: 'right', render: fmt.money },
               { title: t('amount'), dataIndex: 'amount', width: 130, align: 'right', render: fmt.money },
-              { title: t('card.balanceQty'), dataIndex: 'balanceQty', width: 110, align: 'right', render: (v) => fmt.number(v, 3) },
+              { title: t('card.balanceQty'), dataIndex: 'balanceQty', width: 110, align: 'right', render: (v) => <b style={{ fontWeight: 600 }}>{qtyText(v)}</b> },
               { title: t('balance.value'), dataIndex: 'balanceValue', width: 140, align: 'right', render: fmt.money },
             ]}
           />
+          )}
         </>
       )}
       </div>
@@ -314,6 +412,7 @@ export function PurchaseRequestsPage() {
   const [open, setOpen] = useState(false);
   const [range, setRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([dayjs().add(1, 'day'), dayjs().add(7, 'day')]);
   const [warehouseId, setWarehouseId] = useState<string>();
+  const screens = Grid.useBreakpoint();
   const { data, isFetching } = useQuery({ queryKey: ['purchase-requests', page], queryFn: async () => (await http.get<PagedResult<PrRow>>('/purchase-requests', { params: { page, pageSize: 30 } })).data, placeholderData: keepPreviousData });
   const generate = async () => {
     try {
@@ -326,11 +425,23 @@ export function PurchaseRequestsPage() {
   return (
     <Page title={t('purchase.title')} actions={has('purchase.create') && <Button type="primary" icon={<PlusOutlined />} onClick={() => setOpen(true)} data-testid="pr-generate">{t('purchase.generate')}</Button>}>
       <div className="bm-card">
+      {!screens.lg ? (
+        <DocCards
+          loading={isFetching && !data} items={data?.items} total={data?.totalItems ?? 0} page={page} pageSize={30} onPage={setPage}
+          render={(r) => ({
+            key: r.id, onClick: () => navigate(`/stock/purchase-requests/${r.id}`), title: r.docNo, sub: fmt.date(r.docDate), tag: <StatusTag enumName="PurchaseRequestStatus" status={r.status} />,
+            meta: [
+              { label: t('purchase.needDate'), value: fmt.date(r.needDate) || '—' }, { label: t('purchase.menus'), value: r.menuCount },
+              { label: t('lines'), value: r.lineCount }, { label: t('purchase.estAmount'), value: fmt.money(r.estimatedAmount) },
+            ],
+          })}
+        />
+      ) : (
       <Table<PrRow>
         rowKey="id" loading={isFetching} dataSource={data?.items} scroll={{ x: 'max-content' }} onRow={(r) => ({ onClick: () => navigate(`/stock/purchase-requests/${r.id}`), style: { cursor: 'pointer' } })}
-        pagination={{ current: page, pageSize: 30, total: data?.totalItems, onChange: setPage }}
+        pagination={{ current: page, pageSize: 30, total: data?.totalItems, onChange: setPage, showTotal: (n) => t('common:totalItems', { count: n }) }}
         columns={[
-          { title: t('docNo'), dataIndex: 'docNo', width: 170 },
+          { title: t('docNo'), dataIndex: 'docNo', width: 170, render: (v) => <b style={{ fontWeight: 600 }}>{v}</b> },
           { title: t('docDate'), dataIndex: 'docDate', width: 110, render: fmt.date },
           { title: t('purchase.needDate'), dataIndex: 'needDate', width: 120, render: fmt.date },
           { title: t('purchase.menus'), dataIndex: 'menuCount', width: 100, align: 'right' },
@@ -339,6 +450,7 @@ export function PurchaseRequestsPage() {
           { title: t('status'), dataIndex: 'status', width: 130, render: (v) => <StatusTag enumName="PurchaseRequestStatus" status={v} /> },
         ]}
       />
+      )}
       <Modal open={open} title={t('purchase.generate')} onCancel={() => setOpen(false)} onOk={() => void generate()} okButtonProps={{ 'data-testid': 'pr-generate-ok' } as never}>
         <Space direction="vertical" style={{ width: '100%' }}>
           <DatePicker.RangePicker value={range} onChange={(v) => v && setRange(v as never)} format={DATE_FORMAT} style={{ width: '100%' }} />
@@ -358,6 +470,7 @@ export function PurchaseRequestDetailPage() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const { has } = usePermission();
+  const screens = Grid.useBreakpoint();
   const { data } = useQuery({ queryKey: ['purchase-request', id], queryFn: async () => (await http.get<PrDetail>(`/purchase-requests/${id}`)).data });
   const [lines, setLines] = useState<PrLine[]>([]);
   useEffect(() => { if (data) setLines(data.lines); }, [data]);
@@ -406,7 +519,6 @@ export function PurchaseRequestDetailPage() {
             {['Draft', 'Submitted', 'Approved'].includes(data.status) && has('purchase.edit') && <Popconfirm title={t('purchase.cancel')} onConfirm={() => void act('cancel')}><Button danger>{t('purchase.cancel')}</Button></Popconfirm>}
         </>
       )}
-      sub={t('purchase.formula')}
     >
       <div className="bm-card bm-pad">
         <InfoGrid items={[
@@ -417,24 +529,47 @@ export function PurchaseRequestDetailPage() {
           ...(data.receipts.length > 0 ? [{ key: 'r', label: t('receipts.title'), value: <span className="bm-dchips">{data.receipts.map((r) => <a key={r.id} className="bm-dchip" onClick={() => navigate(`/stock/receipts/${r.id}`)}>{r.docNo}</a>)}</span> }] : []),
         ]} />
       </div>
-      <div className="bm-card">
+      <Section title={t('lineItems')} hint={t('purchase.formula')}>
+        {!screens.lg ? (
+          <div className="bm-lines">
+            {lines.map((l) => (
+              <LineRow key={l.id}>
+                <LineCell label={t('ingredient')} flex="1 1 100%" static><span className="bm-take-ing">{ingName(l, i18n.language)}</span></LineCell>
+                <LineCell label={t('purchase.required')} flex="1 1 80px" static>{qtyText(l.requiredQty)} {l.unit ?? ''}</LineCell>
+                <LineCell label={t('available')} flex="1 1 80px" static>{qtyText(l.availableQty)}</LineCell>
+                <LineCell label={t('purchase.suggested')} flex="1 1 80px" static color="var(--primary-text)">{qtyText(l.suggestedQty)}</LineCell>
+                <LineCell label={t('purchase.order')} flex="1 1 100px" static={!editable}>
+                  {editable ? <InputNumber min={0} value={l.orderQty ?? undefined} onChange={(v) => patch(l.id, { orderQty: v ?? null })} /> : qtyText(l.orderQty)}
+                </LineCell>
+                <LineCell label={t('purchase.estPrice')} flex="1 1 120px" static={!editable}>
+                  {editable ? <InputNumber min={0} step={1000} value={l.estimatedPrice ?? undefined} onChange={(v) => patch(l.id, { estimatedPrice: v ?? null })} /> : fmt.money(l.estimatedPrice)}
+                </LineCell>
+                <LineCell label={t('amount')} flex="1 1 110px" static>{fmt.money((l.orderQty ?? 0) * (l.estimatedPrice ?? 0))}</LineCell>
+                <LineCell label={t('partner')} flex="1 1 100%" static={!editable}>
+                  {editable ? <LookupSelect resource="partners" value={l.partnerId} onChange={(v) => patch(l.id, { partnerId: v ?? null })} /> : (l.partner ?? '—')}
+                </LineCell>
+              </LineRow>
+            ))}
+          </div>
+        ) : (
         <Table<PrLine>
           rowKey="id" dataSource={lines} pagination={false} size="small" scroll={{ x: 'max-content' }}
           columns={[
             { title: t('ingredient'), key: 'i', render: (_, l) => ingName(l, i18n.language) },
             { title: t('unit'), dataIndex: 'unit', width: 70 },
-            { title: t('purchase.required'), dataIndex: 'requiredQty', width: 110, align: 'right', render: (v) => fmt.number(v, 3) },
-            { title: t('available'), dataIndex: 'availableQty', width: 110, align: 'right', render: (v) => fmt.number(v, 3) },
-            { title: t('purchase.minStock'), dataIndex: 'minStock', width: 110, align: 'right', render: (v) => fmt.number(v, 3) },
-            { title: t('purchase.suggested'), dataIndex: 'suggestedQty', width: 110, align: 'right', render: (v) => <b>{fmt.number(v, 3)}</b> },
+            { title: t('purchase.required'), dataIndex: 'requiredQty', width: 110, align: 'right', render: (v) => qtyText(v) },
+            { title: t('available'), dataIndex: 'availableQty', width: 110, align: 'right', render: (v) => qtyText(v) },
+            { title: t('purchase.minStock'), dataIndex: 'minStock', width: 110, align: 'right', render: (v) => qtyText(v) },
+            { title: t('purchase.suggested'), dataIndex: 'suggestedQty', width: 110, align: 'right', render: (v) => <b style={{ color: 'var(--primary-text)' }}>{qtyText(v)}</b> },
             { title: t('purchase.order'), key: 'o', width: 120, align: 'right', render: (_, l) => (editable ? <InputNumber size="small" min={0} value={l.orderQty ?? undefined} onChange={(v) => patch(l.id, { orderQty: v ?? null })} /> : fmt.number(l.orderQty, 3)) },
             { title: t('purchase.estPrice'), key: 'p', width: 130, align: 'right', render: (_, l) => (editable ? <InputNumber size="small" min={0} step={1000} value={l.estimatedPrice ?? undefined} onChange={(v) => patch(l.id, { estimatedPrice: v ?? null })} /> : fmt.money(l.estimatedPrice)) },
             { title: t('amount'), key: 'a', width: 130, align: 'right', render: (_, l) => fmt.money((l.orderQty ?? 0) * (l.estimatedPrice ?? 0)) },
             { title: t('partner'), key: 'pt', width: 220, render: (_, l) => (editable ? <LookupSelect resource="partners" value={l.partnerId} onChange={(v) => patch(l.id, { partnerId: v ?? null })} /> : l.partner) },
           ]}
         />
-        <Totals items={[{ label: t('purchase.estAmount'), value: fmt.money(total) }]} />
-      </div>
+        )}
+        <Totals items={[{ label: t('lines'), value: lines.length }, { label: t('purchase.estAmount'), value: fmt.money(total) }]} />
+      </Section>
     </Page>
   );
 }
@@ -448,6 +583,7 @@ export function PeriodLocksPage() {
   const { message } = App.useApp();
   const [warehouseId, setWarehouseId] = useState<string>();
   const [period, setPeriod] = useState<dayjs.Dayjs | null>(dayjs().subtract(1, 'month'));
+  const screens = Grid.useBreakpoint();
   const { data, refetch, isFetching } = useQuery({ queryKey: ['period-locks'], queryFn: async () => (await http.get<LockRow[]>('/stock/period-locks')).data });
   const lock = async () => {
     try {
@@ -461,22 +597,36 @@ export function PeriodLocksPage() {
   const unlock = async (id: string) => { try { await http.delete(`/stock/period-locks/${id}`); void refetch(); } catch (e) { message.error(problemMessage(e)); } };
   return (
     <Page title={t('locks.title')} sub={t('locks.hint')}>
+      <Section title={t('locks.new')}>
+        <div className="bm-toolbar bm-locks-form">
+          <LookupSelect resource="warehouses" value={warehouseId} onChange={setWarehouseId} placeholder={t('locks.allWarehouses')} style={{ width: screens.md ? 220 : '100%' }} />
+          <DatePicker picker="month" value={period} onChange={setPeriod} format="MM/YYYY" style={{ width: screens.md ? 160 : '100%' }} />
+          <Button type="primary" icon={<LockOutlined />} disabled={!period} onClick={() => void lock()}>{t('locks.lock')}</Button>
+        </div>
+      </Section>
       <div className="bm-card">
-      <div className="bm-toolbar">
-        <LookupSelect resource="warehouses" value={warehouseId} onChange={setWarehouseId} placeholder={t('locks.allWarehouses')} style={{ width: 220 }} />
-        <DatePicker picker="month" value={period} onChange={setPeriod} format="MM/YYYY" />
-        <Button type="primary" icon={<LockOutlined />} disabled={!period} onClick={() => void lock()}>{t('locks.lock')}</Button>
-      </div>
+      {!screens.lg ? (
+        <DocCards
+          loading={isFetching && !data} items={data} total={data?.length ?? 0} page={1} pageSize={Math.max(1, data?.length ?? 1)} onPage={() => undefined}
+          render={(r) => ({
+            key: r.id, title: dayjs(r.period).format('MM/YYYY'), sub: r.warehouse ?? t('locks.allWarehouses'), tag: <span className="bm-tag t-red">{t('locks.locked')}</span>,
+            meta: [{ label: t('locks.lockedAt'), value: fmt.dateTime(r.lockedAt) }, { label: t('locks.lockedBy'), value: r.lockedBy ?? '—' }],
+            actions: <Popconfirm title={t('locks.unlock')} onConfirm={() => void unlock(r.id)}><Button size="small" icon={<UnlockOutlined />}>{t('locks.unlock')}</Button></Popconfirm>,
+          })}
+        />
+      ) : (
       <Table<LockRow>
         rowKey="id" loading={isFetching} dataSource={data} pagination={false}
         columns={[
-          { title: t('locks.period'), dataIndex: 'period', render: (v) => dayjs(v).format('MM/YYYY') },
+          { title: t('locks.period'), dataIndex: 'period', render: (v) => <b style={{ fontWeight: 600 }}>{dayjs(v).format('MM/YYYY')}</b> },
           { title: t('warehouse'), dataIndex: 'warehouse', render: (v) => v ?? t('locks.allWarehouses') },
           { title: t('locks.lockedAt'), dataIndex: 'lockedAt', render: fmt.dateTime },
           { title: t('locks.lockedBy'), dataIndex: 'lockedBy' },
+          { title: t('status'), key: 's', width: 120, render: () => <span className="bm-tag t-red">{t('locks.locked')}</span> },
           { key: 'a', width: 120, render: (_, r) => <Popconfirm title={t('locks.unlock')} onConfirm={() => void unlock(r.id)}><Button size="small" icon={<UnlockOutlined />}>{t('locks.unlock')}</Button></Popconfirm> },
         ]}
       />
+      )}
       </div>
     </Page>
   );
