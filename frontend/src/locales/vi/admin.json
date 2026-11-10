@@ -76,7 +76,7 @@
     "matrix": "Ma trận phân quyền",
     "module": "Chức năng",
     "other": "Khác",
-    "selectRole": "Chọn nhóm quyền ở bên trái để xem/sửa quyền",
+    "selectRole": "Chọn một nhóm quyền để xem/sửa quyền",
     "saveMatrix": "Lưu phân quyền",
     "systemLocked": "Nhóm quản trị hệ thống luôn có toàn quyền",
     "all": "Tất cả",

@@ -29,7 +29,7 @@ L = {
         "title": ("Nhóm quyền", "Roles"), "code": ("Mã nhóm", "Role code"), "name": ("Tên nhóm quyền", "Role name"), "nameVi": ("Tên nhóm quyền (tiếng Việt)", "Role name (Vietnamese)"), "nameEn": ("Tên nhóm quyền (tiếng Anh)", "Role name (English)"), "users": ("Số tài khoản", "Users"),
         "permissions": ("Số quyền", "Permissions"), "system": ("Hệ thống", "System"), "requiresMfa": ("Bắt buộc xác thực 2 lớp", "Requires MFA"),
         "matrix": ("Ma trận phân quyền", "Permission matrix"), "module": ("Chức năng", "Function"), "other": ("Khác", "Other"),
-        "selectRole": ("Chọn nhóm quyền ở bên trái để xem/sửa quyền", "Select a role on the left to view or edit its permissions"),
+        "selectRole": ("Chọn một nhóm quyền để xem/sửa quyền", "Select a role to view or edit its permissions"),
         "saveMatrix": ("Lưu phân quyền", "Save permissions"), "systemLocked": ("Nhóm quản trị hệ thống luôn có toàn quyền", "The system administrator role always has full access"),
         "all": ("Tất cả", "All"), "search": ("Lọc chức năng…", "Filter functions…"),
         "pageTitle": ("Vai trò và phân quyền", "Roles and permissions"), "add": ("Thêm vai trò", "Add role"), "editRole": ("Sửa vai trò", "Edit role"), "deleteRole": ("Xóa vai trò", "Delete role"),

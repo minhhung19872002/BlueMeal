@@ -76,7 +76,7 @@
     "matrix": "Permission matrix",
     "module": "Function",
     "other": "Other",
-    "selectRole": "Select a role on the left to view or edit its permissions",
+    "selectRole": "Select a role to view or edit its permissions",
     "saveMatrix": "Save permissions",
     "systemLocked": "The system administrator role always has full access",
     "all": "All",
