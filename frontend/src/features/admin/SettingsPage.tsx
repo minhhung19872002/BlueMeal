@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react';
-import { App, Button, Card, Col, Divider, Form, Input, InputNumber, Row, Select, Space, Switch, Table, Tabs, Typography } from 'antd';
+import { App, Button, Form, Input, InputNumber, Select, Table } from 'antd';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { http, problemMessage } from '@/shared/api/http';
 import { usePermission } from '@/shared/auth/authStore';
 import { EnumSelect, LookupSelect } from '@/shared/components/catalog/inputs';
 import { ENUMS } from '@/shared/utils/enums';
+import { FLabel, PageHead, PillTabs, Section, Toggle, XButton } from '@/app/layout/designKit';
 
 type F = { name: string; type: 'number' | 'bool' | 'text' | 'enum' | 'roles' | 'warehouse' | 'textarea'; enumName?: keyof typeof ENUMS; min?: number; max?: number; step?: number };
-interface Section { key: string; group: string; title?: string; fields: F[] }
+interface SectionDef { key: string; group: string; title?: string; fields: F[] }
 
-const SECTIONS: Record<string, Section[]> = {
+const SECTIONS: Record<string, SectionDef[]> = {
   security: [
     { key: 'security.password', group: 'password', title: 'settings.password.title', fields: [
       { name: 'minLength', type: 'number', min: 8, max: 128 }, { name: 'requireUpper', type: 'bool' }, { name: 'requireLower', type: 'bool' }, { name: 'requireDigit', type: 'bool' },
@@ -60,9 +62,11 @@ const SECTIONS: Record<string, Section[]> = {
   ],
 };
 
+const TABS = ['security', 'warning', 'inventory', 'cost', 'smtp', 'backup', 'sample', 'generator', 'approval', 'audit', 'system'];
 const LABEL_ALIASES: Record<string, string> = { 'system.enabled': 'maintenance', 'system.messageVi': 'maintenanceVi', 'system.messageEn': 'maintenanceEn', 'system.enabledInProduction': 'swagger' };
 
-function SettingForm({ section, value, canEdit, onSaved }: { section: Section; value: Record<string, unknown>; canEdit: boolean; onSaved: () => void }) {
+/** One settings group as a design config card: title, field grid (44×24 switches), Save in the footer. */
+function SettingForm({ section, value, canEdit, onSaved, tabTitle, extraFoot }: { section: SectionDef; value: Record<string, unknown>; canEdit: boolean; onSaved: () => void; tabTitle: string; extraFoot?: React.ReactNode }) {
   const { t, i18n } = useTranslation('admin');
   const { message } = App.useApp();
   const [form] = Form.useForm();
@@ -85,27 +89,22 @@ function SettingForm({ section, value, canEdit, onSaved }: { section: Section; v
     }
   };
   return (
-    <Card size="small" title={section.title ? t(section.title) : undefined} style={{ marginBottom: 16 }}>
-      <Form form={form} layout="vertical" disabled={!canEdit} onValuesChange={() => setDirty(true)}>
-        <Row gutter={16}>
-          {section.fields.map((f) => (
-            <Col xs={24} md={f.type === 'textarea' || f.type === 'roles' ? 24 : 12} lg={f.type === 'textarea' || f.type === 'roles' ? 24 : 8} key={f.name}>
-              <Form.Item name={f.name} label={label(f)} valuePropName={f.type === 'bool' ? 'checked' : 'value'}>
-                {f.type === 'bool' ? <Switch /> :
-                  f.type === 'number' ? <InputNumber min={f.min} max={f.max} step={f.step} style={{ width: '100%' }} decimalSeparator="," /> :
-                  f.type === 'enum' ? <EnumSelect enumName={f.enumName!} values={[...ENUMS[f.enumName!]]} /> :
-                  f.type === 'roles' ? <Select mode="multiple" options={roles.data?.map((r) => ({ value: r.code, label: i18n.language === 'en' && r.nameEn ? r.nameEn : r.nameVi }))} /> :
-                  f.type === 'warehouse' ? <LookupSelect resource="warehouses" /> :
-                  f.type === 'textarea' ? <Input.TextArea rows={2} /> :
-                  <Input type={f.name === 'password' ? 'password' : 'text'} autoComplete="off" />}
-              </Form.Item>
-            </Col>
-          ))}
-        </Row>
+    <Section title={section.title ? t(section.title) : tabTitle} hint={section.key === 'backup' ? t('settings.backup.cronHint') : undefined}
+      foot={(canEdit || extraFoot) && <>{extraFoot}{canEdit && <XButton kind="primary" disabled={!dirty} onClick={() => void save()}>{t('common:actions.save')}</XButton>}</>}>
+      <Form form={form} layout="vertical" disabled={!canEdit} onValuesChange={() => setDirty(true)} className="bm-x-grid">
+        {section.fields.map((f) => (
+          <Form.Item key={f.name} name={f.name} label={label(f)} valuePropName={f.type === 'bool' ? 'checked' : 'value'} className={f.type === 'textarea' || f.type === 'roles' ? 'bm-x-wide' : undefined}>
+            {f.type === 'bool' ? <Toggle onText={t('settings.on')} offText={t('settings.off')} label={label(f)} disabled={!canEdit} /> :
+              f.type === 'number' ? <InputNumber min={f.min} max={f.max} step={f.step} style={{ width: '100%' }} decimalSeparator="," /> :
+              f.type === 'enum' ? <EnumSelect enumName={f.enumName!} values={[...ENUMS[f.enumName!]]} /> :
+              f.type === 'roles' ? <Select mode="multiple" options={roles.data?.map((r) => ({ value: r.code, label: i18n.language === 'en' && r.nameEn ? r.nameEn : r.nameVi }))} /> :
+              f.type === 'warehouse' ? <LookupSelect resource="warehouses" /> :
+              f.type === 'textarea' ? <Input.TextArea rows={2} /> :
+              <Input type={f.name === 'password' ? 'password' : 'text'} autoComplete="off" />}
+          </Form.Item>
+        ))}
       </Form>
-      {section.key === 'backup' && <Typography.Paragraph type="secondary">{t('settings.backup.cronHint')}</Typography.Paragraph>}
-      {canEdit && <Button type="primary" disabled={!dirty} onClick={() => void save()}>{t('common:actions.save')}</Button>}
-    </Card>
+    </Section>
   );
 }
 
@@ -120,12 +119,23 @@ function CostSettings({ value, canEdit, onSaved }: { value: any; canEdit: boolea
     setItems(value?.overheads ?? []);
   }, [value]);
   const update = (i: number, k: string, v: unknown) => setItems(items.map((x, j) => (j === i ? { ...x, [k]: v } : x)));
+  const save = async () => {
+    try { await http.put('/settings/cost', { priceMode, overheads: items }); message.success(t('settings.saved')); onSaved(); } catch (e) { message.error(problemMessage(e)); }
+  };
   return (
-    <Card size="small">
-      <Space direction="vertical" style={{ width: '100%' }}>
-        <Typography.Text>{t('settings.cost.priceMode')}</Typography.Text>
-        <EnumSelect enumName="CostPriceMode" values={[...ENUMS.CostPriceMode]} value={priceMode} onChange={setPriceMode} disabled={!canEdit} style={{ maxWidth: 360 }} />
-        <Divider orientation="left">{t('settings.cost.overheads')}</Divider>
+    <>
+      <Section title={t('settings.tabs.cost')} foot={canEdit && <XButton kind="primary" onClick={() => void save()}>{t('common:actions.save')}</XButton>}>
+        <div className="bm-x-grid">
+          <FLabel label={t('settings.cost.priceMode')}>
+            <EnumSelect enumName="CostPriceMode" values={[...ENUMS.CostPriceMode]} value={priceMode} onChange={setPriceMode} disabled={!canEdit} />
+          </FLabel>
+        </div>
+      </Section>
+      <Section title={t('settings.cost.overheads')} bodyClass="bm-x-sec-table"
+        foot={canEdit && <>
+          <Button icon={<PlusOutlined />} onClick={() => setItems([...items, { code: 'NEW', nameVi: '', nameEn: '', mode: 'FixedPerServing', value: 0 }])}>{t('settings.cost.add')}</Button>
+          <XButton kind="primary" onClick={() => void save()}>{t('common:actions.save')}</XButton>
+        </>}>
         <Table
           size="small"
           rowKey={(_, i) => String(i)}
@@ -141,16 +151,8 @@ function CostSettings({ value, canEdit, onSaved }: { value: any; canEdit: boolea
             { title: '', key: 'd', width: 50, render: (_, _r, i) => canEdit && <Button type="text" danger icon={<DeleteOutlined />} onClick={() => setItems(items.filter((_, j) => j !== i))} /> },
           ]}
         />
-        {canEdit && (
-          <Space>
-            <Button icon={<PlusOutlined />} onClick={() => setItems([...items, { code: 'NEW', nameVi: '', nameEn: '', mode: 'FixedPerServing', value: 0 }])}>{t('settings.cost.add')}</Button>
-            <Button type="primary" onClick={async () => {
-              try { await http.put('/settings/cost', { priceMode, overheads: items }); message.success(t('settings.saved')); onSaved(); } catch (e) { message.error(problemMessage(e)); }
-            }}>{t('common:actions.save')}</Button>
-          </Space>
-        )}
-      </Space>
-    </Card>
+      </Section>
+    </>
   );
 }
 
@@ -159,40 +161,35 @@ function SmtpTest() {
   const { message } = App.useApp();
   const [to, setTo] = useState('');
   return (
-    <Space.Compact style={{ maxWidth: 420, width: '100%' }}>
-      <Input placeholder={t('settings.smtp.testTo')} value={to} onChange={(e) => setTo(e.target.value)} />
-      <Button onClick={async () => { try { await http.post('/settings/smtp/test', { to }); message.success(t('settings.smtp.sent')); } catch (e) { message.error(problemMessage(e)); } }}>{t('settings.smtp.test')}</Button>
-    </Space.Compact>
+    <>
+      <Input placeholder={t('settings.smtp.testTo')} value={to} onChange={(e) => setTo(e.target.value)} style={{ maxWidth: 260 }} />
+      <XButton onClick={async () => { try { await http.post('/settings/smtp/test', { to }); message.success(t('settings.smtp.sent')); } catch (e) { message.error(problemMessage(e)); } }}>{t('settings.smtp.test')}</XButton>
+    </>
   );
 }
 
-/** System configuration screen (SPEC §7.1.13). */
+/** System configuration screen (SPEC §7.1.13) — layout: Claude Design BMAdmin (pill tabs, config cards). */
 export default function SettingsPage() {
   const { t } = useTranslation('admin');
   const { has } = usePermission();
+  const [params] = useSearchParams();
   const canEdit = has('system.setting_edit');
+  const initial = params.get('key');
+  const [tab, setTab] = useState(initial && TABS.includes(initial) ? initial : 'security');
   const { data, refetch } = useQuery({ queryKey: ['settings'], queryFn: async () => (await http.get<Record<string, any>>('/settings')).data });
   if (!data) return null;
-  const tab = (key: string) =>
-    SECTIONS[key].map((s) => <SettingForm key={s.key} section={s} value={data[s.key] ?? {}} canEdit={canEdit} onSaved={() => void refetch()} />);
+  const refresh = () => void refetch();
+  const body = tab === 'cost'
+    ? <CostSettings value={data['cost']} canEdit={canEdit} onSaved={refresh} />
+    : SECTIONS[tab].map((s) => (
+      <SettingForm key={s.key} section={s} value={data[s.key] ?? {}} canEdit={canEdit} onSaved={refresh} tabTitle={t(`settings.tabs.${tab}`)}
+        extraFoot={tab === 'smtp' && canEdit ? <SmtpTest /> : undefined} />
+    ));
   return (
-    <Card title={t('settings.title')}>
-      <Tabs
-        tabPosition="top"
-        items={[
-          { key: 'security', label: t('settings.tabs.security'), children: tab('security') },
-          { key: 'warning', label: t('settings.tabs.warning'), children: tab('warning') },
-          { key: 'inventory', label: t('settings.tabs.inventory'), children: tab('inventory') },
-          { key: 'cost', label: t('settings.tabs.cost'), children: <CostSettings value={data['cost']} canEdit={canEdit} onSaved={() => void refetch()} /> },
-          { key: 'smtp', label: t('settings.tabs.smtp'), children: <>{tab('smtp')}{canEdit && <SmtpTest />}</> },
-          { key: 'backup', label: t('settings.tabs.backup'), children: tab('backup') },
-          { key: 'sample', label: t('settings.tabs.sample'), children: tab('sample') },
-          { key: 'generator', label: t('settings.tabs.generator'), children: tab('generator') },
-          { key: 'approval', label: t('settings.tabs.approval'), children: tab('approval') },
-          { key: 'audit', label: t('settings.tabs.audit'), children: tab('audit') },
-          { key: 'system', label: t('settings.tabs.system'), children: tab('system') },
-        ]}
-      />
-    </Card>
+    <div className="bm-page">
+      <PageHead title={t('settings.title')} />
+      <PillTabs label={t('settings.title')} value={tab} onChange={setTab} items={TABS.map((k) => ({ key: k, label: t(`settings.tabs.${k}`) }))} />
+      {body}
+    </div>
   );
 }

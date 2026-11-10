@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Alert, App, Button, Card, Form, Input, Modal, Space, Table, Tag, Typography } from 'antd';
+import { Alert, App, Button, Form, Input, Modal, Space, Table, Tag, Typography } from 'antd';
 import { CloudDownloadOutlined, DatabaseOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { downloadFile, http, problemMessage } from '@/shared/api/http';
 import { fmt } from '@/shared/utils/format';
+import { PageHead, Section, XButton } from '@/app/layout/designKit';
 
 interface BackupRow { id: string; type: string; requestedAt: string; finishedAt?: string; sizeBytes?: number; sha256?: string; location?: string; status: string; error?: string; note?: string; requestedBy?: string; available: boolean }
 interface BackupList { items: BackupRow[]; totalItems: number; policy: { cron: string; keepDaily: number; keepWeekly: number; keepMonthly: number; mirrorPath?: string } }
@@ -12,7 +13,7 @@ interface BackupList { items: BackupRow[]; totalItems: number; policy: { cron: s
 const STATUS_COLOR: Record<string, string> = { Queued: 'default', Running: 'processing', Succeeded: 'green', Failed: 'red' };
 const size = (b?: number) => (b == null ? '' : b > 1_048_576 ? `${fmt.number(b / 1_048_576, 1)} MB` : `${fmt.number(b / 1024, 0)} KB`);
 
-/** Backup history, manual backup and download after password + MFA re-authentication (SPEC §10.7). */
+/** Backup history, manual backup and download after password + MFA re-authentication (SPEC §10.7) — layout: Claude Design BMAdmin. */
 export default function BackupsPage() {
   const { t } = useTranslation('admin');
   const { message } = App.useApp();
@@ -48,29 +49,28 @@ export default function BackupsPage() {
     }
   };
   return (
-    <Card>
-      <div className="bm-page-header">
-        <Typography.Title level={4}>{t('backups.title')}</Typography.Title>
-        <Button type="primary" icon={<DatabaseOutlined />} onClick={() => setManualOpen(true)} data-testid="backup-manual">{t('backups.manual')}</Button>
-      </div>
-      {data && <Typography.Paragraph type="secondary">{t('backups.policy', { cron: data.policy.cron, d: data.policy.keepDaily, w: data.policy.keepWeekly, m: data.policy.keepMonthly })}</Typography.Paragraph>}
-      <Alert type="info" showIcon message={t('backups.restoreHint')} style={{ marginBottom: 12 }} />
-      <Table<BackupRow> rowKey="id" loading={isFetching && !data} dataSource={data?.items} size="small" scroll={{ x: 'max-content' }}
-        pagination={{ current: page, pageSize: 30, total: data?.totalItems, onChange: setPage, showSizeChanger: false }}
-        columns={[
-          { title: t('backups.requestedAt'), dataIndex: 'requestedAt', width: 150, render: fmt.dateTime },
-          { title: t('backups.type'), dataIndex: 'type', width: 110, render: (v) => <Tag>{t(`backups.${v}`)}</Tag> },
-          { title: t('backups.status'), dataIndex: 'status', width: 120, render: (v, r) => <Tag color={STATUS_COLOR[v]} title={r.error}>{t(`backups.jobStatus.${v}`)}</Tag> },
-          { title: t('backups.finishedAt'), dataIndex: 'finishedAt', width: 150, render: fmt.dateTime },
-          { title: t('backups.size'), dataIndex: 'sizeBytes', width: 100, align: 'right', render: size },
-          { title: t('backups.file'), dataIndex: 'location', width: 280 },
-          { title: t('backups.sha'), dataIndex: 'sha256', width: 160, render: (v?: string) => v && <Typography.Text code copyable={{ text: v }}>{v.slice(0, 12)}…</Typography.Text> },
-          { title: t('backups.by'), dataIndex: 'requestedBy', width: 120 },
-          { title: t('backups.note'), dataIndex: 'note', width: 200 },
-          { key: 'a', width: 130, render: (_, r) => (r.available
-            ? <Button size="small" icon={<CloudDownloadOutlined />} onClick={() => setDl(r)} data-testid="backup-download">{t('backups.download')}</Button>
-            : r.status === 'Succeeded' && <Typography.Text type="secondary">{t('backups.notAvailable')}</Typography.Text>) },
-        ]} />
+    <div className="bm-page">
+      <PageHead title={t('backups.title')}
+        sub={data && <>{t('backups.policy', { cron: data.policy.cron, d: data.policy.keepDaily, w: data.policy.keepWeekly, m: data.policy.keepMonthly })} {t('backups.restoreHint')}</>}
+        actions={<XButton kind="primary" onClick={() => setManualOpen(true)} data-testid="backup-manual"><DatabaseOutlined />{t('backups.manual')}</XButton>} />
+      <Section title={t('backups.history')} bodyClass="bm-x-sec-table">
+        <Table<BackupRow> rowKey="id" loading={isFetching && !data} dataSource={data?.items} size="small" scroll={{ x: 'max-content' }}
+          pagination={{ current: page, pageSize: 30, total: data?.totalItems, onChange: setPage, showSizeChanger: false }}
+          columns={[
+            { title: t('backups.requestedAt'), dataIndex: 'requestedAt', width: 150, render: fmt.dateTime },
+            { title: t('backups.type'), dataIndex: 'type', width: 110, render: (v) => <Tag>{t(`backups.${v}`)}</Tag> },
+            { title: t('backups.size'), dataIndex: 'sizeBytes', width: 100, align: 'right', render: size },
+            { title: t('backups.sha'), dataIndex: 'sha256', width: 160, render: (v?: string) => v && <Typography.Text code copyable={{ text: v }}>{v.slice(0, 12)}…</Typography.Text> },
+            { title: t('backups.note'), dataIndex: 'note', width: 200, render: (v?: string) => v || '—' },
+            { title: t('backups.by'), dataIndex: 'requestedBy', width: 120 },
+            { title: t('backups.file'), dataIndex: 'location', width: 260 },
+            { title: t('backups.finishedAt'), dataIndex: 'finishedAt', width: 150, render: fmt.dateTime },
+            { title: t('backups.status'), dataIndex: 'status', width: 120, render: (v, r) => <Tag color={STATUS_COLOR[v]} title={r.error}>{t(`backups.jobStatus.${v}`)}</Tag> },
+            { key: 'a', width: 130, align: 'right', render: (_, r) => (r.available
+              ? <Button size="small" icon={<CloudDownloadOutlined />} onClick={() => setDl(r)} data-testid="backup-download">{t('backups.download')}</Button>
+              : r.status === 'Succeeded' && <Typography.Text type="secondary">{t('backups.notAvailable')}</Typography.Text>) },
+          ]} />
+      </Section>
       <Modal open={manualOpen} title={t('backups.manual')} onCancel={() => setManualOpen(false)} onOk={() => void manual()} okButtonProps={{ 'data-testid': 'backup-manual-ok' } as never}>
         <Input.TextArea rows={2} maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('backups.note')} />
       </Modal>
@@ -84,6 +84,6 @@ export default function BackupsPage() {
           <Alert type="warning" showIcon message={t('backups.reauthHint')} />
         </Space>
       </Modal>
-    </Card>
+    </div>
   );
 }

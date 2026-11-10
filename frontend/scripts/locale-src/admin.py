@@ -8,18 +8,22 @@ L = {
         "reauthHint": ("Bản sao lưu được mã hóa AES-256; cần mật khẩu khôi phục (BACKUP_PASSPHRASE) để giải mã khi phục hồi bằng restore.ps1/.sh.", "Backups are AES-256 encrypted; the BACKUP_PASSPHRASE is needed to decrypt when restoring with restore.ps1/.sh."),
         "policy": ("Chính sách: lịch {{cron}}, giữ {{d}} bản ngày, {{w}} bản tuần, {{m}} bản tháng", "Policy: schedule {{cron}}, keep {{d}} daily, {{w}} weekly, {{m}} monthly"),
         "restoreHint": ("Khôi phục: chạy deploy/backup/restore.ps1 (Windows) hoặc restore-host.sh (Linux) trên máy chủ — xem tài liệu vận hành.", "Restore: run deploy/backup/restore.ps1 (Windows) or restore-host.sh (Linux) on the server — see the operations guide."),
+        "history": ("Lịch sử sao lưu", "Backup history"),
         "jobStatus": {"Queued": ("Đang chờ", "Queued"), "Running": ("Đang chạy", "Running"), "Succeeded": ("Thành công", "Succeeded"), "Failed": ("Lỗi", "Failed"), "Expired": ("Hết hạn", "Expired")},
     },
     "version": {
         "title": ("Phiên bản hệ thống", "System version"), "server": ("Phiên bản máy chủ", "Server version"), "commit": ("Mã commit", "Commit"),
         "buildTime": ("Thời điểm build", "Build time"), "runtime": (".NET runtime", ".NET runtime"), "web": ("Phiên bản giao diện", "Web version"),
         "webCommit": ("Commit giao diện", "Web commit"), "changelog": ("Nhật ký thay đổi", "Changelog"),
+        "build": ("Thông tin bản dựng", "Build information"), "version": ("Phiên bản", "Version"), "date": ("Ngày", "Date"), "notes": ("Nội dung", "Notes"),
     },
     "org": {
         "title": ("Thông tin đơn vị", "Organization information"), "name": ("Tên đơn vị", "Organization name"), "nameEn": ("Tên tiếng Anh", "English name"),
         "taxCode": ("Mã số thuế", "Tax code"), "address": ("Địa chỉ", "Address"), "phone": ("Điện thoại", "Phone"), "email": ("Email", "Email"),
         "representative": ("Người đại diện", "Representative"), "representativeTitle": ("Chức vụ người đại diện", "Representative title"), "website": ("Website", "Website"),
         "logo": ("Logo", "Logo"), "uploadLogo": ("Tải logo (PNG/JPG, ≤ 2 MB)", "Upload logo (PNG/JPG, ≤ 2 MB)"),
+        "general": ("Thông tin chung", "General"), "generalHint": ("Tên và logo hiển thị trên header và tiêu đề báo cáo.", "The name and logo appear in the header and on report titles."),
+        "logoHint": ("PNG / JPEG / WEBP, tối đa 2 MB.", "PNG / JPEG / WEBP, up to 2 MB."), "noLogo": ("Chưa có logo — đang dùng logo BlueMeal mặc định", "No logo yet — the default BlueMeal logo is used"),
     },
     "roles": {
         "title": ("Nhóm quyền", "Roles"), "code": ("Mã nhóm", "Role code"), "name": ("Tên nhóm quyền", "Role name"), "nameVi": ("Tên nhóm quyền (tiếng Việt)", "Role name (Vietnamese)"), "nameEn": ("Tên nhóm quyền (tiếng Anh)", "Role name (English)"), "users": ("Số tài khoản", "Users"),
@@ -28,6 +32,9 @@ L = {
         "selectRole": ("Chọn nhóm quyền ở bên trái để xem/sửa quyền", "Select a role on the left to view or edit its permissions"),
         "saveMatrix": ("Lưu phân quyền", "Save permissions"), "systemLocked": ("Nhóm quản trị hệ thống luôn có toàn quyền", "The system administrator role always has full access"),
         "all": ("Tất cả", "All"), "search": ("Lọc chức năng…", "Filter functions…"),
+        "pageTitle": ("Vai trò và phân quyền", "Roles and permissions"), "add": ("Thêm vai trò", "Add role"), "editRole": ("Sửa vai trò", "Edit role"), "deleteRole": ("Xóa vai trò", "Delete role"),
+        "activeCount": ("{{n}} quyền đang bật · thay đổi có hiệu lực ngay ở thao tác tiếp theo của người dùng", "{{n}} permissions on · changes apply from the user's next action"),
+        "toggleRow": ("Bấm để bật/tắt cả hàng", "Click to toggle the whole row"),
         "action": {"view": ("Xem", "View"), "create": ("Thêm", "Create"), "edit": ("Sửa", "Edit"), "delete": ("Xóa", "Delete"), "approve": ("Duyệt", "Approve"), "export": ("Xuất", "Export"), "import": ("Nhập", "Import")},
     },
     "users": {
@@ -61,6 +68,7 @@ L = {
     },
     "settings": {
         "title": ("Cấu hình hệ thống", "System settings"), "saved": ("Đã lưu cấu hình", "Settings saved"),
+        "on": ("Đang bật", "On"), "off": ("Đang tắt", "Off"),
         "tabs": {
             "security": ("Bảo mật", "Security"), "warning": ("Ngưỡng cảnh báo", "Warning thresholds"), "inventory": ("Kho", "Inventory"), "cost": ("Chi phí suất ăn", "Meal cost"),
             "smtp": ("Email (SMTP)", "Email (SMTP)"), "backup": ("Sao lưu", "Backup"), "sample": ("Lưu mẫu", "Food samples"), "generator": ("Tạo thực đơn tự động", "Menu generator"),

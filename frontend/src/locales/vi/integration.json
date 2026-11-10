@@ -29,6 +29,8 @@
     "synced": "Nhận {{received}} · tạo {{created}} · cập nhật {{updated}} · xung đột {{conflicts}}",
     "pushed": "Đã gửi — mã tiếp nhận {{id}}",
     "stored": "đã lưu, nhập để thay",
+    "none": "Chưa có kết nối nào.",
+    "secretHint": "Client secret / API key không hiển thị lại sau khi lưu.",
     "auth": {
       "None": "Không xác thực",
       "ApiKey": "API key",

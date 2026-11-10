@@ -29,6 +29,8 @@
     "synced": "Received {{received}} · created {{created}} · updated {{updated}} · conflicts {{conflicts}}",
     "pushed": "Pushed — receipt {{id}}",
     "stored": "stored, type to replace",
+    "none": "No endpoint configured yet.",
+    "secretHint": "Client secrets / API keys are never shown again after saving.",
     "auth": {
       "None": "None",
       "ApiKey": "API key",
