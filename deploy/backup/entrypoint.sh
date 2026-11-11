@@ -31,6 +31,10 @@ chmod 0777 /backups/requests
 
 # Environment needed by cron jobs (crond does not inherit the container env)
 ENV_FILE=/tmp/backup.env
+# Remove the file left by a previous start of this same container (docker restart, host reboot): it belongs to
+# postgres, and with fs.protected_regular root may not re-open another user's file in sticky /tmp — the
+# truncation below then fails with "Permission denied" and the container restarts forever.
+rm -f "$ENV_FILE"
 : > "$ENV_FILE"
 for v in PGHOST PGUSER PGPASSWORD PGDATABASE BACKUP_PASSPHRASE KEEP_DAILY KEEP_WEEKLY KEEP_MONTHLY BACKUP_MIRROR_PATH TZ; do
   eval "val=\${$v:-}"
