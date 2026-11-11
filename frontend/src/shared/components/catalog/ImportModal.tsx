@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Alert, App, Button, Modal, Space, Statistic, Steps, Switch, Table, Tag, Typography, Upload } from 'antd';
 import { DownloadOutlined, InboxOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -6,12 +6,28 @@ import { downloadFile, http, problemMessage } from '@/shared/api/http';
 
 interface ImportRow { rowNumber: number; code?: string; action: 'Create' | 'Update' | 'Skip'; errors: string[] }
 interface Preview { token: string; totalRows: number; validRows: number; errorRows: number; createCount: number; updateCount: number; rows: ImportRow[] }
+type CommitResult = { created: number; updated: number; skipped: number };
+
+interface ImportModalProps {
+  resource: string;
+  open: boolean;
+  onClose: () => void;
+  onDone: () => void;
+  title: string;
+  /** Replaces the generic upload hint (document imports explain how rows are grouped). */
+  hint?: string;
+  /** Query parameters sent with the upload; the server keeps them with the preview token, so commit uses the same options. */
+  params?: Record<string, string | boolean | undefined>;
+  /** Option inputs shown above the upload area. */
+  extra?: ReactNode;
+  doneText?: (r: CommitResult) => string;
+}
 
 /**
  * Excel import following the template: upload → server validation per row (preview) → commit (SPEC §7 common features).
  * Nothing is written until the user confirms.
  */
-export function ImportModal({ resource, open, onClose, onDone, title }: { resource: string; open: boolean; onClose: () => void; onDone: () => void; title: string }) {
+export function ImportModal({ resource, open, onClose, onDone, title, hint, params, extra, doneText }: ImportModalProps) {
   const { t } = useTranslation('catalog');
   const { message } = App.useApp();
   const [preview, setPreview] = useState<Preview | null>(null);
@@ -30,7 +46,7 @@ export function ImportModal({ resource, open, onClose, onDone, title }: { resour
     try {
       const fd = new FormData();
       fd.append('file', file);
-      const r = await http.post<Preview>(`/${resource}/import/preview`, fd);
+      const r = await http.post<Preview>(`/${resource}/import/preview`, fd, { params });
       setPreview(r.data);
       setOnlyErrors(r.data.errorRows > 0);
     } catch (e) {
@@ -45,8 +61,8 @@ export function ImportModal({ resource, open, onClose, onDone, title }: { resour
     if (!preview) return;
     setCommitting(true);
     try {
-      const r = await http.post<{ created: number; updated: number; skipped: number }>(`/${resource}/import/commit`, { token: preview.token, skipErrors });
-      message.success(t('import.done', r.data));
+      const r = await http.post<CommitResult>(`/${resource}/import/commit`, { token: preview.token, skipErrors });
+      message.success(doneText ? doneText(r.data) : t('import.done', r.data));
       reset();
       onDone();
       onClose();
@@ -87,7 +103,8 @@ export function ImportModal({ resource, open, onClose, onDone, title }: { resour
       <Steps size="small" current={preview ? 1 : 0} items={[{ title: t('import.stepUpload') }, { title: t('import.stepPreview') }, { title: t('import.stepCommit') }]} style={{ marginBottom: 16 }} />
       {!preview ? (
         <Space direction="vertical" style={{ width: '100%' }}>
-          <Alert type="info" showIcon message={t('import.hint')} />
+          <Alert type="info" showIcon message={hint ?? t('import.hint')} />
+          {extra}
           <Button icon={<DownloadOutlined />} onClick={() => void downloadFile(`/${resource}/import/template`, undefined, `${resource}_template.xlsx`)}>
             {t('common:actions.downloadTemplate')}
           </Button>

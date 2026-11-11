@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import { App, Button, DatePicker, Form, Grid, Input, InputNumber, Select, Table, Typography } from 'antd';
-import { BarcodeOutlined, CheckOutlined, DeleteOutlined, PlusOutlined, PrinterOutlined, SaveOutlined } from '@ant-design/icons';
+import { App, Button, DatePicker, Form, Grid, Input, InputNumber, Select, Space, Switch, Table, Typography } from 'antd';
+import { BarcodeOutlined, CheckOutlined, DeleteOutlined, PlusOutlined, PrinterOutlined, SaveOutlined, UploadOutlined } from '@ant-design/icons';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { http, problemMessage, type PagedResult } from '@/shared/api/http';
 import { usePermission } from '@/shared/auth/authStore';
+import { ImportModal } from '@/shared/components/catalog/ImportModal';
 import { LookupSelect, useEnumLabel, type LookupItem } from '@/shared/components/catalog/inputs';
 import { ENUMS } from '@/shared/utils/enums';
 import { DATE_FORMAT, fmt, isoDate } from '@/shared/utils/format';
@@ -39,9 +40,16 @@ export function ReceiptsPage() {
   const params = { page, pageSize: 50, from: isoDate(range?.[0]), to: isoDate(range?.[1]), ...filters };
   const { data, isFetching } = useQuery({ queryKey: ['stock-receipts', params], queryFn: async () => (await http.get<PagedResult<ReceiptRow>>('/stock-receipts', { params })).data, placeholderData: keepPreviousData });
   const set = (key: string, v?: string | null) => { setFilters({ ...filters, [key]: v ?? undefined }); setPage(1); };
+  const [importing, setImporting] = useState(false);
   const isMobile = !screens.lg;
   return (
-    <Page title={t('receipts.title')} actions={has('stock.receipt.create') && <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/stock/receipts/new')} data-testid="receipt-new">{t('receipts.new')}</Button>}>
+    <Page title={t('receipts.title')} actions={
+      <Space wrap>
+        {has('stock.receipt.import') && <Button icon={<UploadOutlined />} onClick={() => setImporting(true)} data-testid="receipt-import-opening">{t('receipts.importOpening')}</Button>}
+        {has('stock.receipt.create') && <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/stock/receipts/new')} data-testid="receipt-new">{t('receipts.new')}</Button>}
+      </Space>
+    }>
+      <OpeningStockImport open={importing} onClose={() => setImporting(false)} />
       <div className="bm-card">
         <div className="bm-toolbar">
           <DatePicker.RangePicker value={range} onChange={(v) => { setRange(v as never); setPage(1); }} format={DATE_FORMAT} style={{ width: screens.md ? 260 : '100%' }} />
@@ -256,5 +264,31 @@ export function ReceiptEditorPage() {
         <Totals items={[{ label: t('lines'), value: lines.filter((l) => l.ingredientId).length }, { label: t('total'), value: fmt.money(total) }]} />
       </Section>
     </Page>
+  );
+}
+
+/**
+ * Opening stock from Excel (go-live): one posted (or draft) receipt per warehouse, dated at the chosen document date.
+ * The date and the post option travel with the preview token, so the commit uses exactly what was previewed.
+ */
+function OpeningStockImport({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useTranslation('stock');
+  const { has } = usePermission();
+  const qc = useQueryClient();
+  const canPost = has('stock.receipt.post');
+  const [docDate, setDocDate] = useState(() => dayjs());
+  const [post, setPost] = useState(canPost);
+  return (
+    <ImportModal resource="stock-receipts" open={open} onClose={onClose} title={t('receipts.importTitle')} hint={t('receipts.importHint')}
+      params={{ docDate: isoDate(docDate), post: canPost && post }}
+      onDone={() => void qc.invalidateQueries({ queryKey: ['stock-receipts'] })}
+      doneText={(r) => t('receipts.importDone', r)}
+      extra={
+        <Space wrap>
+          <span>{t('receipts.importDocDate')}</span>
+          <DatePicker value={docDate} onChange={(v) => v && setDocDate(v)} format={DATE_FORMAT} allowClear={false} data-testid="opening-doc-date" />
+          {canPost && <><Switch checked={post} onChange={setPost} /> <span>{t('receipts.importPost')}</span></>}
+        </Space>
+      } />
   );
 }

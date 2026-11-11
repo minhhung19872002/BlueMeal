@@ -69,7 +69,7 @@ public sealed class DepartmentsController : CatalogControllerBase<Department, De
 
     public sealed record MoveRequest(Guid? ParentId, int Index);
 
-    /// <summary>Drag & drop: move a node under a new parent at a given position; siblings are renumbered.</summary>
+    /// <summary>Drag and drop: move a node under a new parent at a given position; siblings are renumbered.</summary>
     [HttpPut("{id:guid}/move"), HasPermission(Permissions.Department.Edit)]
     public async Task<IActionResult> Move(Guid id, [FromBody] MoveRequest req, CancellationToken ct)
     {

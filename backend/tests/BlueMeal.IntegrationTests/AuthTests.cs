@@ -131,6 +131,40 @@ public sealed class AuthTests(ApiFactory f)
     }
 
     [Fact]
+    public async Task Mfa_is_mandatory_for_every_account_by_default()
+    {
+        new BlueMeal.Application.Settings.MfaPolicySettings().RequireForAllUsers.Should().BeTrue();
+        // HEAD_CHEF is not one of the MFA-mandatory roles; with the default policy it still has to enrol.
+        var (u, pwd) = await f.CreateUserAsync("mfa_all_chef", "HEAD_CHEF");
+        await f.SetMfaForAllUsersAsync(true);
+        try
+        {
+            var c = f.NewClient();
+            var login = await Json(await c.PostAsJsonAsync("/api/v1/auth/login", new { userName = u, password = pwd }));
+            login.GetProperty("restricted").GetBoolean().Should().BeTrue();
+            login.GetProperty("mfaSetupRequired").GetBoolean().Should().BeTrue();
+            login.GetProperty("user").GetProperty("mfaRequired").GetBoolean().Should().BeTrue();
+            c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", login.GetProperty("accessToken").GetString());
+            (await c.GetAsync("/api/v1/dishes")).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+            var secret = (await Json(await c.PostAsync("/api/v1/profile/mfa/setup", null))).GetProperty("secret").GetString()!;
+            var code = ApiFactory.Totp(secret);
+            (await c.PostAsJsonAsync("/api/v1/profile/mfa/enable", new { code })).StatusCode.Should().Be(HttpStatusCode.OK);
+            (await f.Refresh(c)).GetProperty("restricted").GetBoolean().Should().BeFalse();
+            (await c.GetAsync("/api/v1/dishes")).StatusCode.Should().Be(HttpStatusCode.OK);
+
+            // the user cannot switch it off again while the policy is on
+            var off = await c.PostAsJsonAsync("/api/v1/profile/mfa/disable", new { code });
+            off.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            (await Json(off)).GetProperty("code").GetString().Should().Be("auth.mfaRequired");
+        }
+        finally
+        {
+            await f.SetMfaForAllUsersAsync(false);
+        }
+    }
+
+    [Fact]
     public async Task Refresh_token_rotates_and_reuse_revokes_the_session()
     {
         var (u, pwd) = await f.CreateUserAsync("rotate1", "NUTRITIONIST");

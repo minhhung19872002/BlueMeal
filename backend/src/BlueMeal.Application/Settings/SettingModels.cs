@@ -58,6 +58,11 @@ public class SessionPolicySettings
 
 public class MfaPolicySettings
 {
+    /// <summary>
+    /// MFA is mandatory for every account, whatever its roles (tender §2.2 — xác thực đa yếu tố cho người dùng).
+    /// On by default; turning it off falls back to <see cref="RequiredRoles"/> + the per-role/per-user flags.
+    /// </summary>
+    public bool RequireForAllUsers { get; set; } = true;
     /// <summary>Role codes for which MFA is mandatory. SYS_ADMIN, MANAGER, MENU_APPROVER, ACCOUNTANT are always included.</summary>
     public List<string> RequiredRoles { get; set; } = ["SYS_ADMIN", "MANAGER", "MENU_APPROVER", "ACCOUNTANT"];
     public bool AllowEmailOtp { get; set; } = true;

@@ -20,7 +20,7 @@ public static class Permissions
     public static class User { public const string View = "user.view"; public const string Create = "user.create"; public const string Edit = "user.edit"; public const string Delete = "user.delete"; public const string Lock = "user.lock"; public const string ResetPassword = "user.reset_password"; }
     public static class Session { public const string View = "session.view"; public const string Revoke = "session.revoke"; }
     public static class Permission { public const string View = "permission.view"; }
-    public static class SystemInfo { public const string Version = "system.version"; public const string Setting = "system.setting"; public const string SettingEdit = "system.setting_edit"; public const string Backup = "system.backup"; public const string Restore = "system.restore"; public const string SampleData = "system.sample_data"; }
+    public static class SystemInfo { public const string Version = "system.version"; public const string Setting = "system.setting"; public const string SettingEdit = "system.setting_edit"; public const string Backup = "system.backup"; public const string SampleData = "system.sample_data"; }
     public static class Audit { public const string View = "audit.view"; public const string Export = "audit.export"; }
     public static class Integration { public const string View = "integration.view"; public const string Edit = "integration.edit"; public const string Sync = "integration.sync"; public const string Resolve = "integration.resolve"; }
 
@@ -35,7 +35,7 @@ public static class Permissions
     public static class FoodSafety { public const string View = "food_safety.view"; public const string Create = "food_safety.create"; public const string Edit = "food_safety.edit"; public const string Delete = "food_safety.delete"; public const string Import = "food_safety.import"; public const string Export = "food_safety.export"; }
     public static class Ingredient { public const string View = "ingredient.view"; public const string Create = "ingredient.create"; public const string Edit = "ingredient.edit"; public const string Delete = "ingredient.delete"; public const string Import = "ingredient.import"; public const string Export = "ingredient.export"; public const string Price = "ingredient.price"; }
     public static class Dish { public const string View = "dish.view"; public const string Create = "dish.create"; public const string Edit = "dish.edit"; public const string Delete = "dish.delete"; public const string Import = "dish.import"; public const string Export = "dish.export"; }
-    public static class Recipe { public const string View = "recipe.view"; public const string Create = "recipe.create"; public const string Edit = "recipe.edit"; public const string Delete = "recipe.delete"; public const string Approve = "recipe.approve"; public const string Export = "recipe.export"; }
+    public static class Recipe { public const string View = "recipe.view"; public const string Create = "recipe.create"; public const string Edit = "recipe.edit"; public const string Delete = "recipe.delete"; public const string Approve = "recipe.approve"; public const string Import = "recipe.import"; public const string Export = "recipe.export"; }
     public static class Recommendation { public const string View = "recommendation.view"; public const string Create = "recommendation.create"; public const string Edit = "recommendation.edit"; public const string Delete = "recommendation.delete"; public const string Import = "recommendation.import"; public const string Export = "recommendation.export"; }
     public static class ReportGroup { public const string View = "report_group.view"; public const string Create = "report_group.create"; public const string Edit = "report_group.edit"; public const string Delete = "report_group.delete"; public const string Import = "report_group.import"; public const string Export = "report_group.export"; }
     public static class MealShift { public const string View = "meal_shift.view"; public const string Create = "meal_shift.create"; public const string Edit = "meal_shift.edit"; public const string Delete = "meal_shift.delete"; public const string Import = "meal_shift.import"; public const string Export = "meal_shift.export"; }
@@ -54,7 +54,7 @@ public static class Permissions
     public static class Alert { public const string View = "alert.view"; public const string Resolve = "alert.resolve"; public const string Config = "alert.config"; }
     public static class Cost { public const string View = "cost.view"; public const string Config = "cost.config"; public const string Export = "cost.export"; }
 
-    public static class StockReceipt { public const string View = "stock.receipt.view"; public const string Create = "stock.receipt.create"; public const string Edit = "stock.receipt.edit"; public const string Delete = "stock.receipt.delete"; public const string Post = "stock.receipt.post"; }
+    public static class StockReceipt { public const string View = "stock.receipt.view"; public const string Create = "stock.receipt.create"; public const string Edit = "stock.receipt.edit"; public const string Delete = "stock.receipt.delete"; public const string Post = "stock.receipt.post"; public const string Import = "stock.receipt.import"; }
     public static class StockIssue { public const string View = "stock.issue.view"; public const string Create = "stock.issue.create"; public const string Edit = "stock.issue.edit"; public const string Delete = "stock.issue.delete"; public const string Post = "stock.issue.post"; }
     public static class StockTake { public const string View = "stock.take.view"; public const string Create = "stock.take.create"; public const string Edit = "stock.take.edit"; public const string Approve = "stock.take.approve"; }
     public static class Stock { public const string View = "stock.view"; public const string Lock = "stock.lock"; }
@@ -97,7 +97,7 @@ public static class Permissions
         ["view_cost"] = ("Xem chi phí", "View cost"), ["lock"] = ("Khóa/mở", "Lock/unlock"), ["reset_password"] = ("Đặt lại mật khẩu", "Reset password"),
         ["revoke"] = ("Đăng xuất cưỡng bức", "Force logout"), ["version"] = ("Phiên bản hệ thống", "System version"),
         ["setting"] = ("Xem cấu hình", "View settings"), ["setting_edit"] = ("Sửa cấu hình", "Edit settings"), ["backup"] = ("Sao lưu", "Backup"),
-        ["restore"] = ("Khôi phục", "Restore"), ["sample_data"] = ("Quản lý dữ liệu mẫu", "Manage sample data"), ["sync"] = ("Đồng bộ", "Synchronize"),
+        ["sample_data"] = ("Quản lý dữ liệu mẫu", "Manage sample data"), ["sync"] = ("Đồng bộ", "Synchronize"),
         ["resolve"] = ("Xử lý", "Resolve"), ["unlock"] = ("Mở khóa dữ liệu API", "Unlock API data"), ["price"] = ("Quản lý giá", "Manage prices"),
         ["config"] = ("Cấu hình", "Configure"), ["post"] = ("Ghi sổ", "Post"), ["dispose"] = ("Hủy mẫu", "Dispose"), ["manage"] = ("Xuất/ẩn danh hóa", "Export/anonymize"),
     };

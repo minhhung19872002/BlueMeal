@@ -13,6 +13,11 @@
   "items": "Số nguyên liệu",
   "updated": "Cập nhật",
   "new": "Tạo công thức",
+  "import": {
+    "title": "Nhập công thức từ Excel",
+    "hint": "Mỗi dòng là một nguyên liệu; các dòng cùng mã món tạo thành một công thức. Món đã có công thức đang dùng sẽ được thêm phiên bản nháp mới; món nào có dòng lỗi sẽ bị bỏ qua cả món.",
+    "done": "Đã nhập: {{created}} công thức mới, {{updated}} phiên bản nháp mới, {{skipped}} dòng bỏ qua"
+  },
   "editor": "Soạn công thức",
   "baseServings": "Số suất cơ sở",
   "instructions": "Hướng dẫn chế biến",

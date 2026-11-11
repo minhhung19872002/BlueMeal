@@ -250,7 +250,7 @@ public sealed class MenusController(AppDbContext db, MenuService menus, EngineDa
 
     public sealed record MoveItemRequest(Guid FromMenuId, Guid ItemId, Guid ToMenuId);
 
-    /// <summary>Drag & drop a dish between two editable menus of the calendar.</summary>
+    /// <summary>Drag and drop a dish between two editable menus of the calendar.</summary>
     [HttpPost("move-item"), HasPermission(Permissions.Menu.Edit)]
     public async Task<IActionResult> MoveItem([FromBody] MoveItemRequest req, CancellationToken ct)
     {

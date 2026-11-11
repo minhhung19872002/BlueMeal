@@ -215,7 +215,8 @@
     },
     "mfa": {
       "title": "Xác thực 2 lớp",
-      "requiredRoles": "Vai trò bắt buộc MFA",
+      "requireForAllUsers": "Bắt buộc MFA cho mọi tài khoản",
+      "requiredRoles": "Vai trò bắt buộc MFA (khi không bắt buộc cho mọi tài khoản)",
       "allowEmailOtp": "Cho phép OTP qua email (dự phòng)"
     },
     "warning": {

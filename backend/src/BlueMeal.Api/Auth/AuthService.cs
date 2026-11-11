@@ -33,7 +33,6 @@ public sealed class AuthService(
     ISettingsService settings,
     IAuditWriter audit,
     IEmailSender email,
-    IEncryptionService enc,
     PermissionService permissionService,
     CaptchaService captcha,
     TimeProvider clock,
@@ -450,6 +449,7 @@ public sealed class AuthService(
     {
         if (user.MfaRequired) return true;
         var policy = await settings.GetAsync<MfaPolicySettings>(SettingKeys.MfaPolicy, ct);
+        if (policy.RequireForAllUsers) return true;
         var required = policy.RequiredRoles.Concat(DefaultRoles.MfaMandatory).ToHashSet();
         var roles = await db.Set<UserRole>().Where(ur => ur.UserId == user.Id).Select(ur => new { ur.Role!.Name, ur.Role.RequiresMfa }).ToListAsync(ct);
         return roles.Any(r => r.RequiresMfa || required.Contains(r.Name!));

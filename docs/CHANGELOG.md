@@ -3,6 +3,17 @@
 Định dạng theo [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/); phiên bản theo [SemVer](https://semver.org/).
 Mỗi mục `## [x.y.z] - YYYY-MM-DD` được nạp vào màn hình **Phiên bản hệ thống** (bảng `system_version`).
 
+## [Unreleased]
+### Bổ sung theo yêu cầu kỹ thuật hồ sơ mời thầu
+- MFA bắt buộc với **mọi tài khoản** theo mặc định (*Cấu hình hệ thống → MFA*, `RequireForAllUsers`); tắt thì quay về bắt buộc theo vai trò.
+- Nhập **công thức món ăn** từ Excel (mỗi dòng một nguyên liệu, gộp theo mã món; món đã có công thức → phiên bản nháp mới). Quyền mới `recipe.import`.
+- Nhập **tồn kho đầu kỳ** từ Excel: một phiếu nhập (ghi sổ ngay hoặc nháp) cho mỗi kho, theo ngày chứng từ chọn. Quyền mới `stock.receipt.import`.
+- Hai luồng nhập trên dùng chung bước xem trước lỗi theo dòng; chứng từ có dòng lỗi bị bỏ qua cả chứng từ.
+- Log tập trung: sink syslog RFC 5424 (UDP/TCP) gửi sự kiện JSON tới SIEM, bật bằng `SYSLOG_HOST`.
+- Bỏ quyền `system.restore` chưa dùng (khôi phục chỉ thực hiện bằng script `deploy/backup/restore.*`).
+- Sửa: thông báo "Hạn sử dụng không được trước ngày sản xuất" trước đây hiện mã khóa thô.
+- Kiểm thử: chỉ ghi lại `docs/api/openapi.json` và mẫu `tools/import-templates/` khi đặt `BLUEMEAL_EXPORT_ARTIFACTS=1`; CSDL kiểm thử dùng `postgres:16-alpine`.
+
 ## [1.0.0] - 2026-11-09
 ### Phát hành chính thức
 - Kiểm thử tải đạt ngưỡng SPEC §11: **1 000 VU giữ 10 phút, p95 đọc 628 ms, lỗi 0 %**, 317 423 request (`docs/test-reports/k6-load-test.md`).

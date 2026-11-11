@@ -41,6 +41,56 @@ public sealed class RecipeTests(ApiFactory f)
     }
 
     [Fact]
+    public async Task Recipes_import_from_excel_whole_dish_or_nothing()
+    {
+        var (c, rice, oil) = await Setup();
+        var riceCode = (await J(await c.GetAsync($"/api/v1/ingredients/{rice}"))).GetProperty("code").GetString();
+        var oilCode = (await J(await c.GetAsync($"/api/v1/ingredients/{oil}"))).GetProperty("code").GetString();
+        async Task<string> Dish(string code) => (await J(await c.PostAsJsonAsync("/api/v1/dishes", new { code, nameVi = "Món nhập thử " + code, dishType = "Staple", cookingMethod = "Boil", isActive = true }))).GetProperty("id").GetString()!;
+        var fresh = await Dish("MON-TEST-IMP-NEW");
+        var existing = await Dish("MON-TEST-IMP-OLD");
+        var broken = await Dish("MON-TEST-IMP-ERR");
+        await J(await c.PostAsJsonAsync("/api/v1/recipes", new { dishId = existing, baseServings = 10, cookingLossRate = 0, items = new[] { new { ingredientId = rice, grossG = 1000 } } }));
+
+        static Dictionary<string, object?> Row(string dish, string? ing, object? gross, decimal? servings = null, decimal? loss = null) => new()
+        {
+            ["Mã món"] = dish, ["Mã nguyên liệu"] = ing, ["Khối lượng sống (g)"] = gross, ["Số suất chuẩn"] = servings, ["Hao hụt chế biến (%)"] = loss,
+        };
+        var xlsx = await ImportSheet.FromTemplateAsync(c, "recipes",
+        [
+            Row("MON-TEST-IMP-NEW", riceCode, 1200m, 10, 5), Row("mon-test-imp-new", oilCode, 50m), // codes are case-insensitive
+            Row("MON-TEST-IMP-OLD", riceCode, 1500m, 10),
+            Row("MON-TEST-IMP-ERR", riceCode, 100m), Row("MON-TEST-IMP-ERR", oilCode, "abc"), // one bad line → the whole dish is skipped
+            Row("MON-KHONG-TON-TAI", riceCode, 100m),
+        ]);
+        var preview = await J(await ImportSheet.PreviewAsync(c, "recipes", xlsx));
+        preview.GetProperty("totalRows").GetInt32().Should().Be(6);
+        preview.GetProperty("validRows").GetInt32().Should().Be(3, preview.GetProperty("rows").ToString());
+        preview.GetProperty("createCount").GetInt32().Should().Be(2);
+        preview.GetProperty("updateCount").GetInt32().Should().Be(1);
+        var token = preview.GetProperty("token").GetString();
+
+        // nothing is written while errors remain and skipErrors is off
+        (await J(await c.PostAsJsonAsync("/api/v1/recipes/import/commit", new { token, skipErrors = false }))).GetProperty("created").GetInt32().Should().Be(0);
+        var commit = await J(await c.PostAsJsonAsync("/api/v1/recipes/import/commit", new { token, skipErrors = true }));
+        commit.GetProperty("created").GetInt32().Should().Be(1);
+        commit.GetProperty("updated").GetInt32().Should().Be(1);
+        commit.GetProperty("skipped").GetInt32().Should().Be(3);
+        (await c.PostAsJsonAsync("/api/v1/recipes/import/commit", new { token })).StatusCode.Should().Be(HttpStatusCode.NotFound); // token is single-use
+
+        async Task<List<JsonElement>> Versions(string dishId) => (await J(await c.GetAsync($"/api/v1/recipes?dishId={dishId}"))).GetProperty("items").EnumerateArray().ToList();
+        var imported = (await Versions(fresh)).Should().ContainSingle().Subject;
+        imported.GetProperty("isCurrent").GetBoolean().Should().BeTrue();   // first recipe of the dish applies at once
+        imported.GetProperty("baseServings").GetDecimal().Should().Be(10);
+        imported.GetProperty("cookingLossRate").GetDecimal().Should().Be(5);
+        imported.GetProperty("itemCount").GetInt32().Should().Be(2);
+        var newVersion = (await Versions(existing)).Single(v => v.GetProperty("versionNo").GetInt32() == 2);
+        newVersion.GetProperty("status").GetString().Should().Be("Draft");  // a dish with a recipe gets a new version to approve
+        newVersion.GetProperty("isCurrent").GetBoolean().Should().BeFalse();
+        (await Versions(broken)).Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task Versioning_activate_archives_previous_and_compare()
     {
         var (c, rice, oil) = await Setup();

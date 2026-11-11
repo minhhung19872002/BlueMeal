@@ -33,7 +33,7 @@ public sealed class OrganizationUpdateValidator : AbstractValidator<Organization
 
 /// <summary>Organization info and logo (SPEC §7.1.1). Logo is shown on the header and reports.</summary>
 [Route("api/v1/organization")]
-public sealed class OrganizationController(AppDbContext db, FileService files, IAuditWriter audit) : ApiControllerBase
+public sealed class OrganizationController(AppDbContext db, FileService files) : ApiControllerBase
 {
     [HttpGet, HasPermission(Permissions.Organization.View)]
     public async Task<IActionResult> Get(CancellationToken ct)
@@ -163,7 +163,7 @@ public sealed class FilesController(FileService files, AppDbContext db) : ApiCon
 
 /// <summary>System configuration (SPEC §7.1.13): password policy, thresholds, inventory cost method, overhead, SMTP, backup schedule, sample retention, generator weights…</summary>
 [Route("api/v1/settings")]
-public sealed class SettingsController(AppDbContext db, ISettingsService settings, IAuditWriter audit, IEmailSender email) : ApiControllerBase
+public sealed class SettingsController(ISettingsService settings, IAuditWriter audit, IEmailSender email) : ApiControllerBase
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() } };
 

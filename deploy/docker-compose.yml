@@ -15,6 +15,9 @@ x-api-env: &api-env
   BLUEMEAL_EXPORT_PATH: /data/exports
   BLUEMEAL_BACKUP_PATH: /backups
   Logging__FilePath: /app/logs/bluemeal-.json
+  Logging__Syslog__Host: ${SYSLOG_HOST:-}
+  Logging__Syslog__Port: ${SYSLOG_PORT:-514}
+  Logging__Syslog__Protocol: ${SYSLOG_PROTOCOL:-udp}
   Auth__CookieSecure: ${AUTH_COOKIE_SECURE:-true}
   Seed__SampleData: ${SEED_SAMPLE_DATA:-true}
   Integration__VddBaseUrl: ${VDD_BASE_URL:-}

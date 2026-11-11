@@ -86,7 +86,7 @@ L = {
             "maxConcurrentSessions": ("Số phiên đồng thời tối đa / người", "Max concurrent sessions per user"), "refreshTokenDays": ("Hiệu lực phiên tối đa (ngày)", "Max session lifetime (days)"),
             "accessTokenMinutes": ("Hiệu lực access token (phút)", "Access token lifetime (minutes)"),
         },
-        "mfa": {"title": ("Xác thực 2 lớp", "Two-factor authentication"), "requiredRoles": ("Vai trò bắt buộc MFA", "Roles requiring MFA"), "allowEmailOtp": ("Cho phép OTP qua email (dự phòng)", "Allow email OTP fallback")},
+        "mfa": {"title": ("Xác thực 2 lớp", "Two-factor authentication"), "requireForAllUsers": ("Bắt buộc MFA cho mọi tài khoản", "Require MFA for every account"), "requiredRoles": ("Vai trò bắt buộc MFA (khi không bắt buộc cho mọi tài khoản)", "Roles requiring MFA (when not required for every account)"), "allowEmailOtp": ("Cho phép OTP qua email (dự phòng)", "Allow email OTP fallback")},
         "warning": {
             "energyWarnLowPct": ("Năng lượng thấp — cảnh báo (< % mục tiêu)", "Low energy — warning (< % of target)"), "energyWarnHighPct": ("Năng lượng cao — cảnh báo (> %)", "High energy — warning (> %)"),
             "energyCriticalLowPct": ("Năng lượng thấp — nghiêm trọng (< %)", "Low energy — critical (< %)"), "energyCriticalHighPct": ("Năng lượng cao — nghiêm trọng (> %)", "High energy — critical (> %)"),

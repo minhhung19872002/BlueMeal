@@ -24,6 +24,7 @@ Cột **Tự động** chỉ tên test tự động tương ứng (U = unit, I =
 | TC-AUTH-06 | 111 | Đăng nhập với mật khẩu đã quá 90 ngày | sửa `password_changed_at` | Phiên hạn chế, chỉ đổi mật khẩu | I `SessionAndPiiTests.Expired_password_gives_a_restricted_session` |
 | TC-AUTH-07 | 111 | Dùng lại cùng mã TOTP cho lần đăng nhập thứ hai | — | Lần 2 bị từ chối | I `SessionAndPiiTests.A_totp_code_cannot_be_replayed_at_login` |
 | TC-AUTH-08 | 111 | Đăng nhập bằng mã khôi phục / OTP email | mã khôi phục | Đăng nhập được; mã khôi phục dùng một lần | TC |
+| TC-AUTH-09 | 111,113 | Tài khoản thường (không thuộc vai trò bắt buộc MFA) đăng nhập với chính sách mặc định | user thường, chưa bật MFA | Phiên hạn chế: phải bật MFA mới dùng được hệ thống | I `AuthTests.Mfa_is_mandatory_for_every_account_by_default` |
 | TC-SES-01 | 107 | Refresh token xoay vòng; dùng lại token cũ | — | Token cũ dùng lại → thu hồi cả phiên | I `AuthTests.Refresh_token_rotates_and_reuse_revokes_the_session` |
 | TC-SES-02 | 107 | Gọi refresh không có header CSRF | — | 403 | I `AuthTests.Refresh_requires_csrf_header` |
 | TC-SES-03 | 107 | Admin đăng xuất cưỡng bức phiên của user | — | Request tiếp theo của user trả 401 | I `AuthTests.Logout_and_admin_force_logout_revoke_sessions` |
@@ -55,6 +56,7 @@ Cột **Tự động** chỉ tên test tự động tương ứng (U = unit, I =
 | TC-REC-01 | 307 | Soạn công thức, nhập khối lượng → xem dinh dưỡng/chi phí realtime; quy đổi 350 suất | Số liệu khớp tính tay | U `NutritionEngineTests`, `CostAndWarningEngineTests`; I `RecipeTests.Realtime_compute_matches_hand_calculation`, `RecipeTests.Price_mode_contract_uses_active_contract_price`; E `p3-recipes.spec.ts` |
 | TC-REC-02 | 307 | Tạo phiên bản mới, so sánh, kích hoạt; sửa bản đang dùng | Kích hoạt lưu trữ bản cũ; bản đang dùng không sửa được | I `RecipeTests.Versioning_activate_archives_previous_and_compare` |
 | TC-REC-03 | 306 | Xem nhanh dinh dưỡng món | Hiện năng lượng, P:L:G, chi phí 1 suất | E `p3-recipes.spec.ts` |
+| TC-REC-04 | 307 | Nhập công thức từ Excel: món mới, món đã có công thức, món có dòng lỗi, mã món không tồn tại | 6 dòng / 4 món | Xem trước 3 dòng hợp lệ; `skipErrors=false` không ghi gì; nhập: 1 công thức mới đang dùng, 1 phiên bản nháp, món lỗi không có công thức; token dùng 1 lần | I `RecipeTests.Recipes_import_from_excel_whole_dish_or_nothing` |
 
 ### 1.3 Thực đơn (UC-401…UC-407)
 
@@ -101,6 +103,7 @@ Cột **Tự động** chỉ tên test tự động tương ứng (U = unit, I =
 | TC-STK-07 | 601 | Gửi 2 lần cùng Idempotency-Key | Cùng một phiếu | I `StockTests.Idempotency_key_replays_the_first_response` |
 | TC-STK-08 | 602,605 | Thực đơn đã duyệt → phiếu xuất dự kiến, đề xuất mua → tạo phiếu nhập | Định lượng × suất; công thức đề xuất đúng; không cho sinh phiếu xuất lần 2 | I `StockTests.Approved_menu_generates_planned_issue_and_purchase_request` |
 | TC-STK-09 | 601 | Nhập mã vạch nguyên liệu trên phiếu nhập | Thêm dòng nguyên liệu tương ứng | TC |
+| TC-STK-10 | 601,604 | Nhập tồn đầu kỳ từ Excel, ghi sổ ngay, ngày 30/06 | 2 dòng đúng, 2 dòng lỗi | 1 phiếu nhập đã ghi sổ 810.000; tồn 15 đơn vị; thẻ kho tháng 7 mở đầu 15; RPT-02 tồn đầu 810.000 | I `StockTests.Opening_stock_import_creates_posted_receipts_per_warehouse` |
 | TC-SAF-01 | 608 | Lưu mẫu < khối lượng tối thiểu; hủy trước 24 giờ | Bị chặn | I `StockTests.Food_sample_rules_and_daily_alerts`; E `p5-stock.spec.ts` |
 | TC-SAF-02 | 607 | Ghi bước 2, bước 3 với kết quả Không đạt không có biện pháp | Bị chặn; có biện pháp thì lưu; in biểu mẫu | TC + I `ReportTests.Date_filtered_safety_lists_work` |
 
@@ -114,7 +117,7 @@ Cột **Tự động** chỉ tên test tự động tương ứng (U = unit, I =
 | TC-INT-04 | 803 | Sửa tay thực phẩm VDD rồi nguồn cũng đổi → giải quyết | 1 xung đột hiển thị local/remote; lấy nguồn → giá trị mới; giữ local → không báo lại cùng phiên bản | như trên |
 | TC-INT-05 | 802 | Nguồn trả 503 hai lần | Đồng bộ vẫn thành công (retry) | như trên |
 | TC-INT-06 | 805 | Token sai secret, scope không cấp; gọi JSON, XML, FHIR; tắt client | 401, 400; JSON/XML/FHIR hợp lệ; scope thiếu 403; tắt client → không lấy token | I `IntegrationTests.Public_api_with_client_credentials_json_xml_and_fhir` |
-| TC-INT-07 | 805 | Sinh `docs/api/openapi.json` | Có các đường dẫn `/api/v1/public/*` | I `IntegrationTests.OpenApi_document_is_exported_to_docs` |
+| TC-INT-07 | 805 | Sinh `docs/api/openapi.json` (chỉ ghi file khi chạy với `BLUEMEAL_EXPORT_ARTIFACTS=1`) | Có các đường dẫn `/api/v1/public/*` | I `IntegrationTests.OpenApi_document_is_exported_to_docs` |
 
 ## 2. Ma trận truy vết (tóm tắt)
 
@@ -124,7 +127,7 @@ Cột **Tự động** chỉ tên test tự động tương ứng (U = unit, I =
 | 4.2–4.3 Danh mục, món, công thức | TC-CAT-*, TC-REC-* | Engine: 60+ unit; integration P2/P3; E2E P2/P3 |
 | 4.4 Thực đơn | TC-MENU-* | MenuGenerator unit; `MenuTests`; E2E P4 |
 | 4.5–4.7, 4.9 Phân tích, cảnh báo, chi phí, báo cáo | TC-ANA-*, TC-ALR-*, TC-COST-*, TC-RPT-*, TC-DASH-* | `ReportTests` (6); E2E P6 |
-| 4.8 Kho, ATTP | TC-STK-*, TC-SAF-* | `InventoryEngineTests` (19); `StockTests` (9); E2E P5 |
+| 4.8 Kho, ATTP | TC-STK-*, TC-SAF-* | `InventoryEngineTests` (19); `StockTests` (10); E2E P5 |
 | 4.10 Tích hợp | TC-INT-* | `NutritionMappingTests` (6); `IntegrationTests` (4); E2E P7 |
 | NFR-02 Bảo mật | mục 4 | `SecurityP8Tests`, `SessionAndPiiTests`, E2E P8, ZAP |
 | NFR-01 Hiệu năng | mục 3 | k6 |
@@ -160,7 +163,7 @@ Tổng số test tự động tại v1.0.0: **117 unit, 81 integration, 7 Vitest
 | Loại | Kết quả | Báo cáo |
 |---|---|---|
 | Unit (backend) | 117/117 đạt; độ phủ dòng các engine tính toán 98,8 % | `dotnet test` |
-| Integration (PostgreSQL thật) | 81/81 đạt (gồm sinh 22 file mẫu nhập `tools/import-templates/`) | `dotnet test` |
+| Integration (PostgreSQL thật) | 87/87 đạt (2026-11-11). Mẫu nhập `tools/import-templates/` và `docs/api/openapi.json` chỉ được sinh lại khi chạy `BLUEMEAL_EXPORT_ARTIFACTS=1 dotnet test --filter "Export"` | `dotnet test` |
 | Frontend unit (Vitest) | 7/7 đạt | `npx vitest run` |
 | E2E Playwright | **54/54 đạt** (44 desktop Chrome + 10 mobile Pixel 7, chạy 2026-11-09 theo 4 đợt rồi gộp báo cáo); thêm P1 + P8 (7/7) trên bản production HTTPS | `docs/test-reports/e2e/index.html`, `e2e-junit.xml` |
 | ZAP baseline | 0 High, 0 Medium, 1 Low (false positive, có giải trình), còn lại Informational | `docs/test-reports/zap/zap-baseline.html` |

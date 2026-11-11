@@ -118,7 +118,7 @@ public sealed class PartnerUpsertValidator : CatalogUpsertValidator<PartnerUpser
 }
 
 [Route("api/v1/partners"), PermissionModule("partner")]
-public sealed class PartnersController(FileService files) : CatalogControllerBase<Partner, PartnerDto, PartnerUpsert>
+public sealed class PartnersController : CatalogControllerBase<Partner, PartnerDto, PartnerUpsert>
 {
     protected override string ExportTitle => L.Pick("Danh muc doi tac", "Partners");
 

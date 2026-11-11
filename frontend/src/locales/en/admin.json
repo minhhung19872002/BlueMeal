@@ -215,7 +215,8 @@
     },
     "mfa": {
       "title": "Two-factor authentication",
-      "requiredRoles": "Roles requiring MFA",
+      "requireForAllUsers": "Require MFA for every account",
+      "requiredRoles": "Roles requiring MFA (when not required for every account)",
       "allowEmailOtp": "Allow email OTP fallback"
     },
     "warning": {

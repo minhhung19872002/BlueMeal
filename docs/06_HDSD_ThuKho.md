@@ -21,6 +21,8 @@
 4. *Lưu* (nháp) hoặc *Ghi sổ* → xác nhận. **Dòng Không đạt chặn ghi sổ** — xóa dòng đó (trả nhà cung cấp) hoặc sửa kết quả.
 5. *In phiếu*. Khi ghi sổ, biên bản kiểm thực bước 1 được tạo tự động cho từng dòng.
 
+**Tồn đầu kỳ khi bắt đầu dùng hệ thống**: *Phiếu nhập kho → Nhập tồn đầu kỳ* → chọn ngày chứng từ và *Ghi sổ ngay* → *Tải file mẫu*, điền mã kho, mã nguyên liệu, số lượng (đơn vị mua), đơn giá, lô/NSX/HSD → chọn file → xem lỗi từng dòng → *Nhập*. Mỗi kho thành một phiếu nhập; kho nào có dòng lỗi sẽ không được nhập cho đến khi sửa file.
+
 ## 3. Xuất kho
 
 ![Phiếu xuất](images/stock-issue.png)

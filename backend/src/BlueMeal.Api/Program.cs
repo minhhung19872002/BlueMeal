@@ -29,7 +29,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables("BLUEMEAL__");
 BlueMealConfig.ApplyEnvAliases(builder.Configuration);
 
-// ---------------------------------------------------------------- logging (SPEC §10.3: JSON rolling file, syslog/SIEM via config)
+// ---------------------------------------------------------------- logging (SPEC §10.3: JSON rolling file + optional remote syslog for a SIEM)
 builder.Host.UseSerilog((ctx, sp, lc) =>
 {
     lc.ReadFrom.Configuration(ctx.Configuration)
@@ -40,6 +40,8 @@ builder.Host.UseSerilog((ctx, sp, lc) =>
     else lc.WriteTo.Console(new CompactJsonFormatter());
     var logPath = ctx.Configuration["Logging:FilePath"] ?? Path.Combine(AppContext.BaseDirectory, "logs", "bluemeal-.json");
     lc.WriteTo.File(new CompactJsonFormatter(), logPath, rollingInterval: RollingInterval.Day, retainedFileCountLimit: 90, fileSizeLimitBytes: 200_000_000, rollOnFileSizeLimit: true);
+    if (ctx.Configuration.GetSection("Logging:Syslog").Get<SyslogOptions>() is { Host.Length: > 0 } syslog)
+        lc.WriteTo.Sink(new SyslogSink(syslog), syslog.MinimumLevel);
 });
 
 // ---------------------------------------------------------------- services

@@ -38,7 +38,7 @@ public sealed class Rpt01ReceiptIssueStats(ReportContext ctx) : IReport
         {
             "group" => data.GroupBy(x => (Key: x.groupId?.ToString() ?? "", Code: "", Name: x.groupName ?? "—", Unit: (string?)null)),
             "partner" => data.Where(x => x.Quantity > 0).GroupBy(x => (Key: x.partnerId?.ToString() ?? "", Code: "", Name: x.partner ?? "—", Unit: (string?)null)),
-            _ => data.GroupBy(x => (Key: x.IngredientId.ToString(), x.Code, Name: x.NameVi, Unit: x.unit)),
+            _ => data.GroupBy(x => (Key: x.IngredientId.ToString(), x.Code, Name: x.NameVi, Unit: (string?)x.unit)),
         };
         var rows = groups.OrderBy(g2 => g2.Key.Code).ThenBy(g2 => g2.Key.Name).Select(g2 => Row.Of(
             ("code", g2.Key.Code), ("name", g2.Key.Name), ("unit", g2.Key.Unit),

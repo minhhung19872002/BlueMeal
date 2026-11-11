@@ -13,6 +13,11 @@
   "items": "Ingredients",
   "updated": "Updated",
   "new": "New recipe",
+  "import": {
+    "title": "Import recipes from Excel",
+    "hint": "One row per ingredient; rows with the same dish code make up one recipe. A dish that already has a current recipe gets a new draft version; a dish with any bad row is skipped entirely.",
+    "done": "Imported: {{created}} new recipes, {{updated}} new draft versions, {{skipped}} rows skipped"
+  },
   "editor": "Recipe editor",
   "baseServings": "Base servings",
   "instructions": "Preparation instructions",

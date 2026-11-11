@@ -188,12 +188,8 @@ public sealed class IntegrationTests(ApiFactory f)
         var json = await r.Content.ReadAsStringAsync();
         var doc = JsonDocument.Parse(json).RootElement;
         doc.GetProperty("paths").TryGetProperty("/api/v1/public/foods", out _).Should().BeTrue();
-        // docs/api/openapi.json is generated from the running API (SPEC §7.10.6)
-        var dir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "..", "docs", "api"));
-        if (Directory.Exists(Path.GetDirectoryName(dir)))
-        {
-            Directory.CreateDirectory(dir);
-            await File.WriteAllTextAsync(Path.Combine(dir, "openapi.json"), JsonSerializer.Serialize(doc, new JsonSerializerOptions { WriteIndented = true }));
-        }
+        // docs/api/openapi.json is generated from the running API (SPEC §7.10.6) when BLUEMEAL_EXPORT_ARTIFACTS=1
+        if (RepoArtifacts.Directory("docs", "api") is { } dir)
+            await File.WriteAllTextAsync(Path.Combine(dir, "openapi.json"), JsonSerializer.Serialize(doc, new JsonSerializerOptions { WriteIndented = true }).ReplaceLineEndings("\n"));
     }
 }

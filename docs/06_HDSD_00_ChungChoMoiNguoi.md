@@ -10,7 +10,7 @@
 1. Mở địa chỉ hệ thống do quản trị cung cấp (ví dụ `https://suatan.congty.vn`) bằng Chrome, Cốc Cốc, Edge hoặc Safari.
 2. Chọn ngôn ngữ **VI / EN** ở góc màn hình (mặc định tiếng Việt).
 3. Nhập **tên đăng nhập** và **mật khẩu** → *Đăng nhập*.
-4. Nếu tài khoản bật xác thực hai lớp (MFA): mở ứng dụng Google/Microsoft Authenticator, nhập **mã 6 số**. Mất điện thoại thì dùng **mã khôi phục** hoặc chọn *Gửi mã qua email*.
+4. Nhập mã xác thực hai lớp (MFA — mặc định **mọi tài khoản bắt buộc**; lần đăng nhập đầu hệ thống hướng dẫn bật): mở ứng dụng Google/Microsoft Authenticator, nhập **mã 6 số**. Mất điện thoại thì dùng **mã khôi phục** hoặc chọn *Gửi mã qua email*.
 5. Lần đầu đăng nhập hệ thống yêu cầu **đổi mật khẩu** (≥ 10 ký tự, có chữ hoa, chữ thường, số, ký tự đặc biệt, không trùng 5 mật khẩu gần nhất).
 
 Lưu ý an toàn: sai mật khẩu 3 lần phải nhập mã kiểm tra (CAPTCHA); sai 5 lần tài khoản bị khóa 15 phút. Không thao tác 30 phút hệ thống tự đăng xuất.

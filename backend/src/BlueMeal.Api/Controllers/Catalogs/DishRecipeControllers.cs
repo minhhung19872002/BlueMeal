@@ -316,6 +316,123 @@ public sealed class RecipesController(AppDbContext db, EngineDataService engine,
             r.Items.Select(i => new RecipeItemInput(i.IngredientId, i.GrossG, i.NetGOverride, i.PrepNote)).ToList(), null), ct);
         return Ok(new { a = new { ra.Id, ra.VersionNo, status = ra.Status.ToString(), computed = await Calc(ra) }, b = new { rb.Id, rb.VersionNo, status = rb.Status.ToString(), computed = await Calc(rb) }, rows });
     }
+
+    // ---------------------------------------------------------------- Excel import of recipes (one row = one ingredient line)
+
+    private static readonly LineImportColumn ColDish = new("dishCode", "Mã món", "Dish code", Required: true, Width: 14);
+    private static readonly LineImportColumn ColServings = new("baseServings", "Số suất chuẩn", "Base servings", Width: 14,
+        HintVi: "Số suất mà khối lượng nguyên liệu tính cho; ghi ở một dòng bất kỳ của món, bỏ trống = 1", HintEn: "Servings the quantities are for; on any row of the dish, empty = 1");
+    private static readonly LineImportColumn ColLoss = new("cookingLossRate", "Hao hụt chế biến (%)", "Cooking loss (%)", Width: 16,
+        HintVi: "0–90; ghi ở một dòng bất kỳ của món, bỏ trống = 0", HintEn: "0–90; on any row of the dish, empty = 0");
+    private static readonly LineImportColumn ColIngredient = new("ingredientCode", "Mã nguyên liệu", "Ingredient code", Required: true, Width: 16,
+        HintVi: "Mã trong danh mục nguyên liệu", HintEn: "Code from the ingredient catalog");
+    private static readonly LineImportColumn ColGross = new("grossG", "Khối lượng sống (g)", "Gross weight (g)", Required: true, Width: 16,
+        HintVi: "Khối lượng mua vào (gram) cho số suất chuẩn", HintEn: "Purchased weight (grams) for the base servings");
+    private static readonly LineImportColumn ColNet = new("netG", "Khối lượng sạch (g)", "Net weight (g)", Width: 16,
+        HintVi: "Bỏ trống = tính theo tỷ lệ thải bỏ của thực phẩm", HintEn: "Empty = computed from the food's refuse rate");
+    private static readonly LineImportColumn ColPrep = new("prepNote", "Ghi chú sơ chế", "Prep note", Width: 28);
+    private static readonly LineImportColumn ColInstructions = new("instructions", "Cách chế biến", "Instructions", Width: 40,
+        HintVi: "Ghi ở một dòng bất kỳ của món", HintEn: "On any row of the dish");
+    private static readonly LineImportColumn[] RecipeImportColumns = [ColDish, ColServings, ColLoss, ColIngredient, ColGross, ColNet, ColPrep, ColInstructions];
+    private const string RecipeImportKind = nameof(Recipe);
+
+    private sealed record RecipeImportDoc(Guid DishId, bool HasCurrent, RecipeInput Input);
+
+    [HttpGet("import/template"), HasPermission(Permissions.Recipe.Import)]
+    public IActionResult ImportTemplate([FromServices] IExcelService excel)
+    {
+        var bytes = LineImport.Template(excel, RecipeImportColumns,
+        [
+            L.Pick("Mỗi dòng là một nguyên liệu của món; các dòng cùng mã món tạo thành một công thức.", "Each row is one ingredient of a dish; rows with the same dish code form one recipe."),
+            L.Pick("Món chưa có công thức: công thức nhập vào được áp dụng ngay. Món đã có công thức: tạo phiên bản mới ở trạng thái Nháp để duyệt.",
+                "Dish without a recipe: the imported recipe applies at once. Dish with a recipe: a new Draft version is created for approval."),
+            L.Pick("Một món có dòng lỗi sẽ không được nhập (cả công thức).", "A dish with any invalid row is not imported (the whole recipe)."),
+        ]);
+        return File(bytes, LineImport.XlsxMime, "recipes_template.xlsx");
+    }
+
+    [HttpPost("import/preview"), HasPermission(Permissions.Recipe.Import), RequestSizeLimit(20 * 1024 * 1024)]
+    public async Task<ActionResult<ImportPreview>> ImportPreview(IFormFile file, [FromServices] IExcelService excel, CancellationToken ct)
+    {
+        var bytes = await LineImport.ReadUploadAsync(file, ct);
+        var (results, _) = await ParseRecipeImportAsync(excel, bytes, ct);
+        var token = await LineImport.StashAsync(cache, UserId, RecipeImportKind, bytes, null, ct);
+        return LineImport.Preview(token, results, results.Count(r => r.Errors.Count == 0 && r.Action == ImportAction.Create), results.Count(r => r.Errors.Count == 0 && r.Action == ImportAction.Update));
+    }
+
+    [HttpPost("import/commit"), HasPermission(Permissions.Recipe.Import)]
+    public async Task<ActionResult<ImportCommitResult>> ImportCommit([FromBody] LineImportCommitRequest req, [FromServices] IExcelService excel, CancellationToken ct)
+    {
+        var (bytes, _) = await LineImport.TakeAsync(cache, UserId, RecipeImportKind, req.Token, ct);
+        var (results, docs) = await ParseRecipeImportAsync(excel, bytes, ct);
+        var errors = results.Where(r => r.Errors.Count > 0).ToList();
+        if (errors.Count > 0 && !req.SkipErrors) return new ImportCommitResult(0, 0, errors.Count, errors);
+
+        var dishIds = docs.Select(d => d.DishId).ToList();
+        var lastVersion = await db.Set<Recipe>().IgnoreQueryFilters().Where(r => dishIds.Contains(r.DishId))
+            .GroupBy(r => r.DishId).Select(g => new { g.Key, Max = g.Max(r => r.VersionNo) }).ToDictionaryAsync(x => x.Key, x => x.Max, ct);
+        foreach (var doc in docs)
+        {
+            var recipe = new Recipe { DishId = doc.DishId, VersionNo = lastVersion.GetValueOrDefault(doc.DishId) + 1, Status = RecipeStatus.Draft, AuthorUserId = CurrentUser.UserId };
+            Apply(recipe, doc.Input);
+            // same rule as Create: the first recipe of a dish is current at once, otherwise the new version waits for approval
+            if (!doc.HasCurrent) { recipe.IsCurrent = true; recipe.Status = RecipeStatus.Active; }
+            db.Add(recipe);
+        }
+        await db.SaveChangesAsync(ct);
+        await LineImport.ForgetAsync(cache, req.Token, ct);
+        await cache.InvalidateRegionAsync("catalog:Dish", ct);
+        int created = docs.Count(d => !d.HasCurrent), versions = docs.Count - created;
+        await audit.WriteAsync(AuditAction.Import, nameof(Recipe), null, message: $"created {created}, new versions {versions}, skipped rows {errors.Count}", ct: ct);
+        return new ImportCommitResult(created, versions, errors.Count, errors);
+    }
+
+    /// <summary>Validates every row and groups valid dishes into recipes; a dish with any invalid row is left out entirely.</summary>
+    private async Task<(List<ImportRowResult> Results, List<RecipeImportDoc> Docs)> ParseRecipeImportAsync(IExcelService excel, byte[] bytes, CancellationToken ct)
+    {
+        var rows = LineImport.Read(excel, bytes, RecipeImportColumns);
+        static string? Key(string? code) => code?.ToUpperInvariant();
+        var dishCodes = rows.Select(r => Key(r.Text(ColDish.Key))).OfType<string>().Distinct().ToList();
+        var ingCodes = rows.Select(r => Key(r.Text(ColIngredient.Key))).OfType<string>().Distinct().ToList();
+        var dishes = await db.Set<Dish>().AsNoTracking().Where(d => dishCodes.Contains(d.Code.ToUpper()))
+            .Select(d => new { d.Id, d.Code, HasCurrent = db.Set<Recipe>().Any(r => r.DishId == d.Id && r.IsCurrent) })
+            .ToDictionaryAsync(d => d.Code.ToUpperInvariant(), ct);
+        var ingredients = await db.Set<Ingredient>().AsNoTracking().Where(i => ingCodes.Contains(i.Code.ToUpper()))
+            .Select(i => new { i.Id, i.Code }).ToDictionaryAsync(i => i.Code.ToUpperInvariant(), i => i.Id, ct);
+
+        var lines = new List<(LineImportRow Row, string Doc, string? Code, decimal? Servings, decimal? Loss, RecipeItemInput? Item)>();
+        foreach (var row in rows)
+        {
+            var dishCode = row.Text(ColDish.Key);
+            var ingCode = row.Text(ColIngredient.Key);
+            if (dishCode is not null && !dishes.ContainsKey(Key(dishCode)!)) row.Errors.Add(L.T("import.notFoundRef", ColDish.Header, dishCode));
+            Guid? ingredientId = ingCode is not null && ingredients.TryGetValue(Key(ingCode)!, out var iid) ? iid : null;
+            if (ingCode is not null && ingredientId is null) row.Errors.Add(L.T("import.notFoundRef", ColIngredient.Header, ingCode));
+            var gross = row.Number(ColGross, v => v is > 0 and < 1_000_000);
+            var net = row.Number(ColNet, v => v >= 0);
+            var servings = row.Number(ColServings, v => v is > 0 and <= 10_000);
+            var loss = row.Number(ColLoss, v => v is >= 0 and <= 90);
+            if (row.Text(ColInstructions.Key) is { Length: > 8000 } ins) row.Errors.Add(L.T("import.invalid", ColInstructions.Header, ins[..40] + "…"));
+            var item = ingredientId is { } id && gross is { } g ? new RecipeItemInput(id, g, net, row.Text(ColPrep.Key)) : null;
+            // rows without a dish code cannot be grouped: each one is its own (failed) document
+            lines.Add((row, Key(dishCode) ?? $"#{row.RowNumber}", dishCode is null ? ingCode : $"{dishCode} · {ingCode}", servings, loss, item));
+        }
+
+        var results = LineImport.Results(lines.Select(l => (l.Row, l.Doc, l.Code)),
+            doc => dishes.TryGetValue(doc, out var d) && d.HasCurrent ? ImportAction.Update : ImportAction.Create);
+        var docs = lines.GroupBy(l => l.Doc)
+            .Where(g => g.All(l => l.Row.Errors.Count == 0 && l.Item is not null))
+            .Select(g =>
+            {
+                var dish = dishes[g.Key];
+                var input = new RecipeInput(dish.Id, g.Select(l => l.Servings).FirstOrDefault(v => v is not null) ?? 1,
+                    g.Select(l => l.Row.Text(ColInstructions.Key)).FirstOrDefault(v => v is not null), null,
+                    g.Select(l => l.Loss).FirstOrDefault(v => v is not null) ?? 0, L.Pick("Nhập từ Excel", "Imported from Excel"),
+                    g.Select(l => l.Item!).ToList(), null);
+                return new RecipeImportDoc(dish.Id, dish.HasCurrent, input);
+            }).ToList();
+        return (results, docs);
+    }
 }
 
 // ================================================================== Recommendations — SPEC §7.3.8

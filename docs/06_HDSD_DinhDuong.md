@@ -36,6 +36,7 @@ Nguyên liệu là thứ mua và nhập kho; mỗi nguyên liệu **ánh xạ m�
 3. Ô *Số suất* để xem định lượng cho số suất bất kỳ (ví dụ 350 suất) — hữu ích khi in cho bếp.
 4. **Phiên bản**: muốn thay đổi công thức đang dùng → *Tạo phiên bản mới* → sửa → *Kích hoạt* (bản cũ được lưu trữ). *So sánh* 2 phiên bản để thấy chênh lệch dinh dưỡng – chi phí.
    *Nhân bản* để tạo công thức cho món tương tự.
+5. **Nhập nhiều công thức từ Excel**: *Công thức → Nhập Excel* → *Tải file mẫu* → mỗi dòng một nguyên liệu (mã món, mã nguyên liệu, khối lượng sống cho số suất chuẩn) → chọn file → xem lỗi → *Nhập*. Món đã có công thức đang dùng sẽ có thêm **phiên bản nháp** để bạn kiểm tra rồi kích hoạt.
 
 ![Xem nhanh món](images/dish-quick.png)
 

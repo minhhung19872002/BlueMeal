@@ -239,7 +239,7 @@ public abstract class CatalogControllerBase<TEntity, TDto, TUpsert> : ApiControl
     [HttpPost("import/preview"), HasPermission(PermissionAction.Import), RequestSizeLimit(20 * 1024 * 1024)]
     public virtual async Task<ActionResult<ImportPreview>> ImportPreview(IFormFile file, CancellationToken ct)
     {
-        var bytes = await ReadUpload(file, ct);
+        var bytes = await LineImport.ReadUploadAsync(file, ct);
         var (results, _) = await ParseImport(bytes, ct);
         var token = Guid.NewGuid().ToString("N");
         await Cache.SetAsync("import:" + token, new ImportCacheEntry(UserId, typeof(TEntity).Name, Convert.ToBase64String(bytes)), TimeSpan.FromMinutes(30), ct);
@@ -491,20 +491,6 @@ public abstract class CatalogControllerBase<TEntity, TDto, TUpsert> : ApiControl
             parsed.Add((result, input));
         }
         return (results, parsed);
-    }
-
-    private static async Task<byte[]> ReadUpload(IFormFile? file, CancellationToken ct)
-    {
-        if (file is null || file.Length == 0) throw new AppException("import.noSheet");
-        if (file.Length > 20 * 1024 * 1024) throw new AppException("error.fileSize", 413, 20);
-        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-        if (ext != ".xlsx") throw new AppException("error.fileType", 415);
-        using var ms = new MemoryStream();
-        await file.CopyToAsync(ms, ct);
-        var bytes = ms.ToArray();
-        // xlsx = zip: "PK\x03\x04" magic number check (do not trust the client MIME type)
-        if (bytes.Length < 4 || bytes[0] != 0x50 || bytes[1] != 0x4B) throw new AppException("error.fileType", 415);
-        return bytes;
     }
 
     protected async Task<ExcelReportHeader> ReportHeader(string title, string? period, CancellationToken ct)

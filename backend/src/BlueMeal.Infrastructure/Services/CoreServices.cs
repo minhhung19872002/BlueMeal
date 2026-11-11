@@ -176,7 +176,7 @@ public sealed class SmtpEmailSender(ISettingsService settings, ILogger<SmtpEmail
         msg.Body = new BodyBuilder { HtmlBody = htmlBody }.ToMessageBody();
         using var client = new SmtpClient();
         var secure = s.UseSsl ? (s.Port == 465 ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls) : SecureSocketOptions.None;
-        await client.ConnectAsync(s.Host, s.Port, secure, ct);
+        await client.ConnectAsync(s.Host!, s.Port, secure, ct); // IsConfigured guarantees a host
         if (!string.IsNullOrEmpty(s.UserName)) await client.AuthenticateAsync(s.UserName, s.Password ?? "", ct);
         await client.SendAsync(msg, ct);
         await client.DisconnectAsync(true, ct);

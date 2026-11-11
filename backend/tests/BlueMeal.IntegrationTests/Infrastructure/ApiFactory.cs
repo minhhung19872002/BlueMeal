@@ -27,8 +27,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     public const string OwnerPassword = "owner_test_pwd";
     public const string AppPassword = "app_test_pwd";
 
-    private readonly PostgreSqlContainer _pg = new PostgreSqlBuilder()
-        .WithImage("postgres:16-alpine")
+    private readonly PostgreSqlContainer _pg = new PostgreSqlBuilder("postgres:16-alpine")
         .WithDatabase("bluemeal")
         .WithUsername("postgres")
         .WithPassword("postgres")
@@ -71,6 +70,22 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         await MockVdd.StartAsync();
 
         _ = Services; // build host → migrations + seed
+        await SetMfaForAllUsersAsync(false);
+    }
+
+    /// <summary>
+    /// Production default is MFA for every account. Most tests log in throw-away users with a single password step,
+    /// so the fixture runs with the role-based policy; <c>AuthTests.Mfa_is_mandatory_for_every_account_by_default</c>
+    /// switches it back on to cover the real default.
+    /// </summary>
+    public async Task SetMfaForAllUsersAsync(bool on)
+    {
+        using var scope = Services.CreateScope();
+        var settings = scope.ServiceProvider.GetRequiredService<BlueMeal.Application.Abstractions.ISettingsService>();
+        var key = BlueMeal.Application.Settings.SettingKeys.MfaPolicy;
+        var policy = await settings.GetAsync<BlueMeal.Application.Settings.MfaPolicySettings>(key);
+        policy.RequireForAllUsers = on;
+        await settings.SetAsync(key, policy);
     }
 
     /// <summary>In-process mock of the VDD portal; use <see cref="MockVddClient"/> for its admin endpoints.</summary>

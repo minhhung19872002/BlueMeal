@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Button, Grid, Input, Pagination, Select, Skeleton } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { Button, Grid, Input, Pagination, Select, Skeleton, Space } from 'antd';
+import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { http, type PagedResult } from '@/shared/api/http';
 import { usePermission } from '@/shared/auth/authStore';
+import { ImportModal } from '@/shared/components/catalog/ImportModal';
 import { LookupSelect, useEnumLabel } from '@/shared/components/catalog/inputs';
 import { Page } from '@/shared/components/PageChrome';
 import { ENUMS } from '@/shared/utils/enums';
@@ -29,6 +30,8 @@ export default function RecipesPage() {
   const [dishId, setDishId] = useState<string>();
   const [status, setStatus] = useState<string>();
   const [currentOnly, setCurrentOnly] = useState(true);
+  const [importing, setImporting] = useState(false);
+  const qc = useQueryClient();
   const { data, isFetching } = useQuery({
     queryKey: ['recipes', page, q, dishId, status, currentOnly],
     queryFn: async () => (await http.get<PagedResult<RecipeRow>>('/recipes', { params: { page, pageSize: 20, q: q || undefined, dishId, status, currentOnly } })).data,
@@ -36,7 +39,15 @@ export default function RecipesPage() {
   });
   const w = (px: number) => (screens.md ? px : '100%');
   return (
-    <Page title={t('title')} sub={t('listSub')} actions={has('recipe.create') && <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/recipes/new')}>{t('new')}</Button>}>
+    <Page title={t('title')} sub={t('listSub')} actions={
+      <Space wrap>
+        {has('recipe.import') && <Button icon={<UploadOutlined />} onClick={() => setImporting(true)} data-testid="recipe-import">{t('common:actions.import')}</Button>}
+        {has('recipe.create') && <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/recipes/new')}>{t('new')}</Button>}
+      </Space>
+    }>
+      <ImportModal resource="recipes" open={importing} title={t('import.title')} hint={t('import.hint')}
+        onClose={() => setImporting(false)} onDone={() => void qc.invalidateQueries({ queryKey: ['recipes'] })}
+        doneText={(r) => t('import.done', r)} />
       <div className="bm-card">
         <div className="bm-toolbar">
           <Input.Search allowClear placeholder={t('common:searchPlaceholder')} onSearch={(v) => { setQ(v); setPage(1); }} style={{ width: w(280) }} />

@@ -25,7 +25,7 @@ const SECTIONS: Record<string, SectionDef[]> = {
       { name: 'idleTimeoutMinutes', type: 'number', min: 5, max: 480 }, { name: 'maxConcurrentSessions', type: 'number', min: 1, max: 20 },
       { name: 'refreshTokenDays', type: 'number', min: 1, max: 30 }, { name: 'accessTokenMinutes', type: 'number', min: 5, max: 60 },
     ] },
-    { key: 'security.mfa', group: 'mfa', title: 'settings.mfa.title', fields: [{ name: 'requiredRoles', type: 'roles' }, { name: 'allowEmailOtp', type: 'bool' }] },
+    { key: 'security.mfa', group: 'mfa', title: 'settings.mfa.title', fields: [{ name: 'requireForAllUsers', type: 'bool' }, { name: 'requiredRoles', type: 'roles' }, { name: 'allowEmailOtp', type: 'bool' }] },
   ],
   warning: [
     { key: 'nutrition.warning', group: 'warning', fields: [

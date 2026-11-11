@@ -1,8 +1,10 @@
 using BlueMeal.Api.Authorization;
+using BlueMeal.Api.Catalog;
 using BlueMeal.Api.Infrastructure;
 using BlueMeal.Api.Services;
 using BlueMeal.Application.Abstractions;
 using BlueMeal.Application.Authorization;
+using BlueMeal.Application.Catalog;
 using BlueMeal.Application.Common;
 using BlueMeal.Domain.Common;
 using BlueMeal.Domain.Entities;
@@ -224,6 +226,134 @@ public sealed class StockReceiptsController(AppDbContext db, InventoryService in
             });
         await Db.SaveChangesAsync(ct);
         return Ok(new { r.Id, r.DocNo, status = r.Status.ToString(), r.TotalAmount });
+    }
+
+    // ------------------------------------------------------------------ Excel import of opening stock (tồn đầu kỳ)
+
+    private static readonly LineImportColumn ColWarehouse = new("warehouseCode", "Mã kho", "Warehouse code", Required: true, Width: 12);
+    private static readonly LineImportColumn ColIngredient = new("ingredientCode", "Mã nguyên liệu", "Ingredient code", Required: true, Width: 16);
+    private static readonly LineImportColumn ColQuantity = new("quantity", "Số lượng", "Quantity", Required: true, Width: 12,
+        HintVi: "Theo đơn vị mua của nguyên liệu", HintEn: "In the ingredient's purchase unit");
+    private static readonly LineImportColumn ColPrice = new("unitPrice", "Đơn giá (₫)", "Unit price (VND)", Required: true, Width: 14, Format: "#,##0",
+        HintVi: "Giá vốn một đơn vị mua", HintEn: "Cost of one purchase unit");
+    private static readonly LineImportColumn ColLot = new("lotNo", "Số lô", "Lot no.", Width: 14);
+    private static readonly LineImportColumn ColMfg = new("mfgDate", "Ngày sản xuất", "Manufacturing date", Width: 14, Format: "dd/mm/yyyy", HintVi: "dd/mm/yyyy", HintEn: "dd/mm/yyyy");
+    private static readonly LineImportColumn ColExpiry = new("expiryDate", "Hạn sử dụng", "Expiry date", Width: 14, Format: "dd/mm/yyyy",
+        HintVi: "dd/mm/yyyy — dùng cho xuất kho FEFO", HintEn: "dd/mm/yyyy — used by FEFO issuing");
+    private static readonly LineImportColumn ColNote = new("note", "Ghi chú", "Note", Width: 28);
+    private static readonly LineImportColumn[] OpeningImportColumns = [ColWarehouse, ColIngredient, ColQuantity, ColPrice, ColLot, ColMfg, ColExpiry, ColNote];
+    private const string OpeningImportKind = "OpeningStock";
+
+    private sealed record OpeningOptions(DateOnly DocDate, bool Post);
+    private sealed record OpeningDoc(Guid WarehouseId, List<ReceiptLineInput> Lines);
+
+    [HttpGet("import/template"), HasPermission(Permissions.StockReceipt.Import)]
+    public IActionResult ImportTemplate([FromServices] IExcelService excel)
+    {
+        var bytes = LineImport.Template(excel, OpeningImportColumns,
+        [
+            L.Pick("Dùng để nhập tồn đầu kỳ khi bắt đầu sử dụng hệ thống: mỗi dòng là một lô nguyên liệu đang có trong kho.",
+                "Used to load opening stock when starting with the system: each row is one lot of an ingredient currently in a warehouse."),
+            L.Pick("Mỗi kho tạo một phiếu nhập (ngày chứng từ chọn khi tải lên); các dòng của một kho có lỗi thì cả phiếu của kho đó không được nhập.",
+                "One receipt is created per warehouse (document date chosen when uploading); if any row of a warehouse has errors, that warehouse's receipt is not imported."),
+        ]);
+        return File(bytes, LineImport.XlsxMime, "opening-stock_template.xlsx");
+    }
+
+    /// <summary>Validates an opening-stock sheet. <c>docDate</c>: date of the receipts (usually the first day of the first period used), default today; <c>post</c>: post them at once (needs stock.receipt.post), otherwise they stay Draft for review.</summary>
+    [HttpPost("import/preview"), HasPermission(Permissions.StockReceipt.Import), RequestSizeLimit(20 * 1024 * 1024)]
+    public async Task<ActionResult<ImportPreview>> ImportPreview(IFormFile file, [FromQuery] DateOnly? docDate, [FromQuery] bool post,
+        [FromServices] IExcelService excel, [FromServices] ICacheService cache, CancellationToken ct)
+    {
+        var bytes = await LineImport.ReadUploadAsync(file, ct);
+        var options = new OpeningOptions(docDate ?? DateOnly.FromDateTime(DateTime.Now), post);
+        if (options.Post && !CurrentUser.Has(Permissions.StockReceipt.Post)) throw new ForbiddenException();
+        var (results, _) = await ParseOpeningImportAsync(excel, bytes, options.DocDate, ct);
+        var token = await LineImport.StashAsync(cache, UserId, OpeningImportKind, bytes, System.Text.Json.JsonSerializer.Serialize(options), ct);
+        return LineImport.Preview(token, results, results.Count(r => r.Errors.Count == 0), 0);
+    }
+
+    [HttpPost("import/commit"), HasPermission(Permissions.StockReceipt.Import)]
+    public async Task<ActionResult<ImportCommitResult>> ImportCommit([FromBody] LineImportCommitRequest req, [FromServices] IExcelService excel,
+        [FromServices] ICacheService cache, [FromServices] IAuditWriter audit, CancellationToken ct)
+    {
+        var (bytes, json) = await LineImport.TakeAsync(cache, UserId, OpeningImportKind, req.Token, ct);
+        var options = System.Text.Json.JsonSerializer.Deserialize<OpeningOptions>(json!)!;
+        if (options.Post && !CurrentUser.Has(Permissions.StockReceipt.Post)) throw new ForbiddenException();
+        var (results, docsToCreate) = await ParseOpeningImportAsync(excel, bytes, options.DocDate, ct);
+        var errors = results.Where(r => r.Errors.Count > 0).ToList();
+        if (errors.Count > 0 && !req.SkipErrors) return new ImportCommitResult(0, 0, errors.Count, errors);
+
+        // all receipts (and their posting) in one transaction: the opening stock is loaded completely or not at all
+        await using var tx = await Db.Database.BeginTransactionAsync(ct);
+        var receipts = new List<StockReceipt>();
+        foreach (var doc in docsToCreate)
+        {
+            var r = new StockReceipt { DocNo = await docs.NextAsync("PN", options.DocDate, ct) };
+            Apply(r, new ReceiptInput(options.DocDate, doc.WarehouseId, null, null, null, null, L.Pick("Tồn đầu kỳ (nhập từ Excel)", "Opening stock (imported from Excel)"), doc.Lines, null));
+            Db.Add(r);
+            receipts.Add(r);
+        }
+        await Db.SaveChangesAsync(ct);
+        if (options.Post)
+            foreach (var r in receipts) await inventory.PostReceiptAsync(r, ct);
+        await tx.CommitAsync(ct);
+        await LineImport.ForgetAsync(cache, req.Token, ct);
+        await audit.WriteAsync(AuditAction.Import, nameof(StockReceipt), null,
+            message: $"opening stock {options.DocDate:yyyy-MM-dd}: {receipts.Count} receipt(s) {(options.Post ? "posted" : "draft")} [{string.Join(", ", receipts.Select(r => r.DocNo))}], skipped rows {errors.Count}", ct: ct);
+        return new ImportCommitResult(receipts.Count, 0, errors.Count, errors);
+    }
+
+    /// <summary>Validates every row and groups valid lines into one receipt per warehouse; a warehouse with any invalid row is left out.</summary>
+    private async Task<(List<ImportRowResult> Results, List<OpeningDoc> Docs)> ParseOpeningImportAsync(IExcelService excel, byte[] bytes, DateOnly docDate, CancellationToken ct)
+    {
+        var rows = LineImport.Read(excel, bytes, OpeningImportColumns);
+        static string? Key(string? code) => code?.ToUpperInvariant();
+        var whCodes = rows.Select(r => Key(r.Text(ColWarehouse.Key))).OfType<string>().Distinct().ToList();
+        var ingCodes = rows.Select(r => Key(r.Text(ColIngredient.Key))).OfType<string>().Distinct().ToList();
+        var warehouses = (await Db.Set<Warehouse>().AsNoTracking().Where(w => whCodes.Contains(w.Code.ToUpper())).Select(w => new { w.Id, w.Code }).ToListAsync(ct))
+            .Where(w => CurrentUser.WarehouseScope is not { } scope || scope.Contains(w.Id)) // out-of-scope warehouses look like unknown codes
+            .ToDictionary(w => w.Code.ToUpperInvariant(), w => w.Id);
+        var ingredients = await Db.Set<Ingredient>().AsNoTracking().Where(i => ingCodes.Contains(i.Code.ToUpper()))
+            .Select(i => new { i.Id, i.Code, i.PurchaseUnitId }).ToDictionaryAsync(i => i.Code.ToUpperInvariant(), ct);
+        var periodErrors = new Dictionary<Guid, string?>();
+        foreach (var wid in warehouses.Values)
+        {
+            try { await inventory.EnsureOpenPeriodAsync(wid, docDate, ct); periodErrors[wid] = null; }
+            catch (AppException e) { periodErrors[wid] = L.T(e.Key, e.Args); }
+        }
+
+        var lines = new List<(LineImportRow Row, string Doc, string? Code, ReceiptLineInput? Line)>();
+        foreach (var row in rows)
+        {
+            var whCode = row.Text(ColWarehouse.Key);
+            var ingCode = row.Text(ColIngredient.Key);
+            Guid? warehouseId = whCode is not null && warehouses.TryGetValue(Key(whCode)!, out var wid) ? wid : null;
+            if (whCode is not null && warehouseId is null) row.Errors.Add(L.T("import.notFoundRef", ColWarehouse.Header, whCode));
+            if (warehouseId is { } w && periodErrors[w] is { } locked) row.Errors.Add(locked);
+            var ing = ingCode is not null ? ingredients.GetValueOrDefault(Key(ingCode)!) : null;
+            if (ingCode is not null && ing is null) row.Errors.Add(L.T("import.notFoundRef", ColIngredient.Header, ingCode));
+            var qty = row.Number(ColQuantity, v => v is > 0 and < 10_000_000);
+            var price = row.Number(ColPrice, v => v is >= 0 and < 1_000_000_000);
+            var mfg = row.Get<DateOnly?>(ColMfg);
+            var expiry = row.Get<DateOnly?>(ColExpiry);
+            if (mfg is not null && expiry < mfg) row.Errors.Add(L.T("validation.expiryBeforeMfg"));
+            var lot = row.Text(ColLot.Key);
+            if (lot is { Length: > 50 }) row.Errors.Add(L.T("import.invalid", ColLot.Header, lot));
+            var note = row.Text(ColNote.Key);
+            if (note is { Length: > 500 }) row.Errors.Add(L.T("import.invalid", ColNote.Header, note[..40] + "…"));
+            var line = ing is not null && qty is { } q && price is { } p
+                ? new ReceiptLineInput(ing.Id, q, ing.PurchaseUnitId, p, lot, mfg, expiry, null, null, note, null)
+                : null;
+            lines.Add((row, Key(whCode) ?? $"#{row.RowNumber}", whCode is null ? ingCode : $"{whCode} · {ingCode}", line));
+        }
+
+        var results = LineImport.Results(lines.Select(l => (l.Row, l.Doc, l.Code)), _ => ImportAction.Create);
+        var docsToCreate = lines.GroupBy(l => l.Doc)
+            .Where(g => g.All(l => l.Row.Errors.Count == 0 && l.Line is not null))
+            .Select(g => new OpeningDoc(warehouses[g.Key], g.Select(l => l.Line!).ToList()))
+            .ToList();
+        return (results, docsToCreate);
     }
 }
 

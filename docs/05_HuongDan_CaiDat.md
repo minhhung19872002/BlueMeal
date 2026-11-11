@@ -81,7 +81,7 @@ Lần đầu khởi động, `api` tự **tạo/cập nhật cơ sở dữ liệ
 | Nơi cấu hình | Nội dung |
 |---|---|
 | `deploy/.env` | Bí mật, tên miền, lịch sao lưu, kích thước pool kết nối (`DB_POOL_SIZE`) |
-| Giao diện *Quản trị → Cấu hình hệ thống* | Chính sách mật khẩu, phiên (thời gian chờ 30 phút, số phiên đồng thời), MFA bắt buộc theo vai trò, ngưỡng cảnh báo dinh dưỡng, phương pháp giá kho (bình quân / FIFO), cho phép xuất âm, chi phí chung, SMTP, thời gian lưu mẫu (≥ 24 giờ), trọng số tạo thực đơn, số cấp duyệt (1/2), thời gian lưu nhật ký (≥ 12 tháng), Swagger |
+| Giao diện *Quản trị → Cấu hình hệ thống* | Chính sách mật khẩu, phiên (thời gian chờ 30 phút, số phiên đồng thời), MFA bắt buộc cho mọi tài khoản (mặc định) hoặc chỉ theo vai trò, ngưỡng cảnh báo dinh dưỡng, phương pháp giá kho (bình quân / FIFO), cho phép xuất âm, chi phí chung, SMTP, thời gian lưu mẫu (≥ 24 giờ), trọng số tạo thực đơn, số cấp duyệt (1/2), thời gian lưu nhật ký (≥ 12 tháng), Swagger |
 | *Quản trị → Tích hợp Viện Dinh dưỡng* | Địa chỉ API, kiểu xác thực, credential, lịch đồng bộ (mặc định 02:00), mapping JSON; client cho API công khai |
 | `deploy/postgres/postgresql.conf` | Tuning PostgreSQL cho 8 vCPU/16 GB — chỉnh `shared_buffers` (~25 % RAM), `effective_cache_size` (~75 % RAM) theo máy thực tế |
 | `deploy/nginx/*.conf` | Header bảo mật, giới hạn request (`BM_EDGE_RATE`), kích thước upload (25 MB) |
@@ -151,15 +151,20 @@ docker compose --env-file deploy/.env -f deploy/docker-compose.yml -f deploy/doc
 ## 7. Nhập dữ liệu ban đầu
 
 Mẫu Excel cho từng danh mục tải tại màn hình danh mục (nút *Tải file mẫu*) hoặc thư mục `tools/import-templates/`. Thứ tự khuyến nghị:
-đơn vị đo → kho → nhóm thực phẩm → thực phẩm (hoặc đồng bộ từ Viện Dinh dưỡng) → nguyên liệu → đối tác → khách hàng → đối tượng → khuyến nghị → món ăn → công thức.
+đơn vị đo → kho → nhóm thực phẩm → thực phẩm (hoặc đồng bộ từ Viện Dinh dưỡng) → nguyên liệu → đối tác → khách hàng → đối tượng → khuyến nghị → món ăn → công thức → tồn kho đầu kỳ.
 Mỗi lần nhập có bước xem trước lỗi theo dòng trước khi ghi.
+
+- **Công thức** (*Công thức → Nhập Excel*): mỗi dòng là một nguyên liệu, các dòng cùng mã món gộp thành một công thức (số suất chuẩn, hao hụt chế biến, cách chế biến ghi ở một dòng bất kỳ của món). Món chưa có công thức → công thức đang dùng; món đã có → thêm phiên bản nháp mới để kiểm tra rồi kích hoạt.
+- **Tồn kho đầu kỳ** (*Kho → Phiếu nhập kho → Nhập tồn đầu kỳ*): mỗi dòng gồm mã kho, mã nguyên liệu, số lượng (đơn vị mua), đơn giá, lô/NSX/HSD. Chọn ngày chứng từ (thường là ngày cuối kỳ trước khi đưa vào sử dụng, kỳ chưa khóa sổ) và *Ghi sổ ngay*; hệ thống tạo một phiếu nhập cho mỗi kho.
+- Với hai loại trên, một công thức / một kho có dòng lỗi sẽ bị bỏ qua **cả chứng từ** để không ghi nửa chừng.
 
 ## 8. Giám sát và nhật ký
 
 | Nguồn | Vị trí |
 |---|---|
 | Sức khỏe | `GET /health/live`, `GET /health/ready` (CSDL, Redis) |
-| Log ứng dụng (JSON, xoay vòng theo ngày, 90 file) | volume `logs` (`/app/logs` trong `api`/`worker`); chuyển sang syslog/SIEM bằng bộ chuyển tiếp log đọc thư mục này |
+| Log ứng dụng (JSON, xoay vòng theo ngày, 90 file) | volume `logs` (`/app/logs` trong `api`/`worker`) |
+| Log tập trung (syslog/SIEM) | Đặt `SYSLOG_HOST` (và `SYSLOG_PORT` mặc định 514, `SYSLOG_PROTOCOL` = `udp`/`tcp`) trong `deploy/.env` rồi khởi động lại `api`/`worker`: mỗi sự kiện được gửi dạng RFC 5424, thân là JSON (rsyslog, Graylog, Wazuh… đọc được) |
 | Log container | `docker compose ... logs <service>` (giới hạn 50 MB × 10 file) |
 | Nhật ký nghiệp vụ / ATTT | *Quản trị → Nhật ký hệ thống*, báo cáo RPT-16 |
 | Lịch sử job | *Quản trị → Sao lưu*, *Báo cáo → File đã xuất*, *Tích hợp → Lịch sử đồng bộ* |

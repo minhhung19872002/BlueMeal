@@ -52,6 +52,47 @@ public sealed class StockTests(ApiFactory f)
         => (await J(await c.GetAsync($"/api/v1/stock/balances?warehouseId={wh}{(date is null ? "" : "&date=" + date)}"))).GetProperty("items")[0];
 
     [Fact]
+    public async Task Opening_stock_import_creates_posted_receipts_per_warehouse()
+    {
+        var (c, wh, ing) = await Setup();
+        var whCode = (await J(await c.GetAsync($"/api/v1/warehouses/{wh}"))).GetProperty("code").GetString();
+        var ingCode = (await J(await c.GetAsync($"/api/v1/ingredients/{ing}"))).GetProperty("code").GetString();
+        static Dictionary<string, object?> Row(string? whc, string? ingc, object? qty, object? price, string? lot = null, object? mfg = null, object? exp = null) => new()
+        {
+            ["Mã kho"] = whc, ["Mã nguyên liệu"] = ingc, ["Số lượng"] = qty, ["Đơn giá (₫)"] = price, ["Số lô"] = lot, ["Ngày sản xuất"] = mfg, ["Hạn sử dụng"] = exp,
+        };
+        var xlsx = await ImportSheet.FromTemplateAsync(c, "stock-receipts",
+        [
+            Row(whCode, ingCode, 10m, 50_000m, "TDK-A", new DateTime(2026, 6, 1), new DateTime(2026, 12, 31)),
+            Row(whCode, ingCode, 5m, 62_000m, "TDK-B", null, "31/01/2027"),
+            Row("KHO-KHONG-TON-TAI", ingCode, 1m, 1m),
+            Row(whCode + "-X", ingCode, 1m, 1m, "TDK-C", "2026-06-10", "2026-06-01"), // unknown warehouse and expiry before mfg
+        ]);
+        var preview = await J(await ImportSheet.PreviewAsync(c, "stock-receipts", xlsx, "?docDate=2026-06-30&post=true"));
+        preview.GetProperty("validRows").GetInt32().Should().Be(2, preview.GetProperty("rows").ToString());
+        preview.GetProperty("errorRows").GetInt32().Should().Be(2);
+        preview.GetProperty("rows")[3].GetProperty("errors").GetArrayLength().Should().Be(2);
+        var commit = await J(await c.PostAsJsonAsync("/api/v1/stock-receipts/import/commit", new { token = preview.GetProperty("token").GetString(), skipErrors = true }));
+        commit.GetProperty("created").GetInt32().Should().Be(1); // one receipt for the one valid warehouse
+
+        var receipt = (await J(await c.GetAsync($"/api/v1/stock-receipts?warehouseId={wh}"))).GetProperty("items").EnumerateArray().Should().ContainSingle().Subject;
+        receipt.GetProperty("status").GetString().Should().Be("Posted");
+        receipt.GetProperty("docDate").GetString().Should().Be("2026-06-30");
+        receipt.GetProperty("totalAmount").GetDecimal().Should().Be(810_000);
+        var b = await Balance(c, wh);
+        b.GetProperty("quantity").GetDecimal().Should().Be(15);
+        b.GetProperty("value").GetDecimal().Should().Be(810_000);
+        var lots = (await J(await c.GetAsync($"/api/v1/stock/lots?warehouseId={wh}&ingredientId={ing}"))).EnumerateArray().ToList();
+        lots.Select(l => l.GetProperty("lotNo").GetString()).Should().BeEquivalentTo(["TDK-A", "TDK-B"]);
+
+        // the opening stock is the opening balance of the following period (stock card and RPT-02)
+        var card = await J(await c.GetAsync($"/api/v1/stock/card?ingredientId={ing}&warehouseId={wh}&from=2026-07-01&to=2026-07-31"));
+        card.GetProperty("opening").GetProperty("quantity").GetDecimal().Should().Be(15);
+        var rpt = await J(await c.PostAsJsonAsync("/api/v1/reports/RPT-02/run", new { from = "2026-07-01", to = "2026-07-31", warehouseId = wh }));
+        rpt.GetProperty("rows")[0].GetProperty("openValue").GetDecimal().Should().Be(810_000);
+    }
+
+    [Fact]
     public async Task Moving_average_issue_cost_balance_and_stock_card()
     {
         var (c, wh, ing) = await Setup();

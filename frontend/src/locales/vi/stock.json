@@ -42,7 +42,13 @@
     "title": "Phiếu nhập kho",
     "new": "Lập phiếu nhập",
     "detail": "Phiếu nhập",
-    "printTitle": "PHIẾU NHẬP KHO"
+    "printTitle": "PHIẾU NHẬP KHO",
+    "importOpening": "Nhập tồn đầu kỳ",
+    "importTitle": "Nhập tồn đầu kỳ từ Excel",
+    "importHint": "Mỗi dòng là một nguyên liệu tồn đầu kỳ (số lượng theo đơn vị mua). Hệ thống tạo một phiếu nhập cho mỗi kho; kho nào có dòng lỗi sẽ bị bỏ qua cả kho.",
+    "importDocDate": "Ngày chứng từ",
+    "importPost": "Ghi sổ ngay",
+    "importDone": "Đã tạo {{created}} phiếu nhập tồn đầu kỳ, {{skipped}} dòng bỏ qua"
   },
   "issues": {
     "title": "Phiếu xuất kho",

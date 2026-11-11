@@ -42,7 +42,13 @@
     "title": "Stock receipts",
     "new": "New receipt",
     "detail": "Receipt",
-    "printTitle": "STOCK RECEIPT"
+    "printTitle": "STOCK RECEIPT",
+    "importOpening": "Import opening stock",
+    "importTitle": "Import opening stock from Excel",
+    "importHint": "One row per ingredient on hand (quantity in purchase units). One receipt is created per warehouse; a warehouse with any bad row is skipped entirely.",
+    "importDocDate": "Document date",
+    "importPost": "Post immediately",
+    "importDone": "Created {{created}} opening-stock receipts, {{skipped}} rows skipped"
   },
   "issues": {
     "title": "Stock issues",
