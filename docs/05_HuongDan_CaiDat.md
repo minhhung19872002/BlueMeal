@@ -81,7 +81,7 @@ Lần đầu khởi động, `api` tự **tạo/cập nhật cơ sở dữ liệ
 | Nơi cấu hình | Nội dung |
 |---|---|
 | `deploy/.env` | Bí mật, tên miền, lịch sao lưu, kích thước pool kết nối (`DB_POOL_SIZE`) |
-| Giao diện *Quản trị → Cấu hình hệ thống* | Chính sách mật khẩu, phiên (thời gian chờ 30 phút, số phiên đồng thời), MFA bắt buộc cho mọi tài khoản (mặc định) hoặc chỉ theo vai trò, ngưỡng cảnh báo dinh dưỡng, phương pháp giá kho (bình quân / FIFO), cho phép xuất âm, chi phí chung, SMTP, thời gian lưu mẫu (≥ 24 giờ), trọng số tạo thực đơn, số cấp duyệt (1/2), thời gian lưu nhật ký (≥ 12 tháng), Swagger |
+| Giao diện *Quản trị → Cấu hình hệ thống* | Chính sách mật khẩu, phiên (thời gian chờ mặc định 30 phút — **đặt 15 phút khi vận hành chính thức** theo TCVN 14423:2026 §4.5.2.2; số phiên đồng thời), MFA bắt buộc cho mọi tài khoản (mặc định) hoặc chỉ theo vai trò, ngưỡng cảnh báo dinh dưỡng, phương pháp giá kho (bình quân / FIFO), cho phép xuất âm, chi phí chung, SMTP, thời gian lưu mẫu (≥ 24 giờ), trọng số tạo thực đơn, số cấp duyệt (1/2), thời gian lưu nhật ký (≥ 12 tháng), Swagger |
 | *Quản trị → Tích hợp Viện Dinh dưỡng* | Địa chỉ API, kiểu xác thực, credential, lịch đồng bộ (mặc định 02:00), mapping JSON; client cho API công khai |
 | `deploy/postgres/postgresql.conf` | Tuning PostgreSQL cho 8 vCPU/16 GB — chỉnh `shared_buffers` (~25 % RAM), `effective_cache_size` (~75 % RAM) theo máy thực tế |
 | `deploy/nginx/*.conf` | Header bảo mật, giới hạn request (`BM_EDGE_RATE`), kích thước upload (25 MB) |
@@ -150,7 +150,7 @@ docker compose --env-file deploy/.env -f deploy/docker-compose.yml -f deploy/doc
 
 ## 7. Nhập dữ liệu ban đầu
 
-Mẫu Excel cho từng danh mục tải tại màn hình danh mục (nút *Tải file mẫu*) hoặc thư mục `tools/import-templates/`. Thứ tự khuyến nghị:
+Mẫu Excel cho từng danh mục tải tại màn hình danh mục (nút *Tải file mẫu*) hoặc thư mục `tools/import-templates/` (22 danh mục, cùng `mau-nhap-recipes.xlsx` và `mau-nhap-opening-stock.xlsx`). Thứ tự khuyến nghị:
 đơn vị đo → kho → nhóm thực phẩm → thực phẩm (hoặc đồng bộ từ Viện Dinh dưỡng) → nguyên liệu → đối tác → khách hàng → đối tượng → khuyến nghị → món ăn → công thức → tồn kho đầu kỳ.
 Mỗi lần nhập có bước xem trước lỗi theo dòng trước khi ghi.
 
@@ -164,7 +164,7 @@ Mỗi lần nhập có bước xem trước lỗi theo dòng trước khi ghi.
 |---|---|
 | Sức khỏe | `GET /health/live`, `GET /health/ready` (CSDL, Redis) |
 | Log ứng dụng (JSON, xoay vòng theo ngày, 90 file) | volume `logs` (`/app/logs` trong `api`/`worker`) |
-| Log tập trung (syslog/SIEM) | Đặt `SYSLOG_HOST` (và `SYSLOG_PORT` mặc định 514, `SYSLOG_PROTOCOL` = `udp`/`tcp`) trong `deploy/.env` rồi khởi động lại `api`/`worker`: mỗi sự kiện được gửi dạng RFC 5424, thân là JSON (rsyslog, Graylog, Wazuh… đọc được) |
+| Log tập trung (syslog/SIEM) | Đặt `SYSLOG_HOST` (và `SYSLOG_PORT` mặc định 514, `SYSLOG_PROTOCOL` = `udp`/`tcp`) trong `deploy/.env`, rồi chạy `up -d` với thêm `-f deploy/docker-compose.syslog.yml` sau `docker-compose.prod.yml`. Khi đó cả 4 thành phần cùng gửi về một máy thu, dạng RFC 5424: `api`/`worker` (APP-NAME `bluemeal`, thân là JSON), `web` (nginx + audit log JSON của ModSecurity), `postgres`, kèm `redis` và `backup` (APP-NAME = tên container, ví dụ `bluemeal-web-1`). Rsyslog, Graylog, Wazuh… đều đọc được. `SYSLOG_HOST` phải truy cập được từ chính máy chủ Docker, vì log driver chạy ở daemon chứ không chạy trong mạng compose |
 | Log container | `docker compose ... logs <service>` (giới hạn 50 MB × 10 file) |
 | Nhật ký nghiệp vụ / ATTT | *Quản trị → Nhật ký hệ thống*, báo cáo RPT-16 |
 | Lịch sử job | *Quản trị → Sao lưu*, *Báo cáo → File đã xuất*, *Tích hợp → Lịch sử đồng bộ* |

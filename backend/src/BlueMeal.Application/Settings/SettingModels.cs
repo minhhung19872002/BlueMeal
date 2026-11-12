@@ -21,6 +21,7 @@ public static class SettingKeys
     public const string SampleData = "sample_data";
     public const string Maintenance = "system.maintenance";
     public const string Swagger = "system.swagger";
+    public const string PrivacyNotice = "privacy.notice";
 
     public static readonly Dictionary<string, Type> Types = new()
     {
@@ -28,7 +29,7 @@ public static class SettingKeys
         [Warning] = typeof(WarningSettings), [Inventory] = typeof(InventorySettings), [Cost] = typeof(CostSettings), [Smtp] = typeof(SmtpSettings),
         [Backup] = typeof(BackupSettings), [Sample] = typeof(SampleSettings), [Generator] = typeof(GeneratorSettings), [Approval] = typeof(ApprovalSettings),
         [Audit] = typeof(AuditSettings), [Inspection] = typeof(InspectionFormSettings), [SampleData] = typeof(SampleDataSettings),
-        [Maintenance] = typeof(MaintenanceSettings), [Swagger] = typeof(SwaggerSettings),
+        [Maintenance] = typeof(MaintenanceSettings), [Swagger] = typeof(SwaggerSettings), [PrivacyNotice] = typeof(PrivacyNoticeSettings),
     };
 }
 
@@ -46,6 +47,11 @@ public class PasswordPolicySettings
     public int CaptchaAfterFailures { get; set; } = 3;
     /// <summary>Per-IP captcha threshold = CaptchaAfterFailures × this multiplier (shared NAT addresses).</summary>
     public int CaptchaIpMultiplier { get; set; } = 10;
+    /// <summary>
+    /// Disable accounts with no sign-in for this many days (TCVN 14423:2026 §4.6.2.3: 45 days at level 2). 0 = off.
+    /// The last active system administrator is never disabled automatically.
+    /// </summary>
+    public int InactiveDisableDays { get; set; } = 45;
 }
 
 public class SessionPolicySettings
@@ -232,4 +238,49 @@ public class SwaggerSettings
 {
     /// <summary>Allow Swagger UI in production (admin toggle) — SPEC §2.</summary>
     public bool EnabledInProduction { get; set; }
+}
+
+/// <summary>
+/// Personal-data processing notice shown to every user, who must accept it before using the system
+/// (Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15). Editing the text publishes a new version: everyone accepts again.
+/// The default text is a template for the investor's data-protection officer to review.
+/// </summary>
+public class PrivacyNoticeSettings
+{
+    public bool Enabled { get; set; } = true;
+    /// <summary>Managed by the server: incremented whenever a text changes.</summary>
+    public int Version { get; set; } = 1;
+    public DateTimeOffset? PublishedAt { get; set; }
+    public string ContentVi { get; set; } = DefaultVi;
+    public string ContentEn { get; set; } = DefaultEn;
+
+    public const string DefaultVi = """
+        THÔNG BÁO XỬ LÝ DỮ LIỆU CÁ NHÂN
+
+        Đơn vị quản lý hệ thống BlueMeal (bên kiểm soát dữ liệu) thông báo việc xử lý dữ liệu cá nhân của người sử dụng theo Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15:
+
+        1. Dữ liệu được xử lý: họ tên, tên đăng nhập, email, số điện thoại, số định danh cá nhân (nếu có trong hồ sơ nhân viên), bộ phận, vai trò; địa chỉ IP, thiết bị, trình duyệt, thời điểm đăng nhập và nhật ký thao tác trên hệ thống.
+        2. Mục đích: cấp và quản lý tài khoản, phân quyền; vận hành nghiệp vụ suất ăn, kho, dinh dưỡng; bảo đảm an ninh mạng, điều tra sự cố và đáp ứng yêu cầu kiểm toán.
+        3. Cách thức: dữ liệu lưu tại máy chủ của đơn vị; số điện thoại, email, số định danh được mã hóa; chỉ người được phân quyền mới xem được; mọi lần xem và xuất dữ liệu cá nhân đều được ghi nhật ký. Dữ liệu không được chuyển ra nước ngoài và không cung cấp cho bên thứ ba, trừ trường hợp pháp luật quy định.
+        4. Thời gian lưu: trong thời gian bạn sử dụng hệ thống; nhật ký hệ thống lưu tối thiểu 12 tháng.
+        5. Quyền của bạn: được biết, xem, yêu cầu chỉnh sửa, xuất bản sao, hạn chế hoặc xóa (ẩn danh hóa) dữ liệu cá nhân, rút lại sự đồng ý, khiếu nại theo quy định. Liên hệ bộ phận quản trị hệ thống của đơn vị để thực hiện.
+        6. Hậu quả có thể xảy ra: dữ liệu có thể bị lộ khi có sự cố an ninh mạng; đơn vị áp dụng các biện pháp bảo vệ theo cấp độ 2 và sẽ thông báo cho bạn và cơ quan chức năng theo quy định khi có sự cố.
+
+        Bằng việc chọn "Tôi đã đọc và đồng ý", bạn xác nhận đã được thông báo và đồng ý với việc xử lý dữ liệu cá nhân nêu trên.
+        """;
+
+    public const string DefaultEn = """
+        PERSONAL DATA PROCESSING NOTICE
+
+        The organization operating BlueMeal (the data controller) informs users how their personal data is processed under the Personal Data Protection Law No. 91/2025/QH15:
+
+        1. Data processed: full name, user name, email, phone number, personal identification number (if present in the employee record), department, roles; IP address, device, browser, sign-in times and the activity log.
+        2. Purposes: account and permission management; meal, stock and nutrition operations; cybersecurity, incident investigation and audit.
+        3. Method: data is stored on the organization's servers; phone, email and identification numbers are encrypted; only authorized staff can view them; every view and export of personal data is logged. Data is not transferred abroad or disclosed to third parties except where the law requires.
+        4. Retention: while you use the system; the system log is kept for at least 12 months.
+        5. Your rights: to be informed, access, correct, obtain a copy, restrict or erase (anonymize) your personal data, withdraw consent and complain. Contact the system administrators of the organization.
+        6. Possible consequences: data may be exposed in a security incident; the organization applies level-2 protection measures and will notify you and the authorities as required.
+
+        By choosing "I have read and agree" you confirm that you have been informed of and agree to the processing described above.
+        """;
 }

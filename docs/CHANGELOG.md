@@ -9,10 +9,21 @@ Mỗi mục `## [x.y.z] - YYYY-MM-DD` được nạp vào màn hình **Phiên b�
 - Nhập **công thức món ăn** từ Excel (mỗi dòng một nguyên liệu, gộp theo mã món; món đã có công thức → phiên bản nháp mới). Quyền mới `recipe.import`.
 - Nhập **tồn kho đầu kỳ** từ Excel: một phiếu nhập (ghi sổ ngay hoặc nháp) cho mỗi kho, theo ngày chứng từ chọn. Quyền mới `stock.receipt.import`.
 - Hai luồng nhập trên dùng chung bước xem trước lỗi theo dòng; chứng từ có dòng lỗi bị bỏ qua cả chứng từ.
-- Log tập trung: sink syslog RFC 5424 (UDP/TCP) gửi sự kiện JSON tới SIEM, bật bằng `SYSLOG_HOST`.
+- Log tập trung: sink syslog RFC 5424 (UDP/TCP) gửi sự kiện JSON tới SIEM, bật bằng `SYSLOG_HOST`; overlay `deploy/docker-compose.syslog.yml` đưa log nginx/ModSecurity, PostgreSQL, Redis, sao lưu về cùng máy thu.
 - Bỏ quyền `system.restore` chưa dùng (khôi phục chỉ thực hiện bằng script `deploy/backup/restore.*`).
+- **Thông báo xử lý dữ liệu cá nhân** (Luật 91/2025/QH15): sau khi đăng nhập, người dùng đọc và bấm *Tôi đã đọc và đồng ý* (từ chối → đăng xuất). Lưu phiên bản, thời điểm, IP, trình duyệt (bảng `privacy_consent`), nhật ký `Consent`. Quản trị soạn nội dung vi/en ở *Cấu hình hệ thống → Bảo mật*; đổi nội dung → tăng phiên bản → mọi người đồng ý lại. Hồ sơ cá nhân và chi tiết tài khoản hiện thời điểm đồng ý.
+- **Tự khóa tài khoản không đăng nhập** sau 45 ngày (TCVN 14423:2026 §4.6.2.3): job `inactive-accounts` 00:15 hằng ngày, cấu hình ở *Chính sách mật khẩu* (0 = tắt), thu hồi phiên, ghi nhật ký; mở khóa tính lại thời hạn; giữ tài khoản quản trị hệ thống cuối cùng.
+- **Xuất CSV UTF-8** (TT 39/2017/TT-BTTTT) cho mọi danh mục, 16 báo cáo và nhật ký hệ thống (`?format=csv`): RFC 4180, BOM, CRLF, số dấu chấm, ngày ISO 8601, chống chèn công thức.
+- **XSD cho XML của API công khai** (TT 39/2017): `GET /api/v1/public/schema.xsd` (không cần token) và `docs/api/public-api.xsd`, sinh từ chính các kiểu dữ liệu XML.
 - Sửa: thông báo "Hạn sử dụng không được trước ngày sản xuất" trước đây hiện mã khóa thô.
 - Kiểm thử: chỉ ghi lại `docs/api/openapi.json` và mẫu `tools/import-templates/` khi đặt `BLUEMEAL_EXPORT_ARTIFACTS=1`; CSDL kiểm thử dùng `postgres:16-alpine`.
+
+### Tài liệu
+- Mới `10_DoiChieu_TieuChuan_PhapLy.md`: đối chiếu TT 39/2017/TT-BTTTT, TT 13/2025/TT-BYT, TCVN 14423:2026 (cấp độ 2), Luật Bảo vệ dữ liệu cá nhân 91/2025; danh sách chênh lệch còn lại.
+- Mới `11_HoSo_DeXuat_CapDo2.md`: dự thảo hồ sơ đề xuất cấp độ 2 theo NĐ 331/2026/NĐ-CP, Viện điền và trình thẩm định.
+- Cập nhật căn cứ pháp lý trong `03`, `05`, `06`, `08` (Luật An ninh mạng 2025, NĐ 331/2026, TCVN 14423:2026, Luật 91/2025 thay các văn bản đã hết hiệu lực); vận hành: khóa tài khoản không đăng nhập 45 ngày, hết phiên 15 phút khi vận hành chính thức.
+- `09_Checklist_NghiemThu.md`: số kiểm thử mới, dòng 20–21 về tiêu chuẩn và cấp độ, tồn tại cập nhật.
+- `10` §2, §4, §5, §6: CSV, XSD, thông báo dữ liệu cá nhân, tự khóa 45 ngày chuyển sang *Đáp ứng*; `03`, `06`, `08`, `11` cập nhật tương ứng.
 
 ## [1.0.0] - 2026-11-09
 ### Phát hành chính thức

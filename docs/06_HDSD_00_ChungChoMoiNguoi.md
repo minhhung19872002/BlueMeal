@@ -12,9 +12,10 @@
 3. Nhập **tên đăng nhập** và **mật khẩu** → *Đăng nhập*.
 4. Nhập mã xác thực hai lớp (MFA — mặc định **mọi tài khoản bắt buộc**; lần đăng nhập đầu hệ thống hướng dẫn bật): mở ứng dụng Google/Microsoft Authenticator, nhập **mã 6 số**. Mất điện thoại thì dùng **mã khôi phục** hoặc chọn *Gửi mã qua email*.
 5. Lần đầu đăng nhập hệ thống yêu cầu **đổi mật khẩu** (≥ 10 ký tự, có chữ hoa, chữ thường, số, ký tự đặc biệt, không trùng 5 mật khẩu gần nhất).
+6. Đọc **Thông báo xử lý dữ liệu cá nhân** và bấm *Tôi đã đọc và đồng ý* (hỏi lại khi Viện thay đổi nội dung). Bấm *Không đồng ý, đăng xuất* thì hệ thống đăng xuất. Xem lại thông báo bất cứ lúc nào ở *Hồ sơ cá nhân*.
 
 Lưu ý an toàn: sai mật khẩu 3 lần phải nhập mã kiểm tra (CAPTCHA); sai 5 lần tài khoản bị khóa 15 phút. Không thao tác 30 phút hệ thống tự đăng xuất.
-Mật khẩu hết hạn sau 90 ngày — hệ thống sẽ yêu cầu đổi.
+Mật khẩu hết hạn sau 90 ngày — hệ thống sẽ yêu cầu đổi. Không đăng nhập quá 45 ngày tài khoản tự bị khóa — liên hệ quản trị để mở lại.
 
 **Quên mật khẩu:** bấm *Quên mật khẩu?*, nhập email; mở email và bấm liên kết (dùng một lần, hiệu lực 15 phút) để đặt mật khẩu mới.
 
@@ -46,6 +47,7 @@ Trên điện thoại (≥ 360 px) menu thu vào nút ☰; các màn kho, kiểm
 | Lịch sử | Biểu tượng đồng hồ: ai sửa, lúc nào, giá trị trước/sau |
 | Nhập Excel | *Nhập Excel* → *Tải file mẫu* → điền → chọn file → hệ thống **hiển thị lỗi từng dòng** → *Ghi dữ liệu* (chỉ ghi các dòng hợp lệ) |
 | Xuất Excel | *Xuất Excel* — file có tên đơn vị, người lập, ngày lập |
+| Xuất CSV | *Xuất CSV* — chỉ có dòng tiêu đề cột và dữ liệu (UTF-8, dấu phẩy), dùng để chuyển sang hệ thống khác; Excel mở trực tiếp được |
 
 Khi hai người cùng sửa một bản ghi, người lưu sau nhận thông báo "dữ liệu đã thay đổi" — tải lại trang và nhập lại.
 

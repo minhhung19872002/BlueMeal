@@ -10,7 +10,7 @@ import { EnumSelect, LookupSelect } from '@/shared/components/catalog/inputs';
 import { ENUMS } from '@/shared/utils/enums';
 import { FLabel, PageHead, PillTabs, Section, Toggle, XButton } from '@/app/layout/designKit';
 
-type F = { name: string; type: 'number' | 'bool' | 'text' | 'enum' | 'roles' | 'warehouse' | 'textarea'; enumName?: keyof typeof ENUMS; min?: number; max?: number; step?: number };
+type F = { name: string; type: 'number' | 'bool' | 'text' | 'enum' | 'roles' | 'warehouse' | 'textarea'; enumName?: keyof typeof ENUMS; min?: number; max?: number; step?: number; rows?: number };
 interface SectionDef { key: string; group: string; title?: string; fields: F[] }
 
 const SECTIONS: Record<string, SectionDef[]> = {
@@ -19,13 +19,16 @@ const SECTIONS: Record<string, SectionDef[]> = {
       { name: 'minLength', type: 'number', min: 8, max: 128 }, { name: 'requireUpper', type: 'bool' }, { name: 'requireLower', type: 'bool' }, { name: 'requireDigit', type: 'bool' },
       { name: 'requireSpecial', type: 'bool' }, { name: 'historyCount', type: 'number', min: 0, max: 24 }, { name: 'expiryDays', type: 'number', min: 0, max: 3650 },
       { name: 'maxFailedAttempts', type: 'number', min: 3, max: 20 }, { name: 'lockoutMinutes', type: 'number', min: 1, max: 1440 }, { name: 'captchaAfterFailures', type: 'number', min: 1, max: 20 },
-      { name: 'captchaIpMultiplier', type: 'number', min: 1, max: 100 },
+      { name: 'captchaIpMultiplier', type: 'number', min: 1, max: 100 }, { name: 'inactiveDisableDays', type: 'number', min: 0, max: 365 },
     ] },
     { key: 'security.session', group: 'session', title: 'settings.session.title', fields: [
       { name: 'idleTimeoutMinutes', type: 'number', min: 5, max: 480 }, { name: 'maxConcurrentSessions', type: 'number', min: 1, max: 20 },
       { name: 'refreshTokenDays', type: 'number', min: 1, max: 30 }, { name: 'accessTokenMinutes', type: 'number', min: 5, max: 60 },
     ] },
     { key: 'security.mfa', group: 'mfa', title: 'settings.mfa.title', fields: [{ name: 'requireForAllUsers', type: 'bool' }, { name: 'requiredRoles', type: 'roles' }, { name: 'allowEmailOtp', type: 'bool' }] },
+    { key: 'privacy.notice', group: 'privacy', title: 'settings.privacy.title', fields: [
+      { name: 'enabled', type: 'bool' }, { name: 'contentVi', type: 'textarea', rows: 12 }, { name: 'contentEn', type: 'textarea', rows: 12 },
+    ] },
   ],
   warning: [
     { key: 'nutrition.warning', group: 'warning', fields: [
@@ -89,7 +92,7 @@ function SettingForm({ section, value, canEdit, onSaved, tabTitle, extraFoot }: 
     }
   };
   return (
-    <Section title={section.title ? t(section.title) : tabTitle} hint={section.key === 'backup' ? t('settings.backup.cronHint') : undefined}
+    <Section title={section.title ? t(section.title) : tabTitle} hint={section.key === 'backup' ? t('settings.backup.cronHint') : section.key === 'privacy.notice' ? t('settings.privacy.hint', { version: value.version ?? 1 }) : undefined}
       foot={(canEdit || extraFoot) && <>{extraFoot}{canEdit && <XButton kind="primary" disabled={!dirty} onClick={() => void save()}>{t('common:actions.save')}</XButton>}</>}>
       <Form form={form} layout="vertical" disabled={!canEdit} onValuesChange={() => setDirty(true)} className="bm-x-grid">
         {section.fields.map((f) => (
@@ -99,7 +102,7 @@ function SettingForm({ section, value, canEdit, onSaved, tabTitle, extraFoot }: 
               f.type === 'enum' ? <EnumSelect enumName={f.enumName!} values={[...ENUMS[f.enumName!]]} /> :
               f.type === 'roles' ? <Select mode="multiple" options={roles.data?.map((r) => ({ value: r.code, label: i18n.language === 'en' && r.nameEn ? r.nameEn : r.nameVi }))} /> :
               f.type === 'warehouse' ? <LookupSelect resource="warehouses" /> :
-              f.type === 'textarea' ? <Input.TextArea rows={2} /> :
+              f.type === 'textarea' ? <Input.TextArea rows={f.rows ?? 2} /> :
               <Input type={f.name === 'password' ? 'password' : 'text'} autoComplete="off" />}
           </Form.Item>
         ))}

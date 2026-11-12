@@ -204,7 +204,8 @@
       "maxFailedAttempts": "Khóa sau số lần sai",
       "lockoutMinutes": "Thời gian khóa (phút)",
       "captchaAfterFailures": "Hiện CAPTCHA sau số lần sai",
-      "captchaIpMultiplier": "Hệ số ngưỡng CAPTCHA theo IP"
+      "captchaIpMultiplier": "Hệ số ngưỡng CAPTCHA theo IP",
+      "inactiveDisableDays": "Tự khóa tài khoản không đăng nhập sau N ngày (0 = tắt)"
     },
     "session": {
       "title": "Phiên đăng nhập",
@@ -303,6 +304,13 @@
       "maintenanceVi": "Thông báo bảo trì (VI)",
       "maintenanceEn": "Thông báo bảo trì (EN)",
       "swagger": "Cho phép Swagger ở môi trường production"
+    },
+    "privacy": {
+      "title": "Thông báo xử lý dữ liệu cá nhân",
+      "enabled": "Yêu cầu người dùng đồng ý khi đăng nhập",
+      "contentVi": "Nội dung (tiếng Việt)",
+      "contentEn": "Nội dung (tiếng Anh)",
+      "hint": "Phiên bản hiện hành: {{version}}. Sửa nội dung sẽ tăng phiên bản và mọi người dùng phải đồng ý lại (Luật 91/2025/QH15)."
     }
   }
 }

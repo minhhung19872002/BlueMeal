@@ -204,7 +204,8 @@
     "Lock": "Khóa",
     "Unlock": "Mở khóa",
     "Post": "Ghi sổ",
-    "Other": "Khác"
+    "Other": "Khác",
+    "Consent": "Đồng ý xử lý dữ liệu cá nhân"
   },
   "BackupType": {
     "Scheduled": "Định kỳ",

@@ -50,6 +50,12 @@ test.describe('P1 — authentication & administration', () => {
     await page.goto('/admin/audit-logs');
     await expect(page.getByRole('heading', { name: 'Nhật ký hệ thống' })).toBeVisible();
     await shot(page, 'admin-audit');
+
+    // personal-data notice (Luật 91/2025): consent recorded and viewable from the profile
+    await page.goto('/profile');
+    await expect(page.getByText(/Đã đồng ý lúc .* \(phiên bản \d+\)/)).toBeVisible();
+    await page.getByRole('button', { name: 'Xem thông báo' }).click();
+    await expect(page.getByTestId('privacy-text')).toContainText('91/2025/QH15');
   });
 
   test('catalog screen: search without accents and Excel buttons @mobile', async ({ page }) => {

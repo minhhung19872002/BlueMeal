@@ -226,6 +226,10 @@ public sealed class PublicApiController(AppDbContext db, PublicTokenService toke
 
     private ObjectResult OAuthError(string error, int status) => StatusCode(status, new Dictionary<string, string> { ["error"] = error });
 
+    /// <summary>XML Schema (XSD) of the XML responses (Thông tư 39/2017/TT-BTTTT). Public, no token needed.</summary>
+    [HttpGet("schema.xsd"), AllowAnonymous, Produces("application/xml")]
+    public ContentResult Schema() => Content(PublicXmlSchema.Xsd, "application/xml; charset=utf-8");
+
     /// <summary>Published menus of a period (dishes and energy only, no costs).</summary>
     [HttpGet("menus"), PublicScope(PublicScopes.MenuRead)]
     public async Task<ActionResult<PublicMenuList>> Menus([FromQuery] DateOnly from, [FromQuery] DateOnly to, [FromQuery] string? customerCode, CancellationToken ct)

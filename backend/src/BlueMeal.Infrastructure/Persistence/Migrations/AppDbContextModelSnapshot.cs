@@ -400,6 +400,10 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("phone_number_confirmed");
 
+                    b.Property<DateTimeOffset?>("ReactivatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reactivated_at");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text")
                         .HasColumnName("security_stamp");
@@ -4154,6 +4158,49 @@ namespace BlueMeal.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_permission_code");
 
                     b.ToTable("permission", "app");
+                });
+
+            modelBuilder.Entity("BlueMeal.Domain.Entities.PrivacyConsent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("AcceptedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("accepted_at");
+
+                    b.Property<string>("Ip")
+                        .HasColumnType("text")
+                        .HasColumnName("ip");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)")
+                        .HasColumnName("language");
+
+                    b.Property<int>("NoticeVersion")
+                        .HasColumnType("integer")
+                        .HasColumnName("notice_version");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("user_agent");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_privacy_consent");
+
+                    b.HasIndex("UserId", "NoticeVersion")
+                        .IsUnique()
+                        .HasDatabaseName("ix_privacy_consent_user_id_notice_version");
+
+                    b.ToTable("privacy_consent", "app");
                 });
 
             modelBuilder.Entity("BlueMeal.Domain.Entities.Province", b =>

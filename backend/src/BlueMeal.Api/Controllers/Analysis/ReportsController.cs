@@ -3,6 +3,7 @@ using BlueMeal.Api.Authorization;
 using BlueMeal.Api.Reports;
 using BlueMeal.Application.Abstractions;
 using BlueMeal.Application.Authorization;
+using BlueMeal.Application.Catalog;
 using BlueMeal.Application.Common;
 using BlueMeal.Domain.Entities;
 using BlueMeal.Domain.Enums;
@@ -37,8 +38,15 @@ public sealed class ReportsController(AppDbContext db, ReportService reports, IF
 
     /// <summary>Excel export: small reports are returned directly; large ones are queued and announced by notification.</summary>
     [HttpPost("{code}/export"), HasPermission(Permissions.Report.Export)]
-    public async Task<IActionResult> Export(string code, [FromBody] ReportFilter filter, [FromQuery] bool background = false, CancellationToken ct = default)
+    public async Task<IActionResult> Export(string code, [FromBody] ReportFilter filter, [FromQuery] bool background = false, [FromQuery] string? format = null, CancellationToken ct = default)
     {
+        if (IsCsv(format))
+        {
+            // CSV UTF-8 for data exchange (TT 39/2017/TT-BTTTT): plain data, cheap to build, always returned directly
+            var (content, name, count) = await reports.CsvAsync(code, filter, ct);
+            await audit.WriteAsync(AuditAction.Export, "Report", code, null, filter, message: $"{count} rows (csv)", ct: ct);
+            return File(content, CsvWriter.ContentType, name);
+        }
         if (!background)
         {
             var (_, r) = await reports.RunAsync(code, filter, ct);

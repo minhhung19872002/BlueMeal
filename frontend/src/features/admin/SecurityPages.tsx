@@ -142,6 +142,7 @@ export function AuditLogsPage() {
       <div className="bm-page-header">
         <Typography.Title level={4}>{t('audit.title')}</Typography.Title>
         {has('audit.export') && <Button icon={<DownloadOutlined />} onClick={() => void downloadFile('/audit-logs/export', { ...params, page: undefined, pageSize: undefined })}>{t('common:actions.export')}</Button>}
+        {has('audit.export') && <Button icon={<DownloadOutlined />} onClick={() => void downloadFile('/audit-logs/export', { ...params, page: undefined, pageSize: undefined, format: 'csv' }, 'audit-logs.csv')}>{t('common:actions.exportCsv')}</Button>}
       </div>
       <div className="bm-toolbar">
         <DatePicker.RangePicker value={range} onChange={(v) => { setRange(v as never); setPage(1); }} format={DATE_FORMAT} allowClear style={{ width: screens.md ? 280 : '100%' }} />

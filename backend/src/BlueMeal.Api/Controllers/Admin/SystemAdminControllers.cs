@@ -163,7 +163,7 @@ public sealed class FilesController(FileService files, AppDbContext db) : ApiCon
 
 /// <summary>System configuration (SPEC §7.1.13): password policy, thresholds, inventory cost method, overhead, SMTP, backup schedule, sample retention, generator weights…</summary>
 [Route("api/v1/settings")]
-public sealed class SettingsController(ISettingsService settings, IAuditWriter audit, IEmailSender email) : ApiControllerBase
+public sealed class SettingsController(ISettingsService settings, IAuditWriter audit, IEmailSender email, TimeProvider clock) : ApiControllerBase
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() } };
 
@@ -196,6 +196,13 @@ public sealed class SettingsController(ISettingsService settings, IAuditWriter a
         var value = body.Deserialize(type, Json) ?? throw new AppException("error.validation");
         var old = await GetTyped(key, type, ct);
         if (value is SmtpSettings smtp && (smtp.Password == "********" || smtp.Password is null)) smtp.Password = (old as SmtpSettings)?.Password;
+        if (value is PrivacyNoticeSettings notice && old is PrivacyNoticeSettings prev)
+        {
+            // The version is server-managed: a changed text is a new notice that every user must accept again.
+            var changed = notice.ContentVi.Trim() != prev.ContentVi.Trim() || notice.ContentEn.Trim() != prev.ContentEn.Trim();
+            notice.Version = changed ? prev.Version + 1 : prev.Version;
+            notice.PublishedAt = changed ? clock.GetUtcNow() : prev.PublishedAt;
+        }
         ValidateSetting(value);
         var method = typeof(ISettingsService).GetMethod(nameof(ISettingsService.SetAsync))!.MakeGenericMethod(type);
         await (Task)method.Invoke(settings, [key, value, ct])!;
@@ -227,8 +234,11 @@ public sealed class SettingsController(ISettingsService settings, IAuditWriter a
         var errors = new Dictionary<string, string[]>();
         switch (v)
         {
-            case PasswordPolicySettings p when p.MinLength is < 8 or > 128 || p.HistoryCount is < 0 or > 24 || p.MaxFailedAttempts is < 3 or > 20 || p.LockoutMinutes is < 1 or > 1440:
+            case PasswordPolicySettings p when p.MinLength is < 8 or > 128 || p.HistoryCount is < 0 or > 24 || p.MaxFailedAttempts is < 3 or > 20 || p.LockoutMinutes is < 1 or > 1440
+                                               || p.InactiveDisableDays is < 0 or > 365:
                 errors["policy"] = [L.T("error.validation")]; break;
+            case PrivacyNoticeSettings n when string.IsNullOrWhiteSpace(n.ContentVi) || string.IsNullOrWhiteSpace(n.ContentEn) || n.ContentVi.Length > 20_000 || n.ContentEn.Length > 20_000:
+                errors["content"] = [L.T("error.validation")]; break;
             case SessionPolicySettings s when s.IdleTimeoutMinutes is < 5 or > 480 || s.MaxConcurrentSessions is < 1 or > 20 || s.AccessTokenMinutes is < 5 or > 60:
                 errors["session"] = [L.T("error.validation")]; break;
             case ApprovalSettings a when a.Levels is < 1 or > 2:
@@ -289,12 +299,12 @@ public sealed class AuditLogsController(AppDbContext db, IExcelService excel, IA
         => Ok(await db.Set<AuditLog>().AsNoTracking().Where(a => a.EntityType != null).Select(a => a.EntityType!).Distinct().OrderBy(x => x).Take(500).ToListAsync(ct));
 
     [HttpGet("export"), HasPermission(Permissions.Audit.Export)]
-    public async Task<IActionResult> Export([FromQuery(Name = "")] AuditQuery q, CancellationToken ct)
+    public async Task<IActionResult> Export([FromQuery(Name = "")] AuditQuery q, [FromQuery] string? format, CancellationToken ct)
     {
         var rows = await Query(q).Take(50_000).ToListAsync(ct);
         var org = await db.Set<Organization>().AsNoTracking().FirstOrDefaultAsync(ct);
         var period = q.From is null && q.To is null ? null : $"{q.From?.ToOffset(TimeSpan.FromHours(7)):dd/MM/yyyy} - {q.To?.ToOffset(TimeSpan.FromHours(7)):dd/MM/yyyy}";
-        var bytes = excel.Write(new ExcelSheet
+        var sheet = new ExcelSheet
         {
             Name = "RPT-16",
             Header = new ExcelReportHeader(L.Pick(org?.Name ?? "BlueMeal", org?.NameEn), L.Pick("Nhật ký truy cập / thao tác hệ thống", "System access / activity log"), period, CurrentUser.FullName ?? CurrentUser.UserName ?? "", DateTimeOffset.UtcNow),
@@ -308,9 +318,13 @@ public sealed class AuditLogsController(AppDbContext db, IExcelService excel, IA
             {
                 ["at"] = a.At, ["user"] = a.UserName, ["ip"] = a.Ip, ["action"] = a.Action.ToString(), ["entity"] = a.EntityType, ["entityId"] = a.EntityId,
                 ["success"] = a.Success, ["message"] = a.Message, ["changes"] = a.NewValues is { Length: > 2000 } nv ? nv[..2000] : a.NewValues,
-            }),
-        });
-        await audit.WriteAsync(AuditAction.Export, nameof(AuditLog), null, message: $"{rows.Count} rows", ct: ct);
-        return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"RPT-16_NhatKyHeThong_{DateTime.Now:yyyyMMdd_HHmm}.xlsx");
+            }).ToList(),
+        };
+        var name = $"RPT-16_NhatKyHeThong_{DateTime.Now:yyyyMMdd_HHmm}.xlsx";
+        var csv = IsCsv(format);
+        await audit.WriteAsync(AuditAction.Export, nameof(AuditLog), null, message: $"{rows.Count} rows" + (csv ? " (csv)" : ""), ct: ct);
+        return csv
+            ? File(CsvWriter.Write(sheet), CsvWriter.ContentType, CsvWriter.FileName(name))
+            : File(excel.Write(sheet), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", name);
     }
 }

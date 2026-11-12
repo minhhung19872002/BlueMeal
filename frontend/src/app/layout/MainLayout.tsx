@@ -6,6 +6,7 @@ import { filterNav, findTrail, NAV, type NavItem } from '@/app/navigation';
 import { usePermission } from '@/shared/auth/authStore';
 import { useUi } from '@/shared/hooks/useUiStore';
 import { AppHeaderRight } from './HeaderRight';
+import { PrivacyConsentGate } from '@/features/auth/PrivacyNotice';
 import { childIcon, groupIcon, LogoMark, Svg } from './navIcons';
 
 const itemClass = (solid: boolean, inGroup: boolean) => (solid ? 'bm-sb-item is-solid' : inGroup ? 'bm-sb-item is-in' : 'bm-sb-item');
@@ -124,6 +125,7 @@ export function MainLayout() {
             <Outlet />
           </Suspense>
         </main>
+        <PrivacyConsentGate />
       </div>
     </div>
   );

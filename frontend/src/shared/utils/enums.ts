@@ -28,7 +28,7 @@ export const ENUMS = {
   ContractStatus: ["Draft", "Active", "Expired", "Terminated"],
   PurchaseRequestStatus: ["Draft", "Submitted", "Approved", "Ordered", "Received", "Cancelled"],
   AlertStatus: ["Open", "Acknowledged", "Resolved"],
-  AuditAction: ["Login", "Logout", "LoginFailed", "Create", "Update", "Delete", "Approve", "Reject", "Export", "Import", "PermissionChange", "ConfigChange", "Backup", "Restore", "SyncRun", "View", "PasswordChange", "MfaChange", "SessionRevoke", "PiiAccess", "Submit", "Publish", "Recall", "Lock", "Unlock", "Post", "Other"],
+  AuditAction: ["Login", "Logout", "LoginFailed", "Create", "Update", "Delete", "Approve", "Reject", "Export", "Import", "PermissionChange", "ConfigChange", "Backup", "Restore", "SyncRun", "View", "PasswordChange", "MfaChange", "SessionRevoke", "PiiAccess", "Submit", "Publish", "Recall", "Lock", "Unlock", "Post", "Other", "Consent"],
   BackupType: ["Scheduled", "Manual"],
   JobStatus: ["Queued", "Running", "Succeeded", "Failed", "Expired"],
   IntegrationAuthType: ["None", "ApiKey", "Basic", "OAuth2ClientCredentials"],

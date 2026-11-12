@@ -204,7 +204,8 @@
       "maxFailedAttempts": "Lock after failed attempts",
       "lockoutMinutes": "Lockout duration (minutes)",
       "captchaAfterFailures": "Show CAPTCHA after failures",
-      "captchaIpMultiplier": "Per-IP CAPTCHA multiplier"
+      "captchaIpMultiplier": "Per-IP CAPTCHA multiplier",
+      "inactiveDisableDays": "Disable accounts not signed in for N days (0 = off)"
     },
     "session": {
       "title": "Sessions",
@@ -303,6 +304,13 @@
       "maintenanceVi": "Maintenance message (VI)",
       "maintenanceEn": "Maintenance message (EN)",
       "swagger": "Enable Swagger in production"
+    },
+    "privacy": {
+      "title": "Personal data processing notice",
+      "enabled": "Require users to accept at sign-in",
+      "contentVi": "Text (Vietnamese)",
+      "contentEn": "Text (English)",
+      "hint": "Current version: {{version}}. Editing the text increases the version and every user must accept again (Law 91/2025/QH15)."
     }
   }
 }

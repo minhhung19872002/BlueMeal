@@ -41,7 +41,8 @@ flowchart TD
 ```
 
 **Sự cố an toàn thông tin** (nghi xâm nhập, lộ dữ liệu, mã độc): xử lý như Mức 1; cô lập (thu hồi phiên, khóa tài khoản liên quan, chặn IP ở tường lửa/WAF);
-lưu giữ bằng chứng (nhật ký hệ thống, log nginx/ModSecurity, log ứng dụng); đánh giá phạm vi dữ liệu cá nhân bị ảnh hưởng và thông báo theo quy định (Nghị định 13/2023/NĐ-CP);
+lưu giữ bằng chứng (nhật ký hệ thống, log nginx/ModSecurity, log ứng dụng); đánh giá phạm vi dữ liệu cá nhân bị ảnh hưởng và thông báo cho cơ quan chuyên trách trong 72 giờ theo Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15 và Nghị định 356/2025/NĐ-CP;
+báo cáo sự cố an ninh mạng và phối hợp với cơ quan chức năng theo Luật An ninh mạng 2025, Nghị định 331/2026/NĐ-CP (đầu mối do Viện chỉ định — TCVN 14423:2026 §4.15);
 khôi phục từ bản sao lưu sạch nếu cần; rà soát và vá lỗ hổng trước khi vận hành lại.
 
 ## 4. Vận hành thường xuyên
@@ -52,8 +53,10 @@ khôi phục từ bản sao lưu sạch nếu cần; rà soát và vá lỗ hổ
 | Hằng ngày | Theo dõi dung lượng đĩa, CPU/RAM máy chủ | Kỹ thuật | Giám sát hạ tầng |
 | Hằng tuần | Rà phiên lạ, tài khoản không dùng; kiểm tra log lỗi (mức Error) | Quản trị | *Phiên làm việc*, log JSON |
 | Hằng tháng | Rà nhật ký thay đổi quyền/cấu hình/truy cập dữ liệu cá nhân; khóa sổ kho; cập nhật bản vá hệ điều hành/Docker | Quản trị, Kế toán, Kỹ thuật | *Nhật ký hệ thống*, RPT-16 |
+| Hằng tháng | **Tài khoản không đăng nhập từ 45 ngày** (TCVN 14423:2026 §4.6.2.3): hệ thống tự khóa lúc 00:15 hằng ngày (job `inactive-accounts`, ghi nhật ký *Khóa* với nội dung `inactive_45d`). Quản trị xem lại danh sách tài khoản bị khóa, mở khóa khi người dùng còn cần (thời hạn 45 ngày tính lại từ lúc mở khóa) | Quản trị | *Quản trị → Tài khoản người dùng*, *Nhật ký hệ thống* |
 | Hằng quý | **Diễn tập khôi phục** (`scripts/test-backup-restore.*`); quét bảo mật ZAP (`scripts/zap-baseline.*`); rà soát nhóm quyền | Kỹ thuật + Quản trị | Biên bản diễn tập |
 | Hằng năm | Gia hạn chứng chỉ TLS; đổi khóa JWT/khóa mã hóa (xoay khóa); đánh giá lại hiệu năng (`scripts/load-test.*`) | Kỹ thuật | `05_HuongDan_CaiDat.md` |
+| Hằng năm | Rà soát theo TCVN 14423:2026: danh sách tài khoản và phân quyền, nhật ký an ninh mạng, danh mục phần mềm/nhà cung cấp, quy trình sự cố; đào tạo nhận thức an ninh mạng; cập nhật hồ sơ cấp độ khi hệ thống thay đổi | Quản trị + bộ phận an ninh mạng của Viện | `10_DoiChieu_TieuChuan_PhapLy.md` §4, `11_HoSo_DeXuat_CapDo2.md` |
 
 **Xoay khóa mã hóa cột:** thêm khóa mới vào đầu `BLUEMEAL_ENC_KEYS`, các khóa cách nhau bằng dấu chấm phẩy (`k2:<base64>;k1:<base64>`) — đặt giá trị trong dấu nháy kép trong `deploy/.env`, khởi động lại `api`/`worker`; dữ liệu mới mã hóa bằng khóa mới, dữ liệu cũ vẫn đọc được bằng khóa cũ.
 **Xoay khóa JWT:** đổi `BLUEMEAL_JWT_KEY` và khởi động lại — mọi người dùng phải đăng nhập lại.

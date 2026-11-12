@@ -204,7 +204,8 @@
     "Lock": "Lock",
     "Unlock": "Unlock",
     "Post": "Post",
-    "Other": "Other"
+    "Other": "Other",
+    "Consent": "Personal data consent"
   },
   "BackupType": {
     "Scheduled": "Scheduled",

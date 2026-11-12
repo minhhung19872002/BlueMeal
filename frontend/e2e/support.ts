@@ -74,6 +74,12 @@ export async function loginUi(page: Page, user: AdminState) {
   await mfa.fill(await freshTotp(user.totpSecret));
   await mfa.press('Enter');
   await page.waitForURL((u) => !u.pathname.startsWith('/login'));
+  // global-setup accepts the personal-data notice for the admin; accept here too if the text changed meanwhile
+  const accept = page.getByTestId('privacy-accept');
+  if (await accept.isVisible()) {
+    await accept.click();
+    await accept.waitFor({ state: 'hidden' });
+  }
 }
 
 export async function shot(page: Page, name: string) {
@@ -90,6 +96,15 @@ export async function apiLogin(user: AdminState): Promise<string> {
   const b2: any = await r2.json();
   if (!b2.accessToken) throw new Error('API login failed: ' + JSON.stringify(b2));
   return b2.accessToken;
+}
+
+/** Accepts the current personal-data notice (Luật 91/2025) for the token's user, if not accepted yet. */
+export async function acceptPrivacyNotice(token: string) {
+  const headers = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
+  const n: any = await (await fetch(BASE_URL + '/api/v1/profile/privacy-notice', { headers })).json();
+  if (!n.enabled || n.accepted) return;
+  const r = await fetch(BASE_URL + '/api/v1/profile/privacy-consent', { method: 'POST', headers, body: JSON.stringify({ version: n.version, language: 'vi' }) });
+  if (!r.ok) throw new Error('privacy consent failed: ' + (await r.text()));
 }
 
 export async function api<T = any>(token: string, method: string, path: string, body?: unknown): Promise<T> {

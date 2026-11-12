@@ -132,6 +132,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             e.HasIndex(x => new { x.UserId, x.RevokedAt });
         });
         b.Entity<LoginHistory>().HasIndex(x => new { x.UserId, x.At });
+        b.Entity<PrivacyConsent>(e =>
+        {
+            e.HasIndex(x => new { x.UserId, x.NoticeVersion }).IsUnique();
+            e.Property(x => x.Language).HasMaxLength(5);
+            e.Property(x => x.UserAgent).HasMaxLength(500);
+        });
         b.Entity<MfaRecoveryCode>().HasIndex(x => x.UserId);
         b.Entity<PasswordHistory>().HasIndex(x => new { x.UserId, x.CreatedAt });
         b.Entity<OneTimeToken>().HasIndex(x => x.TokenHash).IsUnique();

@@ -1,0 +1,30 @@
+# Centralized logging overlay (SPEC §10.3): add after docker-compose.prod.yml when SYSLOG_HOST is set.
+#   docker compose --env-file deploy/.env -f deploy/docker-compose.yml -f deploy/docker-compose.prod.yml \
+#     -f deploy/docker-compose.syslog.yml up -d
+# api/worker already send every event themselves (built-in RFC 5424 sink, APP-NAME "bluemeal"). This overlay sends
+# the stdout/stderr of the other containers to the same collector through Docker's syslog log driver:
+#   web      nginx access/error log + ModSecurity audit log (JSON, blocked/4xx/5xx requests)
+#   postgres connections/disconnections, authentication failures, errors, statements slower than 1 s
+#   redis, backup
+# APP-NAME is the container name (bluemeal-web-1, bluemeal-postgres-1…). The address is resolved by the Docker
+# daemon on the host, so SYSLOG_HOST must be reachable from the host, not only from the compose networks.
+# Non-blocking mode: an unreachable collector never stalls a container; `docker logs` keeps working (dual logging).
+x-syslog: &syslog
+  driver: syslog
+  options:
+    syslog-address: "${SYSLOG_PROTOCOL:-udp}://${SYSLOG_HOST:?set SYSLOG_HOST in deploy/.env}:${SYSLOG_PORT:-514}"
+    syslog-format: rfc5424micro
+    syslog-facility: local0
+    tag: "{{.Name}}"
+    mode: non-blocking
+    max-buffer-size: 4m
+
+services:
+  postgres:
+    logging: *syslog
+  redis:
+    logging: *syslog
+  web:
+    logging: *syslog
+  backup:
+    logging: *syslog

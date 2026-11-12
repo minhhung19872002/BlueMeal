@@ -1,7 +1,9 @@
 using BlueMeal.Api.Auth;
 using BlueMeal.Api.Authorization;
 using BlueMeal.Application.Authorization;
+using BlueMeal.Application.Abstractions;
 using BlueMeal.Application.Common;
+using BlueMeal.Application.Settings;
 using BlueMeal.Domain.Entities;
 using BlueMeal.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
@@ -72,6 +74,32 @@ public sealed class ProfileController(AuthService auth, AppDbContext db, UserMan
         if (req.Email is not null) { user.Email = string.IsNullOrWhiteSpace(req.Email) ? null : req.Email.Trim(); user.NormalizedEmail = user.Email?.ToUpperInvariant(); }
         user.UpdatedAt = clock.GetUtcNow();
         await users.UpdateAsync(user);
+        return NoContent();
+    }
+
+    /// <summary>Current personal-data processing notice in the user's language, and whether the user accepted it.</summary>
+    [HttpGet("privacy-notice"), AllowRestricted]
+    public async Task<IActionResult> PrivacyNotice([FromServices] ISettingsService settings, CancellationToken ct)
+    {
+        var notice = await settings.GetAsync<PrivacyNoticeSettings>(SettingKeys.PrivacyNotice, ct);
+        var lang = (await users.FindByIdAsync(UserId.ToString()))?.Language ?? "vi";
+        var accepted = await db.Set<PrivacyConsent>().AsNoTracking().Where(c => c.UserId == UserId)
+            .OrderByDescending(c => c.AcceptedAt).Select(c => new { c.NoticeVersion, c.AcceptedAt }).FirstOrDefaultAsync(ct);
+        return Ok(new
+        {
+            notice.Enabled, notice.Version, notice.PublishedAt,
+            contentVi = notice.ContentVi, contentEn = notice.ContentEn, language = lang,
+            accepted = accepted is not null && accepted.NoticeVersion == notice.Version,
+            acceptedVersion = accepted?.NoticeVersion, acceptedAt = accepted?.AcceptedAt,
+        });
+    }
+
+    public sealed record PrivacyConsentRequest(int Version, string? Language);
+
+    [HttpPost("privacy-consent"), AllowRestricted]
+    public async Task<IActionResult> AcceptPrivacyNotice([FromBody] PrivacyConsentRequest req, CancellationToken ct)
+    {
+        await auth.AcceptPrivacyNoticeAsync(UserId, req.Version, req.Language ?? "vi", ClientIp, UserAgentHeader, ct);
         return NoContent();
     }
 

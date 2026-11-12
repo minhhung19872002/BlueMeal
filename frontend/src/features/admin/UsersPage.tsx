@@ -230,7 +230,16 @@ export default function UsersPage() {
       >
         {editing === 'new' ? formBody : editing && (
           <Tabs items={[
-            { key: 'info', label: t('catalog:tabs.general'), children: formBody },
+            { key: 'info', label: t('catalog:tabs.general'), children: (
+              <>
+                {formBody}
+                <Typography.Text type="secondary" data-testid="user-privacy-consent">
+                  {t('auth:privacy.section')}: {detail.data?.privacyConsent
+                    ? t('auth:privacy.acceptedOn', { date: fmt.dateTime(detail.data.privacyConsent.acceptedAt), version: detail.data.privacyConsent.noticeVersion })
+                    : t('auth:privacy.notAccepted')}
+                </Typography.Text>
+              </>
+            ) },
             ...(has('session.view') ? [{ key: 'sessions', label: t('users.sessions'), children: <UserSessions userId={editing.id} /> }] : []),
             { key: 'history', label: t('users.loginHistory'), children: <LoginHistory userId={editing.id} /> },
           ]} />

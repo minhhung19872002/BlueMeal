@@ -2,7 +2,14 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Xml;
 using System.Xml.Linq;
+using System.Xml.Schema;
+using BlueMeal.Domain.Entities;
+using BlueMeal.Domain.Enums;
+using BlueMeal.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using BlueMeal.IntegrationTests.Infrastructure;
 
 namespace BlueMeal.IntegrationTests;
@@ -176,6 +183,58 @@ public sealed class IntegrationTests(ApiFactory f)
         (await c.PostAsync($"/api/v1/integration/clients/{client.GetProperty("id").GetString()}/toggle", null)).EnsureSuccessStatusCode();
         (await anon.PostAsync("/api/v1/public/token", new FormUrlEncodedContent(new Dictionary<string, string> { ["grant_type"] = "client_credentials", ["client_id"] = clientId, ["client_secret"] = secret })))
             .StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Public_api_xml_responses_validate_against_the_published_xsd()
+    {
+        var c = await f.AdminAsync();
+        var client = await J(await c.PostAsJsonAsync("/api/v1/integration/clients", new { name = "Kiểm tra XSD", scopes = new[] { "menu.read", "food.read", "nutrition.read" } }));
+        var anon = f.CreateClient();
+
+        // the schema is public (no token) and is itself a valid XSD
+        var xsdResponse = await anon.GetAsync("/api/v1/public/schema.xsd");
+        xsdResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        xsdResponse.Content.Headers.ContentType!.MediaType.Should().Be("application/xml");
+        var xsd = await xsdResponse.Content.ReadAsStringAsync();
+        var schemas = new XmlSchemaSet();
+        using (var reader = XmlReader.Create(new StringReader(xsd))) schemas.Add(null, reader);
+        schemas.Compile();
+        schemas.GlobalElements.Names.Cast<XmlQualifiedName>().Select(n => n.Name)
+            .Should().BeEquivalentTo("token", "menus", "menuNutrition", "foods", "nutritionSummary");
+        if (RepoArtifacts.Directory("docs", "api") is { } dir)
+            await File.WriteAllTextAsync(Path.Combine(dir, "public-api.xsd"), xsd.ReplaceLineEndings("\n"));
+
+        var api = f.CreateClient();
+        async Task<XDocument> Valid(HttpRequestMessage req, string root)
+        {
+            req.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xml"));
+            var r = await (req.RequestUri!.OriginalString.EndsWith("/token") ? anon : api).SendAsync(req);
+            r.StatusCode.Should().Be(HttpStatusCode.OK, root);
+            var doc = XDocument.Parse(await r.Content.ReadAsStringAsync());
+            doc.Root!.Name.LocalName.Should().Be(root);
+            var errors = new List<string>();
+            doc.Validate(schemas, (_, e) => errors.Add($"{root}: {e.Message}"));
+            errors.Should().BeEmpty();
+            return doc;
+        }
+
+        var token = await Valid(new HttpRequestMessage(HttpMethod.Post, "/api/v1/public/token")
+        {
+            Content = new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["grant_type"] = "client_credentials", ["client_id"] = client.GetProperty("clientId").GetString()!, ["client_secret"] = client.GetProperty("clientSecret").GetString()!,
+            }),
+        }, "token");
+        api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.Root!.Element("AccessToken")!.Value);
+
+        (await Valid(new HttpRequestMessage(HttpMethod.Get, "/api/v1/public/foods?pageSize=20"), "foods")).Root!.Elements("food").Should().HaveCount(20);
+        await Valid(new HttpRequestMessage(HttpMethod.Get, "/api/v1/public/menus?from=2026-01-01&to=2026-02-28"), "menus");
+        await Valid(new HttpRequestMessage(HttpMethod.Get, "/api/v1/public/nutrition/summary?from=2026-01-01&to=2026-12-31"), "nutritionSummary");
+        var menuCode = await f.Services.CreateScope().ServiceProvider.GetRequiredService<AppDbContext>().Set<Menu>()
+            .Where(m => m.Status == MenuStatus.Published || m.Status == MenuStatus.Approved).Select(m => m.Code).FirstOrDefaultAsync();
+        if (menuCode is not null)
+            await Valid(new HttpRequestMessage(HttpMethod.Get, $"/api/v1/public/menus/{Uri.EscapeDataString(menuCode)}/nutrition"), "menuNutrition");
     }
 
     [Fact]

@@ -93,8 +93,25 @@ public class AppUser : IdentityUser<Guid>
     public Guid? CreatedBy { get; set; }
     public DateTimeOffset? UpdatedAt { get; set; }
     public DateTimeOffset? LastLoginAt { get; set; }
+    /// <summary>Set when an administrator re-enables the account: restarts the inactivity clock (TCVN 14423:2026 §4.6.2.3).</summary>
+    public DateTimeOffset? ReactivatedAt { get; set; }
     public bool IsDeleted { get; set; }
     public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+}
+
+/// <summary>
+/// Record that a user read and accepted a version of the personal-data processing notice (Luật Bảo vệ dữ liệu cá nhân
+/// 91/2025/QH15). Append-only proof: one row per user and notice version.
+/// </summary>
+[NoAudit]
+public class PrivacyConsent : Entity
+{
+    public Guid UserId { get; set; }
+    public int NoticeVersion { get; set; }
+    public DateTimeOffset AcceptedAt { get; set; }
+    public string Language { get; set; } = "vi";
+    public string? Ip { get; set; }
+    public string? UserAgent { get; set; }
 }
 
 public class AppRole : IdentityRole<Guid>

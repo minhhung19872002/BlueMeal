@@ -15,6 +15,9 @@ public abstract class ApiControllerBase : ControllerBase
     protected string? ClientIp => HttpContext.Connection.RemoteIpAddress?.ToString();
     protected string? UserAgentHeader => Request.Headers.UserAgent.ToString();
 
+    /// <summary>True for <c>format=csv</c> on export endpoints (CSV UTF-8, TT 39/2017/TT-BTTTT).</summary>
+    protected static bool IsCsv(string? format) => string.Equals(format, "csv", StringComparison.OrdinalIgnoreCase);
+
     /// <summary>Runs the registered FluentValidation validator for T, throwing ValidationException (→ 400) on failure.</summary>
     protected async Task ValidateAsync<T>(T model, CancellationToken ct)
     {

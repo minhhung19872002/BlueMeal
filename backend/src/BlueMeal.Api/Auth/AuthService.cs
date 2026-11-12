@@ -18,7 +18,8 @@ namespace BlueMeal.Api.Auth;
 public sealed record LoginRequest(string UserName, string Password, string? CaptchaId, string? CaptchaAnswer);
 public sealed record MfaVerifyRequest(string MfaToken, string Code, string Method = "totp");
 public sealed record AuthUserDto(Guid Id, string UserName, string FullName, string? Email, string Language, string Theme, string[] Roles,
-    string[] Permissions, bool MfaEnabled, bool MfaRequired, bool MustChangePassword, bool PasswordExpired, Guid[]? WarehouseScope, Guid[]? CustomerScope);
+    string[] Permissions, bool MfaEnabled, bool MfaRequired, bool MustChangePassword, bool PasswordExpired, Guid[]? WarehouseScope, Guid[]? CustomerScope,
+    bool PrivacyConsentRequired = false);
 public sealed record LoginResponse(bool MfaRequired, string? MfaToken, string[]? MfaMethods, string? AccessToken, DateTimeOffset? ExpiresAt,
     bool Restricted, bool MustChangePassword, bool MfaSetupRequired, AuthUserDto? User, bool CaptchaRequired = false);
 
@@ -472,7 +473,34 @@ public sealed class AuthService(
         var p = await settings.GetAsync<PasswordPolicySettings>(SettingKeys.PasswordPolicy, ct);
         var expired = p.ExpiryDays > 0 && user.PasswordChangedAt is { } pc && pc.AddDays(p.ExpiryDays) < Now;
         return new AuthUserDto(user.Id, user.UserName!, user.FullName, user.Email, user.Language, user.Theme, access.Roles, access.Permissions,
-            user.TwoFactorEnabled, await IsMfaMandatoryAsync(user, ct), user.MustChangePassword, expired, access.Warehouses, access.Customers);
+            user.TwoFactorEnabled, await IsMfaMandatoryAsync(user, ct), user.MustChangePassword, expired, access.Warehouses, access.Customers,
+            await PrivacyConsentRequiredAsync(user.Id, ct));
+    }
+
+    // ------------------------------------------------------------------ personal-data notice (Luật 91/2025/QH15)
+
+    /// <summary>True when the notice is enabled and the user has not accepted its current version.</summary>
+    public async Task<bool> PrivacyConsentRequiredAsync(Guid userId, CancellationToken ct)
+    {
+        var notice = await settings.GetAsync<PrivacyNoticeSettings>(SettingKeys.PrivacyNotice, ct);
+        return notice.Enabled && !await db.Set<PrivacyConsent>().AnyAsync(c => c.UserId == userId && c.NoticeVersion == notice.Version, ct);
+    }
+
+    /// <summary>
+    /// Records acceptance of the notice version the user was shown. A stale version (the text changed meanwhile)
+    /// is rejected so that consent always refers to the text actually read.
+    /// </summary>
+    public async Task AcceptPrivacyNoticeAsync(Guid userId, int version, string language, string? ip, string? userAgent, CancellationToken ct)
+    {
+        var notice = await settings.GetAsync<PrivacyNoticeSettings>(SettingKeys.PrivacyNotice, ct);
+        if (version != notice.Version) throw new AppException("privacy.noticeChanged", 409);
+        if (await db.Set<PrivacyConsent>().AnyAsync(c => c.UserId == userId && c.NoticeVersion == version, ct)) return;
+        db.Set<PrivacyConsent>().Add(new PrivacyConsent
+        {
+            UserId = userId, NoticeVersion = version, AcceptedAt = Now, Language = language is "en" ? "en" : "vi", Ip = ip, UserAgent = Trunc(userAgent, 500),
+        });
+        await db.SaveChangesAsync(ct);
+        await audit.WriteAsync(AuditAction.Consent, nameof(PrivacyConsent), userId.ToString(), newValues: new { noticeVersion = version }, ct: ct);
     }
 
     private async Task RegisterFailure(AppUser? user, string name, string? ip, string? ua, LoginResult result, string reason, CancellationToken ct)

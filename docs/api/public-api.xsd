@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:annotation>
+    <xs:documentation xml:lang="vi">BlueMeal — lược đồ XML của API công khai /api/v1/public (Accept: application/xml), theo Thông tư 39/2017/TT-BTTTT. Số thập phân dùng dấu chấm; ngày dạng yyyy-MM-dd; thời điểm ISO 8601 UTC. Phần tử có nillable="true" nhận xsi:nil="true" khi không có giá trị.</xs:documentation>
+  </xs:annotation>
+  <xs:element name="token" nillable="true" type="TokenResponse" />
+  <xs:complexType name="TokenResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="AccessToken" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="TokenType" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" name="ExpiresIn" type="xs:int" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Scope" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="menus" nillable="true" type="PublicMenuList" />
+  <xs:complexType name="PublicMenuList">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="From" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="To" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="menu" type="menu" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="menu">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="Code" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Date" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Shift" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Customer" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="CustomerCode" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Subject" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" name="Servings" type="xs:int" />
+      <xs:element minOccurs="1" maxOccurs="1" name="EnergyKcal" nillable="true" type="xs:decimal" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Dishes" type="ArrayOfPublicDish" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfPublicDish">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="dish" nillable="true" type="PublicDish" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="PublicDish">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="Code" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Name" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="NameEn" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Type" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="menuNutrition" nillable="true" type="PublicMenuNutrition" />
+  <xs:complexType name="PublicMenuNutrition">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="Code" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Date" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" name="EnergyKcal" type="xs:decimal" />
+      <xs:element minOccurs="1" maxOccurs="1" name="TargetEnergyKcal" nillable="true" type="xs:decimal" />
+      <xs:element minOccurs="1" maxOccurs="1" name="ProteinPct" type="xs:decimal" />
+      <xs:element minOccurs="1" maxOccurs="1" name="LipidPct" type="xs:decimal" />
+      <xs:element minOccurs="1" maxOccurs="1" name="GlucidPct" type="xs:decimal" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Nutrients" type="ArrayOfPublicNutrient" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfPublicNutrient">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="nutrient" nillable="true" type="PublicNutrient" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="PublicNutrient">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="Code" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Name" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Unit" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" name="Value" type="xs:decimal" />
+      <xs:element minOccurs="1" maxOccurs="1" name="Target" nillable="true" type="xs:decimal" />
+      <xs:element minOccurs="1" maxOccurs="1" name="PercentOfTarget" nillable="true" type="xs:decimal" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="foods" nillable="true" type="PublicFoodPage" />
+  <xs:complexType name="PublicFoodPage">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" name="Page" type="xs:int" />
+      <xs:element minOccurs="1" maxOccurs="1" name="PageSize" type="xs:int" />
+      <xs:element minOccurs="1" maxOccurs="1" name="TotalItems" type="xs:long" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="food" type="food" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="food">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="Code" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Name" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="NameEn" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Group" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" name="RefuseRate" type="xs:decimal" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Source" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="UpdatedAt" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Per100g" type="ArrayOfPublicFoodNutrient" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfPublicFoodNutrient">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="nutrient" nillable="true" type="PublicFoodNutrient" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="PublicFoodNutrient">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="Code" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" name="Value" type="xs:decimal" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="nutritionSummary" nillable="true" type="PublicSummary" />
+  <xs:complexType name="PublicSummary">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="From" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="To" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="row" type="row" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="row">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="Period" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Subject" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Customer" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" name="Menus" type="xs:int" />
+      <xs:element minOccurs="1" maxOccurs="1" name="EnergyKcal" type="xs:decimal" />
+      <xs:element minOccurs="1" maxOccurs="1" name="TargetEnergyKcal" nillable="true" type="xs:decimal" />
+      <xs:element minOccurs="1" maxOccurs="1" name="PercentOfTarget" nillable="true" type="xs:decimal" />
+      <xs:element minOccurs="1" maxOccurs="1" name="DaysMet" type="xs:int" />
+      <xs:element minOccurs="1" maxOccurs="1" name="DaysNotMet" type="xs:int" />
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

@@ -194,8 +194,9 @@ public abstract class CatalogControllerBase<TEntity, TDto, TUpsert> : ApiControl
 
     // ------------------------------------------------------------------ Excel
 
+    /// <summary>Excel export; <c>format=csv</c> gives CSV UTF-8 for data exchange (TT 39/2017/TT-BTTTT).</summary>
     [HttpGet("export"), HasPermission(PermissionAction.Export)]
-    public virtual async Task<IActionResult> Export([FromQuery(Name = "")] PageQuery q, CancellationToken ct)
+    public virtual async Task<IActionResult> Export([FromQuery(Name = "")] PageQuery q, [FromQuery] string? format, CancellationToken ct)
     {
         var entities = await Sort(Filtered(q), q.Sort).Take(100_000).ToListAsync(ct);
         var cols = ExcelColumns();
@@ -204,15 +205,16 @@ public abstract class CatalogControllerBase<TEntity, TDto, TUpsert> : ApiControl
         foreach (var r in rows) PostProcessExportRow(r);
         var extra = await ExtraExcelColumnsAsync(ct);
         if (extra.Count > 0) await FillExtraExportAsync(entities, rows, ct);
-        var bytes = Excel.Write(new ExcelSheet
+        var columns = cols.Select(c => new ExcelColumn(c.Prop.Name, c.Header, c.Attr?.Width ?? 18, c.Attr?.Format)).Concat(extra).ToList();
+        var name = $"{ExportTitle}_{DateTime.Now:yyyyMMdd_HHmm}.xlsx";
+        if (IsCsv(format))
         {
-            Name = ExportTitle,
-            Header = await ReportHeader(ExportTitle, null, ct),
-            Columns = cols.Select(c => new ExcelColumn(c.Prop.Name, c.Header, c.Attr?.Width ?? 18, c.Attr?.Format)).Concat(extra).ToList(),
-            Rows = rows,
-        });
+            await Audit.WriteAsync(AuditAction.Export, typeof(TEntity).Name, null, message: $"{rows.Count} rows (csv)", ct: ct);
+            return File(CsvWriter.Write(columns, rows), CsvWriter.ContentType, CsvWriter.FileName(name));
+        }
+        var bytes = Excel.Write(new ExcelSheet { Name = ExportTitle, Header = await ReportHeader(ExportTitle, null, ct), Columns = columns, Rows = rows });
         await Audit.WriteAsync(AuditAction.Export, typeof(TEntity).Name, null, message: $"{rows.Count} rows", ct: ct);
-        return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{ExportTitle}_{DateTime.Now:yyyyMMdd_HHmm}.xlsx");
+        return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", name);
     }
 
     [HttpGet("import/template"), HasPermission(PermissionAction.Import)]

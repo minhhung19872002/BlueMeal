@@ -7,7 +7,7 @@
   "theme": { "light": "Giao diện sáng", "dark": "Giao diện tối" },
   "actions": {
     "add": "Thêm mới", "edit": "Sửa", "delete": "Xóa", "save": "Lưu", "cancel": "Hủy", "close": "Đóng", "confirm": "Xác nhận",
-    "search": "Tìm kiếm", "filter": "Lọc", "reset": "Đặt lại", "refresh": "Tải lại", "export": "Xuất Excel", "import": "Nhập Excel",
+    "search": "Tìm kiếm", "filter": "Lọc", "reset": "Đặt lại", "refresh": "Tải lại", "export": "Xuất Excel", "exportCsv": "Xuất CSV", "import": "Nhập Excel",
     "downloadTemplate": "Tải file mẫu", "lock": "Khóa", "unlock": "Mở khóa", "history": "Lịch sử thay đổi", "view": "Xem", "back": "Quay lại",
     "print": "In", "copy": "Sao chép", "next": "Tiếp tục", "previous": "Quay lại", "submit": "Gửi", "approve": "Duyệt", "reject": "Từ chối",
     "more": "Thêm", "columns": "Cột hiển thị", "apply": "Áp dụng", "select": "Chọn", "upload": "Tải lên", "download": "Tải xuống",

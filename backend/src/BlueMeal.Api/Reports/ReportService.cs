@@ -74,6 +74,15 @@ public sealed class ReportService(AppDbContext db, IEnumerable<IReport> reports,
         return (excel.Write(sheet), name);
     }
 
+    /// <summary>Renders a report as CSV UTF-8 (data only: no header block, signatures or totals).</summary>
+    public async Task<(byte[] Content, string FileName, int Rows)> CsvAsync(string code, ReportFilter filter, CancellationToken ct)
+    {
+        var (_, result) = await RunAsync(code, filter, ct);
+        var columns = result.Columns.Select(c => new ExcelColumn(c.Key, c.Header(user.Language))).ToList();
+        var name = $"{code}_{clock.GetUtcNow().ToOffset(TimeSpan.FromHours(7)):yyyyMMdd_HHmm}.csv";
+        return (CsvWriter.Write(columns, result.Rows), name, result.Rows.Count);
+    }
+
     /// <summary>Queues a background export (large reports) and returns the job id.</summary>
     public async Task<ExportJob> QueueAsync(string code, ReportFilter filter, CancellationToken ct)
     {

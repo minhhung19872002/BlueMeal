@@ -11,6 +11,7 @@ import { PageHead, Section, StaticField, XButton } from '@/app/layout/designKit'
 import { PasswordFields } from './PasswordPages';
 import { MfaSetup } from './MfaSetup';
 import { fetchMe } from './api';
+import { PrivacyNoticeSummary } from './PrivacyNotice';
 
 interface LoginRow { id: string; at: string; result: string; ip?: string; device?: string; reason?: string }
 interface SessionRow { id: string; ip?: string; device?: string; createdAt: string; lastSeenAt: string; current: boolean }
@@ -137,6 +138,10 @@ export default function ProfilePage() {
             <div className="bm-x-field-v"><Switch aria-label={t('profile.emailOtp')} onChange={(v) => void http.post('/profile/email-otp', null, { params: { enabled: v } })} /></div>
           </div>
         </div>
+      </Section>
+
+      <Section title={t('privacy.section')}>
+        <PrivacyNoticeSummary />
       </Section>
 
       <Section title={t('profile.sessions')} bodyClass="bm-x-sec-table">

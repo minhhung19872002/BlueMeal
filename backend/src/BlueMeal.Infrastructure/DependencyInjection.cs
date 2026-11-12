@@ -134,6 +134,7 @@ public static class DependencyInjection
         yield return new RecurringJob(JobNames.Backup, C(JobNames.Backup, "0 1 * * *"));
         yield return new RecurringJob(JobNames.DailyAlerts, C(JobNames.DailyAlerts, "0 6 * * *"));
         yield return new RecurringJob(JobNames.Housekeeping, C(JobNames.Housekeeping, "30 3 * * *"));
+        yield return new RecurringJob(JobNames.InactiveAccounts, C(JobNames.InactiveAccounts, "15 0 * * *"));
     }
 
     /// <summary>Converts a 5-field unix cron (m h dom mon dow) to Quartz 6/7-field format.</summary>

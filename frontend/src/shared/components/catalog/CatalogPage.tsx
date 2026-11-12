@@ -273,6 +273,11 @@ export function CatalogPage<T extends Row>({ config }: { config: CatalogConfig<T
               {t('actions.export')}
             </Button>
           )}
+          {can('export') && !config.hideExport && (
+            <Button icon={<DownloadOutlined />} data-testid="catalog-export-csv" onClick={() => void downloadFile(`/${config.resource}/export`, { ...params, page: undefined, pageSize: undefined, format: 'csv' }, `${config.resource}.csv`).catch((e) => message.error(problemMessage(e)))}>
+              {t('actions.exportCsv')}
+            </Button>
+          )}
           {can('create') && (
             <Button type="primary" icon={<PlusOutlined />} onClick={() => openEdit('new')} data-testid="catalog-add">
               {t('actions.add')}

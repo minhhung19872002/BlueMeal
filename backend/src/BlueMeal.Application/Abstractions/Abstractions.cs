@@ -112,6 +112,7 @@ public static class JobNames
     public const string Backup = "backup";
     public const string DailyAlerts = "daily-alerts";
     public const string Housekeeping = "housekeeping";
+    public const string InactiveAccounts = "inactive-accounts";
     public const string Export = "export-report";
     public const string GenerateMenus = "generate-menus";
 }

@@ -15,6 +15,8 @@ export interface AuthUser {
   passwordExpired: boolean;
   warehouseScope?: string[] | null;
   customerScope?: string[] | null;
+  /** The current personal-data notice has not been accepted yet (Luật 91/2025). */
+  privacyConsentRequired?: boolean;
 }
 
 export interface LoginResponse {

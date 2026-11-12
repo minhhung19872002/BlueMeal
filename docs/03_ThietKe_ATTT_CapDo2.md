@@ -1,7 +1,10 @@
 # THIẾT KẾ AN TOÀN THÔNG TIN CẤP ĐỘ 2 — BlueMeal
 
 > Phạm vi: tầng phần mềm của hệ thống BlueMeal (ứng dụng web, API, cơ sở dữ liệu, sao lưu) theo yêu cầu cơ bản đối với hệ thống
-> thông tin cấp độ 2 (Nghị định 85/2016/NĐ-CP, Thông tư 12/2022/TT-BTTTT) và quy định bảo vệ dữ liệu cá nhân hiện hành (Nghị định 13/2023/NĐ-CP).
+> thông tin cấp độ 2. Căn cứ (cập nhật 12/11/2026): Luật An ninh mạng 2025, Nghị định 331/2026/NĐ-CP, **TCVN 14423:2026** §4;
+> bảo vệ dữ liệu cá nhân theo Luật 91/2025/QH15 và Nghị định 356/2025/NĐ-CP. Các văn bản này thay NĐ 85/2016, TT 12/2022, TCVN 11930:2017 và NĐ 13/2023 mà SPEC viện dẫn.
+> Đối chiếu từng nhóm yêu cầu của TCVN 14423:2026, TT 39/2017/TT-BTTTT và TT 13/2025/TT-BYT: `10_DoiChieu_TieuChuan_PhapLy.md`.
+> Hồ sơ đề xuất cấp độ: `11_HoSo_DeXuat_CapDo2.md`.
 > Các yêu cầu về hạ tầng vật lý, mạng của đơn vị vận hành (tường lửa biên, phòng máy, quy chế) nằm ngoài phạm vi tài liệu này và được nêu ở mục 9.
 >
 > Mỗi yêu cầu được ánh xạ: **Yêu cầu → Biện pháp kỹ thuật → Vị trí trong mã nguồn/cấu hình → Cách kiểm thử**. Đường dẫn tính từ thư mục gốc repo.
@@ -53,7 +56,7 @@ Nguyên tắc: tối thiểu đặc quyền (DB, container non-root), phòng th�
 | Ghi thời điểm, user, IP, user agent, hành động, đối tượng, giá trị trước/sau (JSON diff, che trường nhạy cảm), kết quả, traceId | `AuditSaveChangesInterceptor` (Create/Update/Delete tự động, che `[Sensitive]`), `AuditWriter` cho Login/Logout/LoginFailed/Export/Import/PermissionChange/ConfigChange/Backup/Restore/SyncRun/PiiAccess… | `Infrastructure/Persistence/AuditSaveChangesInterceptor.cs`, `Infrastructure/Services/CoreServices.cs` | `AuditLogTests.Changes_are_audited_with_json_diff_and_masked_sensitive_fields` |
 | Chỉ thêm, không sửa/xóa qua ứng dụng | Role `bluemeal_app` chỉ có `SELECT, INSERT` trên `audit_log` (REVOKE UPDATE/DELETE/TRUNCATE); bảng phân vùng theo tháng | `Infrastructure/Persistence/Migrations/AuditLogSql.cs`, `deploy/postgres/init.sql` | `AuditLogTests.Audit_log_is_append_only_for_application_role` |
 | Lưu ≥ 12 tháng (cấu hình) | `AuditSettings.RetentionMonths` (tối thiểu 12); job housekeeping 03:30 tạo trước phân vùng và xóa phân vùng quá hạn bằng **kết nối owner** (role app không có quyền) | `Services/BackupService.cs` (`HousekeepingJob`) | `SecurityP8Tests.Housekeeping…` |
-| Log ứng dụng JSON xoay vòng, gửi tập trung sang syslog/SIEM | Serilog Compact JSON ra `logs/` (xoay theo ngày, 90 file, 200 MB/file); sink syslog tích hợp gửi từng sự kiện dạng RFC 5424 (thân là JSON) qua UDP hoặc TCP (khung RFC 6587) tới máy thu log/SIEM — bật bằng `SYSLOG_HOST`; gửi qua hàng đợi nền (10.000 sự kiện) nên máy thu chậm/mất kết nối không làm chậm ứng dụng, file JSON cục bộ vẫn luôn được ghi | `backend/src/BlueMeal.Api/Program.cs`, `Infrastructure/SyslogSink.cs` | `SyslogSinkTests` |
+| Log ứng dụng JSON xoay vòng, gửi tập trung sang syslog/SIEM | Serilog Compact JSON ra `logs/` (xoay theo ngày, 90 file, 200 MB/file); sink syslog tích hợp gửi từng sự kiện dạng RFC 5424 (thân là JSON) qua UDP hoặc TCP (khung RFC 6587) tới máy thu log/SIEM — bật bằng `SYSLOG_HOST`; gửi qua hàng đợi nền (10.000 sự kiện) nên máy thu chậm/mất kết nối không làm chậm ứng dụng, file JSON cục bộ vẫn luôn được ghi. Overlay `docker-compose.syslog.yml` đưa log của các thành phần còn lại về **cùng máy thu** qua log driver syslog của Docker (RFC 5424, APP-NAME = tên container, chế độ non-blocking): nginx access/error log và audit log JSON của ModSecurity (`web`), kết nối/ngắt kết nối, lỗi xác thực, lỗi và câu lệnh chậm > 1 s của PostgreSQL, Redis, sidecar sao lưu | `backend/src/BlueMeal.Api/Program.cs`, `Infrastructure/SyslogSink.cs`, `deploy/docker-compose.syslog.yml` | `SyslogSinkTests`; thử thực tế 2026-11-12: request XSS bị ModSecurity chặn (403) và lỗi `FATAL` của PostgreSQL đều đến máy thu, `docker logs` vẫn đọc được |
 | Màn hình tra cứu nhật ký, lọc, xuất Excel | *Quản trị → Nhật ký hệ thống*; báo cáo RPT-16 | `Controllers/Admin/SystemAdminControllers.cs` (`AuditLogsController`), `Reports/CostSafetySystemReports.cs` | E2E `p1-admin.spec.ts`, `ReportTests` |
 
 ## 5. Mã hóa (SPEC §10.4)
@@ -107,5 +110,10 @@ Nguyên tắc: tối thiểu đặc quyền (DB, container non-root), phòng th�
 - Tường lửa biên/IPS, phân vùng mạng, chỉ mở cổng 443 (và 80 để chuyển hướng) của container `web`.
 - Chứng chỉ TLS hợp lệ (CA nội bộ hoặc công khai) thay chứng chỉ tự ký mặc định; gia hạn định kỳ.
 - Quy chế quản lý tài khoản quản trị, phân công người giữ `BACKUP_PASSPHRASE` (tách biệt người quản trị ứng dụng), lưu bản sao lưu ngoài máy chủ.
-- Cập nhật bản vá hệ điều hành máy chủ, Docker Engine; giám sát log tập trung (SIEM) nếu có.
+- Cập nhật bản vá hệ điều hành máy chủ, Docker Engine; máy thu log tập trung/SIEM nhận log của BlueMeal (mục 4).
+- Đồng bộ thời gian máy chủ bằng NTP (mã TOTP và nhật ký phụ thuộc đồng hồ máy chủ).
 - Diễn tập khôi phục định kỳ (khuyến nghị hằng quý) bằng `scripts/test-backup-restore.*` và lưu biên bản.
+- Cấu hình khi vận hành chính thức theo TCVN 14423:2026: hết phiên sau 15 phút không hoạt động.
+- Tài khoản không đăng nhập quá *Khóa tài khoản không đăng nhập sau* (mặc định 45 ngày, 0 = tắt) bị job `inactive-accounts` khóa lúc 00:15 hằng ngày: đổi security stamp, thu hồi mọi phiên, ghi nhật ký `Lock` (`inactive_45d`). Thời hạn tính từ lần đăng nhập cuối, ngày tạo hoặc lần quản trị mở khóa gần nhất. Không bao giờ khóa tài khoản quản trị hệ thống cuối cùng còn hoạt động (`InactiveAccountsJob`; integration `PrivacyAndInactiveAccountTests`).
+- Thông báo xử lý dữ liệu cá nhân (Luật 91/2025/QH15): người dùng phải đồng ý phiên bản hiện hành sau khi đăng nhập; lưu bảng `privacy_consent` (phiên bản, thời điểm, IP, trình duyệt) và nhật ký `Consent`. Đổi nội dung thông báo → tăng phiên bản → mọi người đồng ý lại.
+- Các yêu cầu quản lý còn lại của TCVN 14423:2026 (rủi ro, tài sản, nhân sự, nhà cung cấp, ứng phó sự cố): `10_DoiChieu_TieuChuan_PhapLy.md` §4.

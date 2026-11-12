@@ -567,6 +567,13 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -1335,6 +1342,7 @@
         "tags": [
           "Countries"
         ],
+        "summary": "Excel export; \u0060format=csv\u0060 gives CSV UTF-8 for data exchange (TT 39/2017/TT-BTTTT).",
         "parameters": [
           {
             "name": "Page",
@@ -1378,6 +1386,13 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -2112,6 +2127,7 @@
         "tags": [
           "Customers"
         ],
+        "summary": "Excel export; \u0060format=csv\u0060 gives CSV UTF-8 for data exchange (TT 39/2017/TT-BTTTT).",
         "parameters": [
           {
             "name": "Page",
@@ -2155,6 +2171,13 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -2588,6 +2611,7 @@
         "tags": [
           "CustomerTypes"
         ],
+        "summary": "Excel export; \u0060format=csv\u0060 gives CSV UTF-8 for data exchange (TT 39/2017/TT-BTTTT).",
         "parameters": [
           {
             "name": "Page",
@@ -2631,6 +2655,13 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -2747,6 +2778,7 @@
         "tags": [
           "Departments"
         ],
+        "summary": "Drag and drop: move a node under a new parent at a given position; siblings are renumbered.",
         "parameters": [
           {
             "name": "id",
@@ -3118,6 +3150,7 @@
         "tags": [
           "Departments"
         ],
+        "summary": "Excel export; \u0060format=csv\u0060 gives CSV UTF-8 for data exchange (TT 39/2017/TT-BTTTT).",
         "parameters": [
           {
             "name": "Page",
@@ -3161,6 +3194,13 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -3618,6 +3658,7 @@
         "tags": [
           "Dishes"
         ],
+        "summary": "Excel export; \u0060format=csv\u0060 gives CSV UTF-8 for data exchange (TT 39/2017/TT-BTTTT).",
         "parameters": [
           {
             "name": "Page",
@@ -3661,6 +3702,13 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -4185,6 +4233,7 @@
         "tags": [
           "Employees"
         ],
+        "summary": "Excel export; \u0060format=csv\u0060 gives CSV UTF-8 for data exchange (TT 39/2017/TT-BTTTT).",
         "parameters": [
           {
             "name": "Page",
@@ -4228,6 +4277,13 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -4742,6 +4798,7 @@
         "tags": [
           "FoodGroups"
         ],
+        "summary": "Excel export; \u0060format=csv\u0060 gives CSV UTF-8 for data exchange (TT 39/2017/TT-BTTTT).",
         "parameters": [
           {
             "name": "Page",
@@ -4785,6 +4842,13 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -5340,6 +5404,7 @@
         "tags": [
           "Foods"
         ],
+        "summary": "Excel export; \u0060format=csv\u0060 gives CSV UTF-8 for data exchange (TT 39/2017/TT-BTTTT).",
         "parameters": [
           {
             "name": "Page",
@@ -5383,6 +5448,13 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -5816,6 +5888,7 @@
         "tags": [
           "FoodSafetySpecs"
         ],
+        "summary": "Excel export; \u0060format=csv\u0060 gives CSV UTF-8 for data exchange (TT 39/2017/TT-BTTTT).",
         "parameters": [
           {
             "name": "Page",
@@ -5859,6 +5932,13 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -6594,6 +6674,7 @@
         "tags": [
           "Ingredients"
         ],
+        "summary": "Excel export; \u0060format=csv\u0060 gives CSV UTF-8 for data exchange (TT 39/2017/TT-BTTTT).",
         "parameters": [
           {
             "name": "Page",
@@ -6637,6 +6718,13 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -8327,6 +8415,7 @@
         "tags": [
           "MealShifts"
         ],
+        "summary": "Excel export; \u0060format=csv\u0060 gives CSV UTF-8 for data exchange (TT 39/2017/TT-BTTTT).",
         "parameters": [
           {
             "name": "Page",
@@ -8370,6 +8459,13 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -8773,6 +8869,7 @@
         "tags": [
           "MealStructures"
         ],
+        "summary": "Excel export; \u0060format=csv\u0060 gives CSV UTF-8 for data exchange (TT 39/2017/TT-BTTTT).",
         "parameters": [
           {
             "name": "Page",
@@ -8816,6 +8913,13 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -9864,6 +9968,7 @@
         "tags": [
           "Menus"
         ],
+        "summary": "Drag and drop a dish between two editable menus of the calendar.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -10356,6 +10461,7 @@
         "tags": [
           "Nutrients"
         ],
+        "summary": "Excel export; \u0060format=csv\u0060 gives CSV UTF-8 for data exchange (TT 39/2017/TT-BTTTT).",
         "parameters": [
           {
             "name": "Page",
@@ -10399,6 +10505,13 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -11299,6 +11412,7 @@
         "tags": [
           "Partners"
         ],
+        "summary": "Excel export; \u0060format=csv\u0060 gives CSV UTF-8 for data exchange (TT 39/2017/TT-BTTTT).",
         "parameters": [
           {
             "name": "Page",
@@ -11342,6 +11456,13 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -11775,6 +11896,7 @@
         "tags": [
           "PartnerTypes"
         ],
+        "summary": "Excel export; \u0060format=csv\u0060 gives CSV UTF-8 for data exchange (TT 39/2017/TT-BTTTT).",
         "parameters": [
           {
             "name": "Page",
@@ -11818,6 +11940,13 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -12106,6 +12235,50 @@
             "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/Api.Controllers.ProfileController.PreferencesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/profile/privacy-notice": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "Current personal-data processing notice in the user\u0027s language, and whether the user accepted it.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/profile/privacy-consent": {
+      "post": {
+        "tags": [
+          "Profile"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Api.Controllers.ProfileController.PrivacyConsentRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Api.Controllers.ProfileController.PrivacyConsentRequest"
+              }
+            },
+            "application/*\u002Bjson": {
+              "schema": {
+                "$ref": "#/components/schemas/Api.Controllers.ProfileController.PrivacyConsentRequest"
               }
             }
           }
@@ -12650,6 +12823,7 @@
         "tags": [
           "Provinces"
         ],
+        "summary": "Excel export; \u0060format=csv\u0060 gives CSV UTF-8 for data exchange (TT 39/2017/TT-BTTTT).",
         "parameters": [
           {
             "name": "Page",
@@ -12693,6 +12867,13 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -12835,6 +13016,19 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/public/schema.xsd": {
+      "get": {
+        "tags": [
+          "PublicApi"
+        ],
+        "summary": "XML Schema (XSD) of the XML responses (Th\u00F4ng t\u01B0 39/2017/TT-BTTTT). Public, no token needed.",
         "responses": {
           "200": {
             "description": "OK"
@@ -13636,6 +13830,95 @@
         }
       }
     },
+    "/api/v1/recipes/import/template": {
+      "get": {
+        "tags": [
+          "Recipes"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/recipes/import/preview": {
+      "post": {
+        "tags": [
+          "Recipes"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "file": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Application.Catalog.ImportPreview"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/recipes/import/commit": {
+      "post": {
+        "tags": [
+          "Recipes"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Api.Catalog.LineImportCommitRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Api.Catalog.LineImportCommitRequest"
+              }
+            },
+            "application/*\u002Bjson": {
+              "schema": {
+                "$ref": "#/components/schemas/Api.Catalog.LineImportCommitRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Application.Catalog.ImportCommitResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/recommendations": {
       "get": {
         "tags": [
@@ -13940,6 +14223,7 @@
         "tags": [
           "Recommendations"
         ],
+        "summary": "Excel export; \u0060format=csv\u0060 gives CSV UTF-8 for data exchange (TT 39/2017/TT-BTTTT).",
         "parameters": [
           {
             "name": "Page",
@@ -13983,6 +14267,13 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -14471,6 +14762,7 @@
         "tags": [
           "ReportGroups"
         ],
+        "summary": "Excel export; \u0060format=csv\u0060 gives CSV UTF-8 for data exchange (TT 39/2017/TT-BTTTT).",
         "parameters": [
           {
             "name": "Page",
@@ -14514,6 +14806,13 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -14703,6 +15002,13 @@
             "schema": {
               "type": "boolean",
               "default": false
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -16042,6 +16348,113 @@
         }
       }
     },
+    "/api/v1/stock-receipts/import/template": {
+      "get": {
+        "tags": [
+          "StockReceipts"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/stock-receipts/import/preview": {
+      "post": {
+        "tags": [
+          "StockReceipts"
+        ],
+        "summary": "Validates an opening-stock sheet. \u0060docDate\u0060: date of the receipts (usually the first day of the first period used), default today; \u0060post\u0060: post them at once (needs stock.receipt.post), otherwise they stay Draft for review.",
+        "parameters": [
+          {
+            "name": "docDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "post",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "file": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Application.Catalog.ImportPreview"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/stock-receipts/import/commit": {
+      "post": {
+        "tags": [
+          "StockReceipts"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Api.Catalog.LineImportCommitRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Api.Catalog.LineImportCommitRequest"
+              }
+            },
+            "application/*\u002Bjson": {
+              "schema": {
+                "$ref": "#/components/schemas/Api.Catalog.LineImportCommitRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Application.Catalog.ImportCommitResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/stock-takes": {
       "get": {
         "tags": [
@@ -16588,6 +17001,7 @@
         "tags": [
           "SubjectGroups"
         ],
+        "summary": "Excel export; \u0060format=csv\u0060 gives CSV UTF-8 for data exchange (TT 39/2017/TT-BTTTT).",
         "parameters": [
           {
             "name": "Page",
@@ -16631,6 +17045,13 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -17194,6 +17615,7 @@
         "tags": [
           "Units"
         ],
+        "summary": "Excel export; \u0060format=csv\u0060 gives CSV UTF-8 for data exchange (TT 39/2017/TT-BTTTT).",
         "parameters": [
           {
             "name": "Page",
@@ -17237,6 +17659,13 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -18085,6 +18514,7 @@
         "tags": [
           "Wards"
         ],
+        "summary": "Excel export; \u0060format=csv\u0060 gives CSV UTF-8 for data exchange (TT 39/2017/TT-BTTTT).",
         "parameters": [
           {
             "name": "Page",
@@ -18128,6 +18558,13 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -18561,6 +18998,7 @@
         "tags": [
           "Warehouses"
         ],
+        "summary": "Excel export; \u0060format=csv\u0060 gives CSV UTF-8 for data exchange (TT 39/2017/TT-BTTTT).",
         "parameters": [
           {
             "name": "Page",
@@ -18604,6 +19042,13 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -18774,6 +19219,9 @@
               "format": "uuid"
             },
             "nullable": true
+          },
+          "privacyConsentRequired": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -19147,6 +19595,20 @@
           }
         },
         "additionalProperties": false
+      },
+      "Api.Catalog.LineImportCommitRequest": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "nullable": true
+          },
+          "skipErrors": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Commit of a previewed line import: the preview token, and whether to import the valid documents when some rows have errors."
       },
       "Api.Controllers.Admin.BackupsController.ManualInput": {
         "type": "object",
@@ -22862,6 +23324,20 @@
         },
         "additionalProperties": false
       },
+      "Api.Controllers.ProfileController.PrivacyConsentRequest": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "language": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "Api.Controllers.PublicApi.PublicDish": {
         "type": "object",
         "properties": {
@@ -24235,6 +24711,14 @@
           "totalItems": {
             "type": "integer",
             "format": "int64"
+          },
+          "statusCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -24260,6 +24744,14 @@
           "totalItems": {
             "type": "integer",
             "format": "int64"
+          },
+          "statusCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -24285,6 +24777,14 @@
           "totalItems": {
             "type": "integer",
             "format": "int64"
+          },
+          "statusCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -24310,6 +24810,14 @@
           "totalItems": {
             "type": "integer",
             "format": "int64"
+          },
+          "statusCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -24335,6 +24843,14 @@
           "totalItems": {
             "type": "integer",
             "format": "int64"
+          },
+          "statusCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -24360,6 +24876,14 @@
           "totalItems": {
             "type": "integer",
             "format": "int64"
+          },
+          "statusCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -24385,6 +24909,14 @@
           "totalItems": {
             "type": "integer",
             "format": "int64"
+          },
+          "statusCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -24410,6 +24942,14 @@
           "totalItems": {
             "type": "integer",
             "format": "int64"
+          },
+          "statusCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -24435,6 +24975,14 @@
           "totalItems": {
             "type": "integer",
             "format": "int64"
+          },
+          "statusCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -24460,6 +25008,14 @@
           "totalItems": {
             "type": "integer",
             "format": "int64"
+          },
+          "statusCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -24485,6 +25041,14 @@
           "totalItems": {
             "type": "integer",
             "format": "int64"
+          },
+          "statusCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -24510,6 +25074,14 @@
           "totalItems": {
             "type": "integer",
             "format": "int64"
+          },
+          "statusCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -24535,6 +25107,14 @@
           "totalItems": {
             "type": "integer",
             "format": "int64"
+          },
+          "statusCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -24560,6 +25140,14 @@
           "totalItems": {
             "type": "integer",
             "format": "int64"
+          },
+          "statusCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -24585,6 +25173,14 @@
           "totalItems": {
             "type": "integer",
             "format": "int64"
+          },
+          "statusCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -24610,6 +25206,14 @@
           "totalItems": {
             "type": "integer",
             "format": "int64"
+          },
+          "statusCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -24635,6 +25239,14 @@
           "totalItems": {
             "type": "integer",
             "format": "int64"
+          },
+          "statusCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -24660,6 +25272,14 @@
           "totalItems": {
             "type": "integer",
             "format": "int64"
+          },
+          "statusCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -24685,6 +25305,14 @@
           "totalItems": {
             "type": "integer",
             "format": "int64"
+          },
+          "statusCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -24710,6 +25338,14 @@
           "totalItems": {
             "type": "integer",
             "format": "int64"
+          },
+          "statusCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -24735,6 +25371,14 @@
           "totalItems": {
             "type": "integer",
             "format": "int64"
+          },
+          "statusCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -24831,6 +25475,7 @@
           "Lock",
           "Unlock",
           "Post",
+          "Consent",
           "Other"
         ],
         "type": "string"

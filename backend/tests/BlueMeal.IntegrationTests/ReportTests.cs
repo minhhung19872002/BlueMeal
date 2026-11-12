@@ -200,4 +200,34 @@ public sealed class ReportTests(ApiFactory f)
         foreach (var url in new[] { "/api/v1/inspections/step1?from=2026-01-01&to=2026-12-31", "/api/v1/food-samples?from=2026-01-01&to=2026-12-31", "/api/v1/inspections/step2?from=2026-01-01&to=2026-12-31" })
             (await c.GetAsync(url)).StatusCode.Should().Be(HttpStatusCode.OK, url);
     }
+
+    [Fact]
+    public async Task Catalogs_audit_log_and_reports_export_to_csv_utf8()
+    {
+        var c = await f.AdminAsync();
+        static async Task<string[]> Csv(HttpResponseMessage r)
+        {
+            if (!r.IsSuccessStatusCode) throw new HttpRequestException($"{(int)r.StatusCode}: {await r.Content.ReadAsStringAsync()}");
+            r.Content.Headers.ContentType!.MediaType.Should().Be("text/csv");
+            r.Content.Headers.ContentDisposition!.FileNameStar.Should().EndWith(".csv");
+            var bytes = await r.Content.ReadAsByteArrayAsync();
+            bytes.Take(3).Should().Equal((byte)0xEF, (byte)0xBB, (byte)0xBF);
+            var text = System.Text.Encoding.UTF8.GetString(bytes, 3, bytes.Length - 3);
+            text.Should().EndWith("\r\n");
+            return text.Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        var provinces = await Csv(await c.GetAsync("/api/v1/provinces/export?format=csv&q=ho%20chi%20minh"));
+        provinces[0].Should().NotContain("*");
+        provinces.Skip(1).Should().Contain(l => l.Contains("Thành phố Hồ Chí Minh"));
+
+        var audit = await Csv(await c.GetAsync("/api/v1/audit-logs/export?format=csv"));
+        audit.Length.Should().BeGreaterThan(1);
+        audit[1].Should().MatchRegex(@"^\d{4}-\d{2}-\d{2}T");
+
+        // reports: data rows only (no organization/title block), synchronous whatever the size
+        var report = await Csv(await c.PostAsJsonAsync("/api/v1/reports/RPT-16/export?format=csv", new { from = "2026-01-01", to = "2026-12-31" }));
+        string.Join("\n", report).Should().NotContain("Người lập");
+        report.Length.Should().BeGreaterThan(1);
+    }
 }

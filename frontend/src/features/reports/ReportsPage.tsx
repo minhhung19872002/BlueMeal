@@ -87,6 +87,17 @@ export default function ReportsPage() {
       setBusy(false);
     }
   };
+  const exportCsv = async () => {
+    if (!code) return;
+    setBusy(true);
+    try {
+      await postDownload(`/reports/${code}/export?format=csv`, filter, `${code}.csv`);
+    } catch (e) {
+      message.error(problemMessage(e));
+    } finally {
+      setBusy(false);
+    }
+  };
   const download = (j: ExportJob) => downloadFile(`/reports/exports/${j.id}/download`, undefined, j.fileName ?? `${j.reportCode}.xlsx`);
   const saveFavorite = async () => {
     const list = [...(favorites.data ?? []).filter((f) => f.name !== favName), { name: favName, filter }];
@@ -150,6 +161,7 @@ export default function ReportsPage() {
         <>
           <XButton onClick={() => setFavOpen(true)}><StarOutlined />{t('reports.saveFavorite')}</XButton>
           {has('report.export') && <XButton disabled={busy} onClick={() => void exportExcel()} data-testid="report-export"><FileExcelOutlined />{t('reports.export')}</XButton>}
+          {has('report.export') && <XButton disabled={busy} onClick={() => void exportCsv()} data-testid="report-export-csv"><DownloadOutlined />{t('common:actions.exportCsv')}</XButton>}
           <Button type="primary" icon={<PlayCircleOutlined />} loading={busy} onClick={() => void run()} data-testid="report-run">{t('reports.run')}</Button>
         </>
       )}

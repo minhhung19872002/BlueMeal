@@ -1,4 +1,4 @@
-import { BASE_URL, hasAdminState, saveAdmin, totp } from './support';
+import { acceptPrivacyNotice, apiLogin, BASE_URL, hasAdminState, loadAdmin, saveAdmin, totp } from './support';
 
 /**
  * Prepares the admin account for E2E runs. On a fresh database the seeded admin must change its password and
@@ -6,7 +6,10 @@ import { BASE_URL, hasAdminState, saveAdmin, totp } from './support';
  * (git-ignored). Provide E2E_ADMIN_PASSWORD + E2E_ADMIN_TOTP to reuse an existing configured admin instead.
  */
 export default async function globalSetup() {
-  if (hasAdminState()) return;
+  if (hasAdminState()) {
+    await acceptPrivacyNotice(await apiLogin(loadAdmin()));
+    return;
+  }
   const initial = process.env.E2E_ADMIN_INITIAL_PASSWORD ?? 'BlueMeal@2026!';
   const newPassword = process.env.E2E_ADMIN_NEW_PASSWORD ?? 'E2e@BlueMeal2026!';
   const login: any = await (await fetch(BASE_URL + '/api/v1/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userName: 'admin', password: initial }) })).json();
@@ -17,5 +20,6 @@ export default async function globalSetup() {
   const setup: any = await (await fetch(BASE_URL + '/api/v1/profile/mfa/setup', { method: 'POST', headers: auth })).json();
   const en = await fetch(BASE_URL + '/api/v1/profile/mfa/enable', { method: 'POST', headers: auth, body: JSON.stringify({ code: totp(setup.secret) }) });
   if (!en.ok) throw new Error('mfa enable failed: ' + (await en.text()));
+  await acceptPrivacyNotice(login.accessToken);
   saveAdmin({ userName: 'admin', password: newPassword, totpSecret: setup.secret });
 }

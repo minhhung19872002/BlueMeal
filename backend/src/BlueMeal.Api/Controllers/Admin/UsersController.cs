@@ -87,8 +87,11 @@ public sealed class UsersController(AppDbContext db, UserManager<AppUser> users,
     {
         var u = await users.Users.AsNoTracking().Include(x => x.UserRoles).FirstOrDefaultAsync(x => x.Id == id, ct) ?? throw new NotFoundException("user");
         var scopes = await db.Set<UserDataScope>().AsNoTracking().Where(s => s.UserId == id).Select(s => new DataScopeItem(s.ScopeType, s.ScopeId)).ToListAsync(ct);
+        var consent = await db.Set<PrivacyConsent>().AsNoTracking().Where(c => c.UserId == id).OrderByDescending(c => c.AcceptedAt)
+            .Select(c => new { c.NoticeVersion, c.AcceptedAt, c.Ip }).FirstOrDefaultAsync(ct);
         return Ok(new
         {
+            privacyConsent = consent,
             u.Id, u.UserName, u.FullName, u.Email, u.IsActive, locked = u.LockoutEnd != null && u.LockoutEnd > Now, u.LockoutEnd, mfaEnabled = u.TwoFactorEnabled, u.MfaRequired,
             mfaMandatory = await auth.IsMfaMandatoryAsync(u, ct), u.MustChangePassword, u.LastLoginAt, u.CreatedAt, u.EmployeeId, u.Language,
             roleIds = u.UserRoles.Select(r => r.RoleId).ToArray(), scopes,
@@ -171,6 +174,7 @@ public sealed class UsersController(AppDbContext db, UserManager<AppUser> users,
     public async Task<IActionResult> Unlock(Guid id, CancellationToken ct)
     {
         var u = await users.FindByIdAsync(id.ToString()) ?? throw new NotFoundException("user");
+        if (!u.IsActive) u.ReactivatedAt = Now; // restarts the inactivity clock, otherwise the nightly job disables it again
         u.IsActive = true;
         u.LockoutEnd = null;
         u.AccessFailedCount = 0;

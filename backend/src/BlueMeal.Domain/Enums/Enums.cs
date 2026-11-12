@@ -63,7 +63,7 @@ public enum AuditAction
     Login = 1, Logout = 2, LoginFailed = 3, Create = 4, Update = 5, Delete = 6, Approve = 7, Reject = 8,
     Export = 9, Import = 10, PermissionChange = 11, ConfigChange = 12, Backup = 13, Restore = 14, SyncRun = 15,
     View = 16, PasswordChange = 17, MfaChange = 18, SessionRevoke = 19, PiiAccess = 20, Submit = 21, Publish = 22,
-    Recall = 23, Lock = 24, Unlock = 25, Post = 26, Other = 99,
+    Recall = 23, Lock = 24, Unlock = 25, Post = 26, Consent = 27, Other = 99,
 }
 
 public enum LoginResult { Success = 1, Failed = 2, Locked = 3, MfaRequired = 4, MfaFailed = 5, Disabled = 6 }
