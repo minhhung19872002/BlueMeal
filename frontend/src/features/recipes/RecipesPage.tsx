@@ -52,9 +52,9 @@ export default function RecipesPage() {
         <div className="bm-toolbar">
           <Input.Search allowClear placeholder={t('common:searchPlaceholder')} onSearch={(v) => { setQ(v); setPage(1); }} style={{ width: w(280) }} />
           <LookupSelect resource="dishes" placeholder={t('dish')} value={dishId} onChange={(v) => { setDishId(v ?? undefined); setPage(1); }} style={{ width: w(260) }} />
-          <Select allowClear placeholder={t('status')} value={status} onChange={(v) => { setStatus(v); setPage(1); }} style={{ width: w(170) }}
+          <Select aria-label={t('status')} allowClear placeholder={t('status')} value={status} onChange={(v) => { setStatus(v); setPage(1); }} style={{ width: w(170) }}
             options={ENUMS.RecipeStatus.map((s) => ({ value: s, label: enumLabel('RecipeStatus', s) }))} />
-          <Select value={currentOnly ? 'current' : 'all'} onChange={(v) => { setCurrentOnly(v === 'current'); setPage(1); }} style={{ width: w(200) }}
+          <Select aria-label={t('versions')} value={currentOnly ? 'current' : 'all'} onChange={(v) => { setCurrentOnly(v === 'current'); setPage(1); }} style={{ width: w(200) }}
             options={[{ value: 'current', label: t('current') }, { value: 'all', label: t('versions') }]} />
         </div>
         {isFetching && !data ? <div className="bm-pad"><Skeleton active /></div> : !data?.items.length ? <div className="bm-noRows">{t('common:noData')}</div> : (

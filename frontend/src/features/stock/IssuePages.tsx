@@ -72,8 +72,8 @@ export function IssuesPage() {
         <DatePicker.RangePicker value={range} onChange={(v) => { setRange(v as never); setPage(1); }} format={DATE_FORMAT} style={{ width: screens.md ? 260 : '100%' }} />
         <Input.Search allowClear placeholder={t('docNo')} onSearch={(v) => set('q', v || undefined)} style={{ width: screens.md ? 200 : '100%' }} />
         <LookupSelect resource="warehouses" placeholder={t('warehouse')} value={filters.warehouseId} onChange={(v) => set('warehouseId', v)} style={{ width: screens.md ? 200 : '100%' }} />
-        <Select allowClear placeholder={t('reason')} value={filters.reason} onChange={(v) => set('reason', v)} style={{ width: screens.md ? 170 : '100%' }} options={ENUMS.IssueReason.map((s) => ({ value: s, label: enumLabel('IssueReason', s) }))} />
-        <Select allowClear placeholder={t('status')} value={filters.status} onChange={(v) => set('status', v)} style={{ width: screens.md ? 150 : '100%' }} options={ENUMS.StockDocStatus.map((s) => ({ value: s, label: enumLabel('StockDocStatus', s) }))} />
+        <Select aria-label={t('reason')} allowClear placeholder={t('reason')} value={filters.reason} onChange={(v) => set('reason', v)} style={{ width: screens.md ? 170 : '100%' }} options={ENUMS.IssueReason.map((s) => ({ value: s, label: enumLabel('IssueReason', s) }))} />
+        <Select aria-label={t('status')} allowClear placeholder={t('status')} value={filters.status} onChange={(v) => set('status', v)} style={{ width: screens.md ? 150 : '100%' }} options={ENUMS.StockDocStatus.map((s) => ({ value: s, label: enumLabel('StockDocStatus', s) }))} />
       </div>
       {isMobile ? (
         <DocCards
@@ -107,7 +107,7 @@ export function IssuesPage() {
       )}
       </div>
       <Modal open={menuOpen} title={t('fromMenu')} onCancel={() => setMenuOpen(false)} onOk={() => void fromMenu()} okButtonProps={{ disabled: !menuId, 'data-testid': 'issue-from-menu-ok' } as never}>
-        <Select showSearch optionFilterProp="label" loading={menus.isFetching} value={menuId} onChange={setMenuId} placeholder={t('issues.pickMenu')} style={{ width: '100%' }} data-testid="issue-menu-select"
+        <Select aria-label={t('issues.pickMenu')} showSearch optionFilterProp="label" loading={menus.isFetching} value={menuId} onChange={setMenuId} placeholder={t('issues.pickMenu')} style={{ width: '100%' }} data-testid="issue-menu-select"
           options={(menus.data ?? []).map((m) => ({ value: m.id, label: `${fmt.date(m.menuDate)} · ${m.shift} · ${m.code} · ${fmt.number(m.servings)}` }))} />
       </Modal>
     </Page>

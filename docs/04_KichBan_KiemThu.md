@@ -29,7 +29,7 @@ Cột **Tự động** chỉ tên test tự động tương ứng (U = unit, I =
 | TC-SES-02 | 107 | Gọi refresh không có header CSRF | — | 403 | I `AuthTests.Refresh_requires_csrf_header` |
 | TC-SES-03 | 107 | Admin đăng xuất cưỡng bức phiên của user | — | Request tiếp theo của user trả 401 | I `AuthTests.Logout_and_admin_force_logout_revoke_sessions` |
 | TC-SES-04 | 107 | Đăng nhập lần thứ 4 khi giới hạn 3 phiên | — | Phiên cũ nhất bị thu hồi | I `SessionAndPiiTests.Concurrent_session_limit_revokes_the_oldest_session` |
-| TC-SES-05 | 107 | Không thao tác 30 phút | — | Phiên hết hạn (401) | I `SessionAndPiiTests.Idle_session_expires_after_the_configured_timeout` |
+| TC-SES-05 | 107 | Không thao tác 15 phút (mặc định) | — | Phiên hết hạn (401) | I `SessionAndPiiTests.Idle_session_expires_after_the_configured_timeout` |
 | TC-ADM-01 | 105,109 | Mỗi vai trò mặc định gọi toàn bộ endpoint | 8 vai trò | Chỉ endpoint được cấp trả khác 403 | I `PermissionMatrixTests.Role_can_only_reach_endpoints_it_is_granted` |
 | TC-ADM-02 | 106 | Tạo user, khóa, reset mật khẩu; xóa quản trị cuối cùng | — | Khóa thu hồi phiên; không xóa được quản trị cuối | I `CatalogTests.Users_can_be_created_locked_and_reset_by_admin`, `Last_system_admin_cannot_be_removed` |
 | TC-ADM-03 | 104 | Xem nhân viên khi không có `pii.view`; tìm theo SĐT | — | SĐT/email/CCCD bị che; tìm chính xác vẫn ra | I `CatalogTests.Employee_pii_is_encrypted_at_rest_masked_without_pii_view_and_searchable_by_hash` |
@@ -88,6 +88,7 @@ Cột **Tự động** chỉ tên test tự động tương ứng (U = unit, I =
 | TC-RPT-02 | 701 | RPT-02 với dữ liệu biết trước | Tồn đầu/nhập/xuất/tồn cuối khớp sổ cái | I `ReportTests.Stock_movement_report_matches_ledger` |
 | TC-RPT-03 | 701 | Thủ kho 1 kho chạy RPT-02; chạy RPT-16 | Chỉ thấy kho mình; RPT-16 403 | I `ReportTests.Warehouse_scoped_user_only_sees_own_warehouse_in_reports` |
 | TC-RPT-04 | 701 | Xuất nền; lưu bộ lọc yêu thích | File tải được; bộ lọc được lưu theo người dùng | I `ReportTests.Background_export_and_favorites` |
+| TC-RPT-05 | 701 | Xuất CSV và ODS (TT 39/2017) cho danh mục tỉnh/thành, nhật ký hệ thống, RPT-16 | CSV UTF-8 có BOM, RFC 4180; ODS: `mimetype` là mục đầu không nén, `content.xml` hợp lệ, ô số/ngày có kiểu, có "Người lập"; in A4 vừa 1 trang ngang (vùng in đúng bằng bảng) | I `ReportTests.Catalogs_audit_log_and_reports_export_to_csv_utf8`, `ReportTests.Catalogs_audit_log_and_reports_export_to_ods`; U `OdsWriterTests` (5 test) |
 | TC-DASH-01 | 702 | Đăng nhập theo từng vai trò | Chỉ widget đúng quyền | I `ReportTests.Analysis_cost_sheet_and_dashboard`; E `p6-reports.spec.ts` |
 
 ### 1.5 Kho và ATTP (UC-601…UC-608)
@@ -118,6 +119,7 @@ Cột **Tự động** chỉ tên test tự động tương ứng (U = unit, I =
 | TC-INT-05 | 802 | Nguồn trả 503 hai lần | Đồng bộ vẫn thành công (retry) | như trên |
 | TC-INT-06 | 805 | Token sai secret, scope không cấp; gọi JSON, XML, FHIR; tắt client | 401, 400; JSON/XML/FHIR hợp lệ; scope thiếu 403; tắt client → không lấy token | I `IntegrationTests.Public_api_with_client_credentials_json_xml_and_fhir` |
 | TC-INT-07 | 805 | Sinh `docs/api/openapi.json` (chỉ ghi file khi chạy với `BLUEMEAL_EXPORT_ARTIFACTS=1`) | Có các đường dẫn `/api/v1/public/*` | I `IntegrationTests.OpenApi_document_is_exported_to_docs` |
+| TC-INT-08 | 805 | FHIR R4: `metadata` không token; công bố 1 thực đơn rồi tìm/đọc `NutritionOrder`, `Observation`; thiếu `date`; id không tồn tại; token thiếu `nutrition.read` | `CapabilityStatement` 4.0.1; `NutritionOrder` có `patient` data-absent-reason, `fullUrl` tuyệt đối, năng lượng kcal (UCUM); `Observation` có thành phần ENERGY/PROTEIN/LIPID/GLUCID; 400 và 404 trả `OperationOutcome`; 403 | I `FhirTests` (3 test); HL7 Validator (HAPI `$validate`) 0 lỗi |
 
 ## 2. Ma trận truy vết (tóm tắt)
 
@@ -162,14 +164,15 @@ Tổng số test tự động tại v1.0.0: **117 unit, 81 integration, 7 Vitest
 
 | Loại | Kết quả | Báo cáo |
 |---|---|---|
-| Unit (backend) | 117/117 đạt; độ phủ dòng các engine tính toán 98,8 % | `dotnet test` |
-| Integration (PostgreSQL thật) | 87/87 đạt (2026-11-11). Mẫu nhập `tools/import-templates/` và `docs/api/openapi.json` chỉ được sinh lại khi chạy `BLUEMEAL_EXPORT_ARTIFACTS=1 dotnet test --filter "Export"` | `dotnet test` |
+| Unit (backend) | 134/134 đạt; độ phủ dòng các engine tính toán 98,8 % | `dotnet test` |
+| Integration (PostgreSQL thật) | 96/96 đạt (2026-11-12). Mẫu nhập `tools/import-templates/` và `docs/api/openapi.json` chỉ được sinh lại khi chạy `BLUEMEAL_EXPORT_ARTIFACTS=1 dotnet test --filter "Export"` | `dotnet test` |
 | Frontend unit (Vitest) | 7/7 đạt | `npx vitest run` |
-| E2E Playwright | **54/54 đạt** (44 desktop Chrome + 10 mobile Pixel 7, chạy 2026-11-09 theo 4 đợt rồi gộp báo cáo); thêm P1 + P8 (7/7) trên bản production HTTPS | `docs/test-reports/e2e/index.html`, `e2e-junit.xml` |
+| E2E Playwright | **68/68 đạt** (58 desktop Chrome + 10 mobile Pixel 7, chạy liền một lượt 25 phút ngày 2026-11-12; gồm P10 quét axe-core WCAG 2.0/2.1 AA 14 màn hình); thêm P1 + P8 (7/7) trên bản production HTTPS | `docs/test-reports/e2e/index.html`, `e2e-junit.xml` |
 | ZAP baseline | 0 High, 0 Medium, 1 Low (false positive, có giải trình), còn lại Informational | `docs/test-reports/zap/zap-baseline.html` |
 | Diễn tập khôi phục | PASSED — 12/12 bảng khớp số bản ghi | `docs/test-reports/restore-drill.txt` |
 | Tải k6 | xem mục 5.1 | `docs/test-reports/k6-load-test.md` |
 | Lighthouse | xem mục 5.2 | `docs/test-reports/lighthouse/` |
+| Khả năng tiếp cận (axe-core, WCAG 2.0/2.1 A + AA) | 14/14 màn hình không có vi phạm mức serious/critical (E2E `p10-accessibility`, 2026-11-12) | `docs/test-reports/e2e/index.html` (tệp đính kèm `axe-*.txt` liệt kê cả vi phạm mức nhẹ nếu có) |
 
 ### 5.1 Kết quả tải (k6)
 

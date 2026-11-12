@@ -10,14 +10,20 @@ Mỗi mục `## [x.y.z] - YYYY-MM-DD` được nạp vào màn hình **Phiên b�
 - Nhập **tồn kho đầu kỳ** từ Excel: một phiếu nhập (ghi sổ ngay hoặc nháp) cho mỗi kho, theo ngày chứng từ chọn. Quyền mới `stock.receipt.import`.
 - Hai luồng nhập trên dùng chung bước xem trước lỗi theo dòng; chứng từ có dòng lỗi bị bỏ qua cả chứng từ.
 - Log tập trung: sink syslog RFC 5424 (UDP/TCP) gửi sự kiện JSON tới SIEM, bật bằng `SYSLOG_HOST`; overlay `deploy/docker-compose.syslog.yml` đưa log nginx/ModSecurity, PostgreSQL, Redis, sao lưu về cùng máy thu.
+- Hết phiên khi không hoạt động mặc định **15 phút** (trước: 30) theo TCVN 14423:2026 §4.5.2.2. Hệ thống đã lưu chính sách phiên giữ giá trị đã lưu — kiểm tra ở *Cấu hình hệ thống → Phiên*.
 - Bỏ quyền `system.restore` chưa dùng (khôi phục chỉ thực hiện bằng script `deploy/backup/restore.*`).
 - **Thông báo xử lý dữ liệu cá nhân** (Luật 91/2025/QH15): sau khi đăng nhập, người dùng đọc và bấm *Tôi đã đọc và đồng ý* (từ chối → đăng xuất). Lưu phiên bản, thời điểm, IP, trình duyệt (bảng `privacy_consent`), nhật ký `Consent`. Quản trị soạn nội dung vi/en ở *Cấu hình hệ thống → Bảo mật*; đổi nội dung → tăng phiên bản → mọi người đồng ý lại. Hồ sơ cá nhân và chi tiết tài khoản hiện thời điểm đồng ý.
 - **Tự khóa tài khoản không đăng nhập** sau 45 ngày (TCVN 14423:2026 §4.6.2.3): job `inactive-accounts` 00:15 hằng ngày, cấu hình ở *Chính sách mật khẩu* (0 = tắt), thu hồi phiên, ghi nhật ký; mở khóa tính lại thời hạn; giữ tài khoản quản trị hệ thống cuối cùng.
 - **Xuất CSV UTF-8** (TT 39/2017/TT-BTTTT) cho mọi danh mục, 16 báo cáo và nhật ký hệ thống (`?format=csv`): RFC 4180, BOM, CRLF, số dấu chấm, ngày ISO 8601, chống chèn công thức.
+- **Xuất ODS** (OpenDocument Spreadsheet, TT 39/2017 nhóm bắt buộc `.xls`/`.ods`) cho mọi danh mục, 16 báo cáo và nhật ký hệ thống (`?format=ods`): cùng bố cục với tệp Excel (tiêu đề, ô số/ngày có kiểu, dòng tổng `SUM`, khối chữ ký); in khổ A4, quá 8 cột thì xoay ngang, co vừa 1 trang ngang, có số trang. Đã mở thử bằng LibreOffice (chuyển sang PDF): tiếng Việt, ngày giờ, số và tiêu đề cột lặp lại ở mỗi trang hiển thị đúng.
+- **Máy chủ HL7 FHIR R4** chỉ đọc (TT 13/2025/TT-BYT) tại `/api/v1/public/fhir/r4`: `metadata` trả `CapabilityStatement`; `NutritionOrder` và `Observation` (giá trị dinh dưỡng từng chất một suất, scope `nutrition.read`) hỗ trợ tìm theo `date` và đọc theo id; lỗi trả `OperationOutcome`; có phần mô tả (narrative). Đạt HL7 FHIR Validator (HAPI `$validate`, 0 lỗi).
+- Sửa FHIR: mã năng lượng trước đây dùng nhầm SNOMED 33463005 (nghĩa là "chất lỏng"), nay dùng hệ mã nội bộ `urn:bluemeal:nutrient`; bổ sung `patient` bắt buộc của R4 (extension data-absent-reason vì thực đơn cho tập thể); `fullUrl` trong `Bundle` là URL tuyệt đối.
+- **Kiểm tra khả năng tiếp cận WCAG 2.0/2.1 AA** tự động trong E2E (`p10-accessibility`, axe-core) trên 14 màn hình chính; sửa các lỗi tìm được: màu chữ phụ đậm hơn (tương phản ≥ 4,5:1), nhãn cho ô lọc dạng chọn và ô chọn dòng, nút *Thông báo* đọc kèm số chưa đọc.
 - **XSD cho XML của API công khai** (TT 39/2017): `GET /api/v1/public/schema.xsd` (không cần token) và `docs/api/public-api.xsd`, sinh từ chính các kiểu dữ liệu XML.
 - Sửa: thông báo "Hạn sử dụng không được trước ngày sản xuất" trước đây hiện mã khóa thô.
 - Sửa: *Kiểm kê kho* — bấm *Lưu số đếm* rồi *Duyệt* ngay khi chưa lưu xong báo "dữ liệu đã thay đổi" (409); các lần lưu nay chạy tuần tự, nút *Duyệt* khóa trong lúc lưu.
 - Sửa: request bị trình duyệt hủy giữa chừng (chuyển trang) bị ghi log mức Error mã 500 và đẩy sang SIEM; nay ghi mức Information mã 499.
+- Kiểm thử: unit 134/134, integration 96/96, E2E 68/68 (58 desktop + 10 mobile, chạy liền một lượt).
 - Kiểm thử: chỉ ghi lại `docs/api/openapi.json` và mẫu `tools/import-templates/` khi đặt `BLUEMEAL_EXPORT_ARTIFACTS=1`; CSDL kiểm thử dùng `postgres:16-alpine`.
 
 ### Tài liệu

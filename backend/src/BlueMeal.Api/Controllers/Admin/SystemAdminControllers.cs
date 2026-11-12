@@ -322,9 +322,10 @@ public sealed class AuditLogsController(AppDbContext db, IExcelService excel, IA
         };
         var name = $"RPT-16_NhatKyHeThong_{DateTime.Now:yyyyMMdd_HHmm}.xlsx";
         var csv = IsCsv(format);
-        await audit.WriteAsync(AuditAction.Export, nameof(AuditLog), null, message: $"{rows.Count} rows" + (csv ? " (csv)" : ""), ct: ct);
-        return csv
-            ? File(CsvWriter.Write(sheet), CsvWriter.ContentType, CsvWriter.FileName(name))
-            : File(excel.Write(sheet), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", name);
+        var ods = IsOds(format);
+        await audit.WriteAsync(AuditAction.Export, nameof(AuditLog), null, message: $"{rows.Count} rows" + (csv ? " (csv)" : ods ? " (ods)" : ""), ct: ct);
+        if (csv) return File(CsvWriter.Write(sheet), CsvWriter.ContentType, CsvWriter.FileName(name));
+        if (ods) return File(OdsWriter.Write(sheet), OdsWriter.ContentType, OdsWriter.FileName(name));
+        return File(excel.Write(sheet), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", name);
     }
 }

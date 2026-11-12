@@ -37,6 +37,8 @@ export function LookupSelect({
   style,
   extraParams,
   'data-testid': testId,
+  id,
+  'aria-label': ariaLabel,
 }: {
   resource: string;
   value?: string | string[] | null;
@@ -48,6 +50,9 @@ export function LookupSelect({
   style?: React.CSSProperties;
   extraParams?: Record<string, string>;
   'data-testid'?: string;
+  /** set by Form.Item so its <label for> points at the input */
+  id?: string;
+  'aria-label'?: string;
 }) {
   const { i18n, t } = useTranslation();
   const [search, setSearch] = useState('');
@@ -82,6 +87,8 @@ export function LookupSelect({
       options={items.map((i) => ({ value: i.id, label: lookupLabel(i, i18n.language) }))}
       style={{ width: '100%', ...style }}
       data-testid={testId}
+      id={id}
+      aria-label={ariaLabel ?? (id ? undefined : placeholder)}
       popupMatchSelectWidth={false}
     />
   );
@@ -98,6 +105,8 @@ export function EnumSelect({
   placeholder,
   disabled,
   style,
+  id,
+  'aria-label': ariaLabel,
 }: {
   enumName: string;
   values: string[];
@@ -108,6 +117,8 @@ export function EnumSelect({
   placeholder?: string;
   disabled?: boolean;
   style?: React.CSSProperties;
+  id?: string;
+  'aria-label'?: string;
 }) {
   const { t } = useTranslation('enums');
   return (
@@ -118,6 +129,8 @@ export function EnumSelect({
       mode={multiple ? 'multiple' : undefined}
       disabled={disabled}
       placeholder={placeholder}
+      id={id}
+      aria-label={ariaLabel ?? (id ? undefined : placeholder)}
       options={values.map((v) => ({ value: v, label: t(`${enumName}.${v}`, v) }))}
       style={{ width: '100%', ...style }}
     />

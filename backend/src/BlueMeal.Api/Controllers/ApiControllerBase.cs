@@ -18,6 +18,9 @@ public abstract class ApiControllerBase : ControllerBase
     /// <summary>True for <c>format=csv</c> on export endpoints (CSV UTF-8, TT 39/2017/TT-BTTTT).</summary>
     protected static bool IsCsv(string? format) => string.Equals(format, "csv", StringComparison.OrdinalIgnoreCase);
 
+    /// <summary>True for <c>format=ods</c> on export endpoints (OpenDocument Spreadsheet, TT 39/2017/TT-BTTTT).</summary>
+    protected static bool IsOds(string? format) => string.Equals(format, "ods", StringComparison.OrdinalIgnoreCase);
+
     /// <summary>Runs the registered FluentValidation validator for T, throwing ValidationException (→ 400) on failure.</summary>
     protected async Task ValidateAsync<T>(T model, CancellationToken ct)
     {

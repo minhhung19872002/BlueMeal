@@ -229,7 +229,7 @@ erDiagram
 | ATTP | `/inspections/step1|step2|step3`, `/inspections/form`, `/inspections/day-dishes`, `/food-samples` (+`dispose`, `rules`) | |
 | Phân tích – báo cáo | `/analysis/nutrition` (+`export`), `/cost-sheet`, `/dashboard`, `/alerts` (+`resolve`, `run-daily`, `config`), `/reports` (+`{code}/run`, `{code}/export`, `exports`, `favorites`) | |
 | Tích hợp | `/integration/endpoints` (+`test`, `push`), `/integration/sync`, `/integration/logs`, `/integration/conflicts` (+`resolve`), `/integration/clients` (+`rotate`, `toggle`) | |
-| API công khai | `/public/token`, `/public/menus`, `/public/menus/{code}/nutrition`, `/public/foods`, `/public/nutrition/summary`, `/public/fhir/r4/NutritionOrder` | OAuth2 client credentials, scope `menu.read`/`nutrition.read`/`food.read` |
+| API công khai | `/public/token`, `/public/menus`, `/public/menus/{code}/nutrition`, `/public/foods`, `/public/nutrition/summary`, `/public/fhir/r4/metadata`, `/public/fhir/r4/NutritionOrder`, `/public/fhir/r4/Observation` | OAuth2 client credentials, scope `menu.read`/`nutrition.read`/`food.read` |
 | Sức khỏe | `/health/live`, `/health/ready` | Không cần đăng nhập |
 
 ## 6. Thiết kế giao diện

@@ -187,7 +187,7 @@ UC-702 — Dashboard theo vai trò: thực đơn chờ duyệt, cảnh báo nghi
 | UC-802 | Đồng bộ theo lịch (02:00) và thủ công; tăng dần theo `modifiedSince`; upsert theo mã; quy đổi đơn vị theo mapping; retry khi lỗi tạm thời |
 | UC-803 | Xung đột: bản ghi đã sửa tay mà nguồn cũng đổi → danh sách xung đột so sánh từng trường; chọn giữ bản đang dùng hoặc lấy dữ liệu nguồn |
 | UC-804 | Lịch sử đồng bộ: thời điểm, số bản ghi nhận/tạo/cập nhật/xung đột, chi tiết từng request, lỗi |
-| UC-805 | API công khai `/api/v1/public/*`: token client credentials, scope; JSON hoặc XML; FHIR R4 tối giản; tài liệu OpenAPI |
+| UC-805 | API công khai `/api/v1/public/*`: token client credentials, scope; JSON hoặc XML; FHIR R4 chỉ đọc (`CapabilityStatement`, `NutritionOrder`, `Observation`); tài liệu OpenAPI |
 
 ## 5. Yêu cầu phi chức năng
 

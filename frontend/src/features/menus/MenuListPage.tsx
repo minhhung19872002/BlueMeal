@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { App, Button, Checkbox, DatePicker, Grid, Input, Pagination, Select, Skeleton, Space, Table, Tag, Tooltip } from 'antd';
+import type { CheckboxProps } from 'antd';
 import { CheckOutlined, PlusOutlined, ThunderboltOutlined, WarningFilled } from '@ant-design/icons';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -81,7 +82,7 @@ export default function MenuListPage({ approvalMode = false }: { approvalMode?: 
           <LookupSelect resource="subject-groups" placeholder={t('subject')} value={filters.subjectGroupId} onChange={(v) => set('subjectGroupId', v)} style={{ width: screens.md ? 220 : '100%' }} />
           <LookupSelect resource="customers" placeholder={t('customer')} value={filters.customerId} onChange={(v) => set('customerId', v)} style={{ width: screens.md ? 220 : '100%' }} />
           {!approvalMode && (
-            <Select allowClear placeholder={t('status')} value={filters.status} onChange={(v) => set('status', v)} style={{ width: screens.md ? 150 : '100%' }}
+            <Select aria-label={t('status')} allowClear placeholder={t('status')} value={filters.status} onChange={(v) => set('status', v)} style={{ width: screens.md ? 150 : '100%' }}
               options={ENUMS.MenuStatus.map((s) => ({ value: s, label: enumLabel('MenuStatus', s) }))} />
           )}
         </div>
@@ -122,7 +123,7 @@ export default function MenuListPage({ approvalMode = false }: { approvalMode?: 
         ) : (
           <Table<Row>
             rowKey="id" loading={isFetching} dataSource={data?.items} scroll={{ x: 'max-content' }}
-            rowSelection={{ selectedRowKeys: selected, onChange: (k) => setSelected(k as string[]) }}
+            rowSelection={{ selectedRowKeys: selected, onChange: (k) => setSelected(k as string[]), getCheckboxProps: (r) => ({ 'aria-label': r.code }) as CheckboxProps }}
             onRow={(r) => ({ onClick: () => navigate(`/menus/${r.id}`), style: { cursor: 'pointer' } })}
             pagination={{ current: page, pageSize: 50, total: data?.totalItems, onChange: setPage, showSizeChanger: false, showTotal: (n) => t('common:totalItems', { count: n }) }}
             columns={[

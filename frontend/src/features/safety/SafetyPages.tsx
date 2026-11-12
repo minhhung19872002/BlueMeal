@@ -208,7 +208,7 @@ export function InspectionsPage() {
               <Space wrap>
                 <Form.Item name="inspectDate" label={t('date')} rules={[{ required: true }]}><DatePicker format={DATE_FORMAT} onChange={() => void dayDishes.refetch()} /></Form.Item>
                 <Form.Item name="dishMenu" label={t('dish')}>
-                  <Select allowClear style={{ width: 360 }} loading={dayDishes.isFetching} placeholder={t('fromMenus')}
+                  <Select aria-label={t('fromMenus')} allowClear style={{ width: 360 }} loading={dayDishes.isFetching} placeholder={t('fromMenus')}
                     options={(dayDishes.data ?? []).map((d) => ({ value: `${d.menuId}|${d.dishId}`, label: `${d.shift} · ${d.menuCode} · ${d.dishName}` }))} />
                 </Form.Item>
               </Space>
@@ -296,7 +296,7 @@ export function SamplesPage() {
       sub={settings.data && <span className="bm-no-print">{t('samples.rule', { h: settings.data.retentionHours, g: settings.data.minWeightG })}</span>}
       actions={(
         <>
-          <Select allowClear placeholder={t('samples.state')} value={state} onChange={(v) => { setState(v); setPage(1); }} style={{ width: 160 }}
+          <Select aria-label={t('samples.state')} allowClear placeholder={t('samples.state')} value={state} onChange={(v) => { setState(v); setPage(1); }} style={{ width: 160 }}
             options={['kept', 'due', 'disposed'].map((s) => ({ value: s, label: t(`samples.${s}`) }))} />
           <Button icon={<PrinterOutlined />} onClick={() => window.print()}>{t('printForm')}</Button>
           {has('sample.create') && <Button type="primary" icon={<PlusOutlined />} onClick={() => { form.resetFields(); form.setFieldsValue({ sampledAt: dayjs(), weightG: settings.data?.minWeightG ?? 150 }); setOpen(true); }} data-testid="sample-add">{t('samples.new')}</Button>}

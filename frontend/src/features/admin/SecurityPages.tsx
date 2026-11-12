@@ -143,15 +143,16 @@ export function AuditLogsPage() {
         <Typography.Title level={4}>{t('audit.title')}</Typography.Title>
         {has('audit.export') && <Button icon={<DownloadOutlined />} onClick={() => void downloadFile('/audit-logs/export', { ...params, page: undefined, pageSize: undefined })}>{t('common:actions.export')}</Button>}
         {has('audit.export') && <Button icon={<DownloadOutlined />} onClick={() => void downloadFile('/audit-logs/export', { ...params, page: undefined, pageSize: undefined, format: 'csv' }, 'audit-logs.csv')}>{t('common:actions.exportCsv')}</Button>}
+        {has('audit.export') && <Button icon={<DownloadOutlined />} onClick={() => void downloadFile('/audit-logs/export', { ...params, page: undefined, pageSize: undefined, format: 'ods' }, 'audit-logs.ods')}>{t('common:actions.exportOds')}</Button>}
       </div>
       <div className="bm-toolbar">
         <DatePicker.RangePicker value={range} onChange={(v) => { setRange(v as never); setPage(1); }} format={DATE_FORMAT} allowClear style={{ width: screens.md ? 280 : '100%' }} />
         <Input.Search allowClear placeholder={t('audit.user')} onSearch={(v) => { setUserName(v); setPage(1); }} style={{ width: screens.md ? 180 : '100%' }} />
-        <Select allowClear showSearch placeholder={t('audit.action')} value={action} onChange={(v) => { setAction(v); setPage(1); }} style={{ width: screens.md ? 200 : '100%' }}
+        <Select aria-label={t('audit.action')} allowClear showSearch placeholder={t('audit.action')} value={action} onChange={(v) => { setAction(v); setPage(1); }} style={{ width: screens.md ? 200 : '100%' }}
           options={ENUMS.AuditAction.map((a) => ({ value: a, label: enumLabel('AuditAction', a) }))} />
-        <Select allowClear showSearch placeholder={t('audit.entity')} value={entityType} onChange={(v) => { setEntityType(v); setPage(1); }} style={{ width: screens.md ? 200 : '100%' }}
+        <Select aria-label={t('audit.entity')} allowClear showSearch placeholder={t('audit.entity')} value={entityType} onChange={(v) => { setEntityType(v); setPage(1); }} style={{ width: screens.md ? 200 : '100%' }}
           options={types.data?.map((x) => ({ value: x, label: x }))} />
-        <Select allowClear placeholder={t('audit.result')} value={success} onChange={(v) => { setSuccess(v); setPage(1); }} style={{ width: screens.md ? 140 : '100%' }}
+        <Select aria-label={t('audit.result')} allowClear placeholder={t('audit.result')} value={success} onChange={(v) => { setSuccess(v); setPage(1); }} style={{ width: screens.md ? 140 : '100%' }}
           options={[{ value: 'true', label: t('audit.success') }, { value: 'false', label: t('audit.failure') }]} />
       </div>
       <Table<AuditRow>

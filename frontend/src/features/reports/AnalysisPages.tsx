@@ -61,7 +61,7 @@ function MenuPicker({ value, onChange }: { value?: string; onChange: (v?: string
     queryFn: async () => (await http.get<{ items: { id: string; code: string; menuDate: string; shift: string; customer?: string }[] }>('/menus', { params: { q: q || undefined, pageSize: 30, from: isoDate(dayjs().subtract(60, 'day')), to: isoDate(dayjs().add(60, 'day')) } })).data.items,
   });
   return (
-    <Select showSearch allowClear filterOption={false} onSearch={setQ} loading={isFetching} value={value} onChange={onChange} placeholder={t('nutrition.menu')}
+    <Select aria-label={t('nutrition.menu')} showSearch allowClear filterOption={false} onSearch={setQ} loading={isFetching} value={value} onChange={onChange} placeholder={t('nutrition.menu')}
       options={(data ?? []).map((m) => ({ value: m.id, label: `${m.code} · ${fmt.date(m.menuDate)} · ${m.shift}${m.customer ? ' · ' + m.customer : ''}` }))} />
   );
 }
@@ -241,9 +241,9 @@ export function AlertsPage() {
   const list = (
     <>
       <div className="bm-toolbar">
-        <Select allowClear placeholder={t('alerts.level')} value={filters.level} onChange={(v) => { setFilters({ ...filters, level: v }); setPage(1); }} style={{ width: 150 }}
+        <Select aria-label={t('alerts.level')} allowClear placeholder={t('alerts.level')} value={filters.level} onChange={(v) => { setFilters({ ...filters, level: v }); setPage(1); }} style={{ width: 150 }}
           options={['Critical', 'Warning', 'Info'].map((l) => ({ value: l, label: t(`nutrition:level.${l}`) }))} />
-        <Select allowClear placeholder={t('alerts.category')} value={filters.category} onChange={(v) => { setFilters({ ...filters, category: v }); setPage(1); }} style={{ width: 170 }}
+        <Select aria-label={t('alerts.category')} allowClear placeholder={t('alerts.category')} value={filters.category} onChange={(v) => { setFilters({ ...filters, category: v }); setPage(1); }} style={{ width: 170 }}
           options={['Stock', 'Certificate', 'Sample', 'Menu'].map((c) => ({ value: c, label: t(`alerts.cat.${c}`) }))} />
         <Input.Search allowClear placeholder={t('reports.f.q')} onSearch={(v) => { setFilters({ ...filters, q: v || undefined }); setPage(1); }} style={{ width: screens.md ? 240 : '100%' }} />
         <Space>{(data?.counts ?? []).map((c) => <Tag key={c.level} color={LEVEL_COLOR[c.level]}>{t(`nutrition:level.${c.level}`)}: {c.count}</Tag>)}</Space>

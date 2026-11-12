@@ -87,11 +87,12 @@ export default function ReportsPage() {
       setBusy(false);
     }
   };
-  const exportCsv = async () => {
+  /** Open formats (TT 39/2017/TT-BTTTT): CSV UTF-8 for data exchange, ODS with the same layout as Excel; both returned directly. */
+  const exportOpen = async (format: 'csv' | 'ods') => {
     if (!code) return;
     setBusy(true);
     try {
-      await postDownload(`/reports/${code}/export?format=csv`, filter, `${code}.csv`);
+      await postDownload(`/reports/${code}/export?format=${format}`, filter, `${code}.${format}`);
     } catch (e) {
       message.error(problemMessage(e));
     } finally {
@@ -136,7 +137,7 @@ export default function ReportsPage() {
       {report.filters.includes('q') && <FLabel label={t('reports.f.q')}><Input allowClear value={filter.q} onChange={(e) => set({ q: e.target.value || undefined })} /></FLabel>}
       {(favorites.data?.length ?? 0) > 0 && (
         <FLabel label={t('reports.favorites')}>
-          <Select placeholder={t('reports.favorites')} onChange={(n) => { const f = favorites.data!.find((x) => x.name === n); if (f) setFilter(f.filter); }}
+          <Select aria-label={t('reports.favorites')} placeholder={t('reports.favorites')} onChange={(n) => { const f = favorites.data!.find((x) => x.name === n); if (f) setFilter(f.filter); }}
             options={favorites.data!.map((f) => ({ value: f.name, label: f.name }))} />
         </FLabel>
       )}
@@ -161,7 +162,8 @@ export default function ReportsPage() {
         <>
           <XButton onClick={() => setFavOpen(true)}><StarOutlined />{t('reports.saveFavorite')}</XButton>
           {has('report.export') && <XButton disabled={busy} onClick={() => void exportExcel()} data-testid="report-export"><FileExcelOutlined />{t('reports.export')}</XButton>}
-          {has('report.export') && <XButton disabled={busy} onClick={() => void exportCsv()} data-testid="report-export-csv"><DownloadOutlined />{t('common:actions.exportCsv')}</XButton>}
+          {has('report.export') && <XButton disabled={busy} onClick={() => void exportOpen('csv')} data-testid="report-export-csv"><DownloadOutlined />{t('common:actions.exportCsv')}</XButton>}
+          {has('report.export') && <XButton disabled={busy} onClick={() => void exportOpen('ods')} data-testid="report-export-ods"><DownloadOutlined />{t('common:actions.exportOds')}</XButton>}
           <Button type="primary" icon={<PlayCircleOutlined />} loading={busy} onClick={() => void run()} data-testid="report-run">{t('reports.run')}</Button>
         </>
       )}

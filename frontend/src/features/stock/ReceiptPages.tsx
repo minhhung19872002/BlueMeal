@@ -56,7 +56,7 @@ export function ReceiptsPage() {
           <Input.Search allowClear placeholder={t('docNo')} onSearch={(v) => set('q', v || undefined)} style={{ width: screens.md ? 200 : '100%' }} />
           <LookupSelect resource="warehouses" placeholder={t('warehouse')} value={filters.warehouseId} onChange={(v) => set('warehouseId', v)} style={{ width: screens.md ? 200 : '100%' }} />
           <LookupSelect resource="partners" placeholder={t('partner')} value={filters.partnerId} onChange={(v) => set('partnerId', v)} style={{ width: screens.md ? 220 : '100%' }} />
-          <Select allowClear placeholder={t('status')} value={filters.status} onChange={(v) => set('status', v)} style={{ width: screens.md ? 150 : '100%' }}
+          <Select aria-label={t('status')} allowClear placeholder={t('status')} value={filters.status} onChange={(v) => set('status', v)} style={{ width: screens.md ? 150 : '100%' }}
             options={ENUMS.StockDocStatus.map((s) => ({ value: s, label: enumLabel('StockDocStatus', s) }))} />
         </div>
         {isMobile ? (

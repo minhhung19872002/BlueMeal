@@ -56,7 +56,8 @@ public class PasswordPolicySettings
 
 public class SessionPolicySettings
 {
-    public int IdleTimeoutMinutes { get; set; } = 30;
+    /// <summary>Sign the session out after this many minutes without activity (TCVN 14423:2026 §4.5.2.2: ≤ 15 minutes for level 2).</summary>
+    public int IdleTimeoutMinutes { get; set; } = 15;
     public int MaxConcurrentSessions { get; set; } = 3;
     public int RefreshTokenDays { get; set; } = 7;
     public int AccessTokenMinutes { get; set; } = 15;

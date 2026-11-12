@@ -278,6 +278,11 @@ export function CatalogPage<T extends Row>({ config }: { config: CatalogConfig<T
               {t('actions.exportCsv')}
             </Button>
           )}
+          {can('export') && !config.hideExport && (
+            <Button icon={<DownloadOutlined />} data-testid="catalog-export-ods" onClick={() => void downloadFile(`/${config.resource}/export`, { ...params, page: undefined, pageSize: undefined, format: 'ods' }, `${config.resource}.ods`).catch((e) => message.error(problemMessage(e)))}>
+              {t('actions.exportOds')}
+            </Button>
+          )}
           {can('create') && (
             <Button type="primary" icon={<PlusOutlined />} onClick={() => openEdit('new')} data-testid="catalog-add">
               {t('actions.add')}
@@ -315,7 +320,7 @@ export function CatalogPage<T extends Row>({ config }: { config: CatalogConfig<T
               ) : f.type === 'enum' ? (
                 <EnumSelect enumName={f.enumName!} values={f.enumValues ?? []} allowClear placeholder={t(f.label)} value={filters[f.name]} onChange={(v) => setFilter(f.name, v ?? undefined)} />
               ) : (
-                <Select allowClear placeholder={t(f.label)} style={{ width: '100%' }} value={filters[f.name]} options={f.options?.map((o) => ({ ...o, label: t(o.label) }))} onChange={(v) => setFilter(f.name, v ?? undefined)} />
+                <Select aria-label={t(f.label)} allowClear placeholder={t(f.label)} style={{ width: '100%' }} value={filters[f.name]} options={f.options?.map((o) => ({ ...o, label: t(o.label) }))} onChange={(v) => setFilter(f.name, v ?? undefined)} />
               )}
             </div>
           ))}

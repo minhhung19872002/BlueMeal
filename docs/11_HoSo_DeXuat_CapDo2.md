@@ -109,7 +109,7 @@ Phương án gồm hai phần: biện pháp kỹ thuật đã có trong phần m
 | Chống tấn công | WAF ModSecurity + OWASP CRS; rate limit; CSP và header bảo mật; chống CSRF, SQLi, XSS; kiểm tra tệp tải lên | `03` §6 |
 | Dữ liệu cá nhân | Che dữ liệu, nhật ký truy cập, xuất dữ liệu và ẩn danh hóa theo yêu cầu | `03` §7 |
 | Sao lưu | Tự động hằng ngày, giữ 7/4/6, mirror NAS, diễn tập khôi phục tự động | `03` §8 |
-| Kiểm thử | Unit 117, integration 87, E2E 54/54, ZAP baseline 0 High/0 Medium, diễn tập khôi phục PASSED | `04`, `09` |
+| Kiểm thử | Unit 134, integration 96, E2E 68/68, ZAP baseline 0 High/0 Medium, diễn tập khôi phục PASSED | `04`, `09` |
 
 ### 4.2 Biện pháp quản lý, vận hành do Viện thực hiện
 

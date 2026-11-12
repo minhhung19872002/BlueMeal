@@ -166,8 +166,8 @@ export default function UsersPage() {
       </div>
       <div className="bm-toolbar">
         <Input.Search allowClear placeholder={t('common:searchPlaceholder')} onSearch={(v) => { setQ(v); setPage(1); }} style={{ width: screens.md ? 300 : '100%' }} />
-        <Select allowClear placeholder={t('users.roles')} options={roleOptions} value={roleId} onChange={setRoleId} style={{ width: screens.md ? 220 : '100%' }} />
-        <Select allowClear placeholder={t('users.status')} value={status} onChange={setStatus} style={{ width: screens.md ? 180 : '100%' }}
+        <Select aria-label={t('users.roles')} allowClear placeholder={t('users.roles')} options={roleOptions} value={roleId} onChange={setRoleId} style={{ width: screens.md ? 220 : '100%' }} />
+        <Select aria-label={t('users.status')} allowClear placeholder={t('users.status')} value={status} onChange={setStatus} style={{ width: screens.md ? 180 : '100%' }}
           options={[{ value: 'active', label: t('users.active') }, { value: 'disabled', label: t('users.disabled') }, { value: 'locked', label: t('users.lockedOut') }]} />
       </div>
       <Table<UserRow>

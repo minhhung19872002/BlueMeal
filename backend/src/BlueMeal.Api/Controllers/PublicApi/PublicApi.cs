@@ -186,7 +186,7 @@ public sealed class PublicSummary
 
 /// <summary>
 /// Public API for other systems (SPEC §7.10.6): OAuth2 client credentials (<c>POST /api/v1/public/token</c>) + scopes,
-/// JSON by default and XML with <c>Accept: application/xml</c>; minimal HL7 FHIR R4 export (A-43).
+/// JSON by default and XML with <c>Accept: application/xml</c>; HL7 FHIR R4 in <see cref="PublicFhirController"/> (A-43).
 /// </summary>
 [Route("api/v1/public")]
 [Produces("application/json", "application/xml")]
@@ -298,38 +298,5 @@ public sealed class PublicApiController(AppDbContext db, PublicTokenService toke
                 TargetEnergyKcal = D(x["target"]), PercentOfTarget = D(x["pct"]), DaysMet = (int)(D(x["daysMet"]) ?? 0), DaysNotMet = (int)(D(x["daysNotMet"]) ?? 0),
             }).ToList(),
         };
-    }
-
-    /// <summary>
-    /// Minimal HL7 FHIR R4 export (A-43): a searchset Bundle of NutritionOrder resources, one per published menu
-    /// (oralDiet with the dishes as free text and the energy as nutrient modifier). No patient-level data.
-    /// </summary>
-    [HttpGet("fhir/r4/NutritionOrder"), PublicScope(PublicScopes.MenuRead)]
-    public async Task<IActionResult> FhirNutritionOrders([FromQuery] DateOnly date, CancellationToken ct)
-    {
-        var menus = (await Menus(date, date, null, ct)).Value!.Items;
-        var bundle = new Dictionary<string, object?>
-        {
-            ["resourceType"] = "Bundle", ["type"] = "searchset", ["total"] = menus.Count, ["timestamp"] = clock.GetUtcNow().ToString("O"),
-            ["entry"] = menus.Select(m => new Dictionary<string, object?>
-            {
-                ["fullUrl"] = $"urn:bluemeal:menu:{m.Code}",
-                ["resource"] = new Dictionary<string, object?>
-                {
-                    ["resourceType"] = "NutritionOrder", ["id"] = m.Code, ["status"] = "active", ["intent"] = "plan", ["dateTime"] = m.Date,
-                    ["identifier"] = new[] { new { system = "urn:bluemeal:menu", value = m.Code } },
-                    ["note"] = new[] { new { text = $"{m.Shift}{(m.Customer is null ? "" : " — " + m.Customer)}; {m.Servings} suất" } },
-                    ["oralDiet"] = new Dictionary<string, object?>
-                    {
-                        ["type"] = new[] { new { text = string.Join("; ", m.Dishes.Select(d => d.Name)) } },
-                        ["nutrient"] = m.EnergyKcal is null ? Array.Empty<object>() : new object[]
-                        {
-                            new { modifier = new { coding = new[] { new { system = "http://snomed.info/sct", code = "33463005", display = "Energy" } }, text = "Energy" }, amount = new { value = Math.Round(m.EnergyKcal.Value, 0), unit = "kcal", system = "http://unitsofmeasure.org", code = "kcal" } },
-                        },
-                    },
-                },
-            }).ToList(),
-        };
-        return new ContentResult { Content = JsonSerializer.Serialize(bundle, new JsonSerializerOptions { WriteIndented = false }), ContentType = "application/fhir+json; charset=utf-8", StatusCode = 200 };
     }
 }

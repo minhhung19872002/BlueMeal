@@ -194,7 +194,7 @@ public abstract class CatalogControllerBase<TEntity, TDto, TUpsert> : ApiControl
 
     // ------------------------------------------------------------------ Excel
 
-    /// <summary>Excel export; <c>format=csv</c> gives CSV UTF-8 for data exchange (TT 39/2017/TT-BTTTT).</summary>
+    /// <summary>Excel export; <c>format=csv</c> gives CSV UTF-8, <c>format=ods</c> OpenDocument (TT 39/2017/TT-BTTTT).</summary>
     [HttpGet("export"), HasPermission(PermissionAction.Export)]
     public virtual async Task<IActionResult> Export([FromQuery(Name = "")] PageQuery q, [FromQuery] string? format, CancellationToken ct)
     {
@@ -212,7 +212,13 @@ public abstract class CatalogControllerBase<TEntity, TDto, TUpsert> : ApiControl
             await Audit.WriteAsync(AuditAction.Export, typeof(TEntity).Name, null, message: $"{rows.Count} rows (csv)", ct: ct);
             return File(CsvWriter.Write(columns, rows), CsvWriter.ContentType, CsvWriter.FileName(name));
         }
-        var bytes = Excel.Write(new ExcelSheet { Name = ExportTitle, Header = await ReportHeader(ExportTitle, null, ct), Columns = columns, Rows = rows });
+        var sheet = new ExcelSheet { Name = ExportTitle, Header = await ReportHeader(ExportTitle, null, ct), Columns = columns, Rows = rows };
+        if (IsOds(format))
+        {
+            await Audit.WriteAsync(AuditAction.Export, typeof(TEntity).Name, null, message: $"{rows.Count} rows (ods)", ct: ct);
+            return File(OdsWriter.Write(sheet), OdsWriter.ContentType, OdsWriter.FileName(name));
+        }
+        var bytes = Excel.Write(sheet);
         await Audit.WriteAsync(AuditAction.Export, typeof(TEntity).Name, null, message: $"{rows.Count} rows", ct: ct);
         return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", name);
     }

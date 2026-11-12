@@ -230,4 +230,29 @@ public sealed class ReportTests(ApiFactory f)
         string.Join("\n", report).Should().NotContain("Người lập");
         report.Length.Should().BeGreaterThan(1);
     }
+
+    [Fact]
+    public async Task Catalogs_audit_log_and_reports_export_to_ods()
+    {
+        var c = await f.AdminAsync();
+        static async Task<string> Ods(HttpResponseMessage r)
+        {
+            if (!r.IsSuccessStatusCode) throw new HttpRequestException($"{(int)r.StatusCode}: {await r.Content.ReadAsStringAsync()}");
+            r.Content.Headers.ContentType!.MediaType.Should().Be("application/vnd.oasis.opendocument.spreadsheet");
+            r.Content.Headers.ContentDisposition!.FileNameStar.Should().EndWith(".ods");
+            using var zip = new System.IO.Compression.ZipArchive(new MemoryStream(await r.Content.ReadAsByteArrayAsync()));
+            zip.Entries[0].FullName.Should().Be("mimetype");
+            using var content = new StreamReader(zip.GetEntry("content.xml")!.Open());
+            var xml = await content.ReadToEndAsync();
+            System.Xml.Linq.XDocument.Parse(xml); // well-formed
+            return xml;
+        }
+
+        (await Ods(await c.GetAsync("/api/v1/provinces/export?format=ods&q=ho%20chi%20minh"))).Should().Contain("Thành phố Hồ Chí Minh");
+        (await Ods(await c.GetAsync("/api/v1/audit-logs/export?format=ods"))).Should().Contain("office:date-value=");
+
+        // reports keep the Excel layout: title block and signature block (unlike CSV)
+        var report = await Ods(await c.PostAsJsonAsync("/api/v1/reports/RPT-16/export?format=ods", new { from = "2026-01-01", to = "2026-12-31" }));
+        report.Should().Contain("RPT-16").And.Contain("Người lập");
+    }
 }

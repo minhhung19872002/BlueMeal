@@ -7,7 +7,7 @@
   "theme": { "light": "Giao diện sáng", "dark": "Giao diện tối" },
   "actions": {
     "add": "Thêm mới", "edit": "Sửa", "delete": "Xóa", "save": "Lưu", "cancel": "Hủy", "close": "Đóng", "confirm": "Xác nhận",
-    "search": "Tìm kiếm", "filter": "Lọc", "reset": "Đặt lại", "refresh": "Tải lại", "export": "Xuất Excel", "exportCsv": "Xuất CSV", "import": "Nhập Excel",
+    "search": "Tìm kiếm", "filter": "Lọc", "reset": "Đặt lại", "refresh": "Tải lại", "export": "Xuất Excel", "exportCsv": "Xuất CSV", "exportOds": "Xuất ODS", "import": "Nhập Excel",
     "downloadTemplate": "Tải file mẫu", "lock": "Khóa", "unlock": "Mở khóa", "history": "Lịch sử thay đổi", "view": "Xem", "back": "Quay lại",
     "print": "In", "copy": "Sao chép", "next": "Tiếp tục", "previous": "Quay lại", "submit": "Gửi", "approve": "Duyệt", "reject": "Từ chối",
     "more": "Thêm", "columns": "Cột hiển thị", "apply": "Áp dụng", "select": "Chọn", "upload": "Tải lên", "download": "Tải xuống",
@@ -57,7 +57,7 @@
     "dateRange": "Ngày kết thúc phải sau ngày bắt đầu",
     "passwordMismatch": "Mật khẩu xác nhận không khớp"
   },
-  "header": { "notifications": "Thông báo", "markAllRead": "Đánh dấu đã đọc tất cả", "noNotifications": "Không có thông báo mới", "version": "Phiên bản", "toggleMenu": "Thu gọn menu", "breadcrumb": "Đường dẫn trang" },
+  "header": { "notifications": "Thông báo", "notificationsUnread": "Thông báo: {{n}} chưa đọc", "markAllRead": "Đánh dấu đã đọc tất cả", "noNotifications": "Không có thông báo mới", "version": "Phiên bản", "toggleMenu": "Thu gọn menu", "breadcrumb": "Đường dẫn trang" },
   "nav": {
     "dashboard": "Trang chủ",
     "system": "Quản trị hệ thống",

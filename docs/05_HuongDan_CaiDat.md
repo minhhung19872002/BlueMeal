@@ -81,7 +81,7 @@ Lần đầu khởi động, `api` tự **tạo/cập nhật cơ sở dữ liệ
 | Nơi cấu hình | Nội dung |
 |---|---|
 | `deploy/.env` | Bí mật, tên miền, lịch sao lưu, kích thước pool kết nối (`DB_POOL_SIZE`) |
-| Giao diện *Quản trị → Cấu hình hệ thống* | Chính sách mật khẩu, phiên (thời gian chờ mặc định 30 phút — **đặt 15 phút khi vận hành chính thức** theo TCVN 14423:2026 §4.5.2.2; số phiên đồng thời), MFA bắt buộc cho mọi tài khoản (mặc định) hoặc chỉ theo vai trò, ngưỡng cảnh báo dinh dưỡng, phương pháp giá kho (bình quân / FIFO), cho phép xuất âm, chi phí chung, SMTP, thời gian lưu mẫu (≥ 24 giờ), trọng số tạo thực đơn, số cấp duyệt (1/2), thời gian lưu nhật ký (≥ 12 tháng), Swagger |
+| Giao diện *Quản trị → Cấu hình hệ thống* | Chính sách mật khẩu, phiên (thời gian chờ mặc định 15 phút theo TCVN 14423:2026 §4.5.2.2 — không nên đặt dài hơn; số phiên đồng thời), MFA bắt buộc cho mọi tài khoản (mặc định) hoặc chỉ theo vai trò, ngưỡng cảnh báo dinh dưỡng, phương pháp giá kho (bình quân / FIFO), cho phép xuất âm, chi phí chung, SMTP, thời gian lưu mẫu (≥ 24 giờ), trọng số tạo thực đơn, số cấp duyệt (1/2), thời gian lưu nhật ký (≥ 12 tháng), Swagger |
 | *Quản trị → Tích hợp Viện Dinh dưỡng* | Địa chỉ API, kiểu xác thực, credential, lịch đồng bộ (mặc định 02:00), mapping JSON; client cho API công khai |
 | `deploy/postgres/postgresql.conf` | Tuning PostgreSQL cho 8 vCPU/16 GB — chỉnh `shared_buffers` (~25 % RAM), `effective_cache_size` (~75 % RAM) theo máy thực tế |
 | `deploy/nginx/*.conf` | Header bảo mật, giới hạn request (`BM_EDGE_RATE`), kích thước upload (25 MB) |

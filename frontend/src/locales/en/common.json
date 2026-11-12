@@ -7,7 +7,7 @@
   "theme": { "light": "Light theme", "dark": "Dark theme" },
   "actions": {
     "add": "Add new", "edit": "Edit", "delete": "Delete", "save": "Save", "cancel": "Cancel", "close": "Close", "confirm": "Confirm",
-    "search": "Search", "filter": "Filter", "reset": "Reset", "refresh": "Reload", "export": "Export Excel", "exportCsv": "Export CSV", "import": "Import Excel",
+    "search": "Search", "filter": "Filter", "reset": "Reset", "refresh": "Reload", "export": "Export Excel", "exportCsv": "Export CSV", "exportOds": "Export ODS", "import": "Import Excel",
     "downloadTemplate": "Download template", "lock": "Lock", "unlock": "Unlock", "history": "Change history", "view": "View", "back": "Back",
     "print": "Print", "copy": "Copy", "next": "Next", "previous": "Back", "submit": "Submit", "approve": "Approve", "reject": "Reject",
     "more": "More", "columns": "Columns", "apply": "Apply", "select": "Select", "upload": "Upload", "download": "Download",
@@ -57,7 +57,7 @@
     "dateRange": "End date must be after start date",
     "passwordMismatch": "Passwords do not match"
   },
-  "header": { "notifications": "Notifications", "markAllRead": "Mark all as read", "noNotifications": "No new notifications", "version": "Version", "toggleMenu": "Toggle menu", "breadcrumb": "Breadcrumb" },
+  "header": { "notifications": "Notifications", "notificationsUnread": "Notifications: {{n}} unread", "markAllRead": "Mark all as read", "noNotifications": "No new notifications", "version": "Version", "toggleMenu": "Toggle menu", "breadcrumb": "Breadcrumb" },
   "nav": {
     "dashboard": "Home",
     "system": "System administration",

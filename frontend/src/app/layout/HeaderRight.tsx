@@ -102,7 +102,8 @@ function NotificationBell() {
   );
   return (
     <Popover content={content} trigger="click" placement="bottomRight">
-      <button type="button" className="bm-icon-btn" aria-label={t('header.notifications')}>
+      {/* the accessible name contains the visible badge number (WCAG 2.5.3 label in name) */}
+      <button type="button" className="bm-icon-btn" aria-label={unread > 0 ? t('header.notificationsUnread', { n: unread > 99 ? '99+' : unread }) : t('header.notifications')}>
         <Svg d={BELL} stroke={1.8} />
         {unread > 0 && <span className="bm-badge">{unread > 99 ? '99+' : unread}</span>}
       </button>

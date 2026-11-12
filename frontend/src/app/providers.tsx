@@ -50,7 +50,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
         colorBorderSecondary: dark ? '#27322b' : '#e2e7e1',
         colorText: dark ? '#e8efe9' : '#14201a',
         colorTextSecondary: dark ? '#a9b6ad' : '#55635a',
-        colorTextTertiary: dark ? '#8b998f' : '#69766d',
+        colorTextTertiary: dark ? '#8b998f' : '#5f6c63',
         colorLink: dark ? '#7cc796' : '#2a7144',
         colorPrimaryBg: dark ? '#1f3326' : '#e8f3eb',
         borderRadius: 8,

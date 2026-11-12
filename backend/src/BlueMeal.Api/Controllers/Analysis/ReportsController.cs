@@ -47,6 +47,13 @@ public sealed class ReportsController(AppDbContext db, ReportService reports, IF
             await audit.WriteAsync(AuditAction.Export, "Report", code, null, filter, message: $"{count} rows (csv)", ct: ct);
             return File(content, CsvWriter.ContentType, name);
         }
+        if (IsOds(format))
+        {
+            // OpenDocument (TT 39 nhóm bắt buộc .xls/.ods): same layout as the Excel file, built in memory and returned directly
+            var (content, name, count) = await reports.OdsAsync(code, filter, ct);
+            await audit.WriteAsync(AuditAction.Export, "Report", code, null, filter, message: $"{count} rows (ods)", ct: ct);
+            return File(content, OdsWriter.ContentType, name);
+        }
         if (!background)
         {
             var (_, r) = await reports.RunAsync(code, filter, ct);

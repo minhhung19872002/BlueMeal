@@ -44,11 +44,11 @@ public sealed class SessionAndPiiTests(ApiFactory f)
         var (u, p) = await f.CreateUserAsync("sess_idle", "HEAD_CHEF");
         var c = await f.LoginAsync(u, p);
         (await c.GetAsync("/api/v1/profile/sessions")).StatusCode.Should().Be(HttpStatusCode.OK);
-        // simulate 31 minutes without activity: the sliding cache entry (TTL = idle timeout) is gone and last_seen is old
+        // simulate 16 minutes without activity (default idle timeout 15): the sliding cache entry (TTL = idle timeout) is gone and last_seen is old
         var sessionIds = await InDb(async db =>
         {
             var uid = await db.Users.Where(x => x.UserName == u).Select(x => x.Id).FirstAsync();
-            await db.Set<UserSession>().Where(s => s.UserId == uid).ExecuteUpdateAsync(s => s.SetProperty(x => x.LastSeenAt, DateTimeOffset.UtcNow.AddMinutes(-31)));
+            await db.Set<UserSession>().Where(s => s.UserId == uid).ExecuteUpdateAsync(s => s.SetProperty(x => x.LastSeenAt, DateTimeOffset.UtcNow.AddMinutes(-16)));
             return await db.Set<UserSession>().Where(s => s.UserId == uid).Select(s => s.Id).ToListAsync();
         });
         using (var scope = f.Services.CreateScope())

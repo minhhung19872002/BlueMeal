@@ -56,6 +56,19 @@ public sealed class ReportService(AppDbContext db, IEnumerable<IReport> reports,
     /// <summary>Renders a report to Excel with the standard header and signature block.</summary>
     public async Task<(byte[] Content, string FileName)> ExcelAsync(string code, ReportFilter filter, CancellationToken ct)
     {
+        var (sheet, name, _) = await SheetAsync(code, filter, ct);
+        return (excel.Write(sheet), name);
+    }
+
+    /// <summary>Renders a report as OpenDocument Spreadsheet (.ods) with the same header, totals and signature block as Excel.</summary>
+    public async Task<(byte[] Content, string FileName, int Rows)> OdsAsync(string code, ReportFilter filter, CancellationToken ct)
+    {
+        var (sheet, name, rows) = await SheetAsync(code, filter, ct);
+        return (OdsWriter.Write(sheet), OdsWriter.FileName(name), rows);
+    }
+
+    private async Task<(ExcelSheet Sheet, string FileName, int Rows)> SheetAsync(string code, ReportFilter filter, CancellationToken ct)
+    {
         var (def, result) = await RunAsync(code, filter, ct);
         var lang = user.Language;
         var org = await db.Set<Organization>().AsNoTracking().Select(o => new { o.Name, o.NameEn }).FirstOrDefaultAsync(ct);
@@ -71,7 +84,7 @@ public sealed class ReportService(AppDbContext db, IEnumerable<IReport> reports,
             TotalColumns = result.Columns.Where(c => c.Total).Select(c => c.Key).ToList(),
         };
         var name = $"{code}_{clock.GetUtcNow().ToOffset(TimeSpan.FromHours(7)):yyyyMMdd_HHmm}.xlsx";
-        return (excel.Write(sheet), name);
+        return (sheet, name, result.Rows.Count);
     }
 
     /// <summary>Renders a report as CSV UTF-8 (data only: no header block, signatures or totals).</summary>

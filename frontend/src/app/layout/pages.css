@@ -17,7 +17,7 @@
 .bm-chips{padding:10px 14px;display:flex;gap:6px;overflow-x:auto;border-bottom:1px solid var(--border)}
 .bm-chip{flex:none;height:32px;padding:0 12px;border:1px solid var(--border);border-radius:999px;background:transparent;color:var(--ink-2);font-weight:500;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .bm-chip.is-on{border-color:var(--ink);background:var(--ink);color:var(--surface)}
-.bm-chip-n{font-variant-numeric:tabular-nums;opacity:.75}
+.bm-chip-n{font-variant-numeric:tabular-nums;opacity:.9}
 .bm-tag{font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap;display:inline-block;line-height:1.45}
 .bm-tag.t-neutral{background:var(--tag-neutral-bg);color:var(--tag-neutral-fg)}
 .bm-tag.t-info{background:var(--tag-info-bg);color:var(--tag-info-fg)}
