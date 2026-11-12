@@ -57,7 +57,15 @@ public sealed class ExpectedExceptionMiddleware(RequestDelegate next)
         {
             await GlobalExceptionHandler.HandleKnownAsync(ctx, ex);
         }
+        catch (OperationCanceledException) when (ctx.RequestAborted.IsCancellationRequested)
+        {
+            // the client went away (navigation, closed tab): not a server error, so it must not be logged as one
+            // (Error-level request logs are forwarded to syslog/SIEM). 499 = nginx "client closed request".
+            if (!ctx.Response.HasStarted) ctx.Response.StatusCode = ClientClosedRequest;
+        }
     }
+
+    public const int ClientClosedRequest = 499;
 }
 
 public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> log) : IExceptionHandler

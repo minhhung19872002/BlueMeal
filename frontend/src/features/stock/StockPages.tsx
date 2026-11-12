@@ -96,11 +96,18 @@ export function StockTakeDetailPage() {
   const [extra, setExtra] = useState<{ ingredientId?: string; actualQty?: number }>({});
   // latest row version: a save followed quickly by approve must not send a stale version
   const versionRef = useRef<number | undefined>(undefined);
+  // saves run one after another, so a save started while another is in flight sends the refreshed version
+  const savingRef = useRef<Promise<boolean>>(Promise.resolve(true));
   useEffect(() => { if (data) { setLines(data.lines); setMembers(data.members ?? ''); versionRef.current = data.version; } }, [data]);
   if (!data) return <Card loading />;
   const editable = (data.status === 'Draft' || data.status === 'Counting') && has('stock.take.edit');
   const patch = (lid: string, p: Partial<TakeLine>) => setLines((ls) => ls.map((l) => (l.id === lid ? { ...l, ...p, difference: (p.actualQty !== undefined ? (p.actualQty ?? l.bookQty) : (l.actualQty ?? l.bookQty)) - l.bookQty } : l)));
-  const save = async (newLines?: { ingredientId: string; actualQty: number }[]) => {
+  const save = (newLines?: { ingredientId: string; actualQty: number }[]) => {
+    const run = savingRef.current.then(() => saveNow(newLines));
+    savingRef.current = run;
+    return run;
+  };
+  const saveNow = async (newLines?: { ingredientId: string; actualQty: number }[]) => {
     setBusy(true);
     try {
       await http.put(`/stock-takes/${id}`, { members, note: data.note, version: versionRef.current, lines: lines.map((l) => ({ id: l.id, actualQty: l.actualQty ?? null, cause: l.cause ?? null, resolution: l.resolution ?? null })), newLines });
@@ -139,7 +146,7 @@ export function StockTakeDetailPage() {
         <>
           <Button onClick={() => navigate('/stock/takes')}>{t('common:actions.back')}</Button>
           {editable && <Button icon={<SaveOutlined />} loading={busy} onClick={() => void save()} data-testid="take-save">{t('takes.saveCounts')}</Button>}
-          {editable && has('stock.take.approve') && <Button type="primary" icon={<CheckOutlined />} disabled={counted < lines.length} onClick={approve} data-testid="take-approve">{t('takes.approve')}</Button>}
+          {editable && has('stock.take.approve') && <Button type="primary" icon={<CheckOutlined />} disabled={busy || counted < lines.length} onClick={approve} data-testid="take-approve">{t('takes.approve')}</Button>}
         </>
       )}
     >

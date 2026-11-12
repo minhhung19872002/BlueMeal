@@ -16,6 +16,8 @@ Mỗi mục `## [x.y.z] - YYYY-MM-DD` được nạp vào màn hình **Phiên b�
 - **Xuất CSV UTF-8** (TT 39/2017/TT-BTTTT) cho mọi danh mục, 16 báo cáo và nhật ký hệ thống (`?format=csv`): RFC 4180, BOM, CRLF, số dấu chấm, ngày ISO 8601, chống chèn công thức.
 - **XSD cho XML của API công khai** (TT 39/2017): `GET /api/v1/public/schema.xsd` (không cần token) và `docs/api/public-api.xsd`, sinh từ chính các kiểu dữ liệu XML.
 - Sửa: thông báo "Hạn sử dụng không được trước ngày sản xuất" trước đây hiện mã khóa thô.
+- Sửa: *Kiểm kê kho* — bấm *Lưu số đếm* rồi *Duyệt* ngay khi chưa lưu xong báo "dữ liệu đã thay đổi" (409); các lần lưu nay chạy tuần tự, nút *Duyệt* khóa trong lúc lưu.
+- Sửa: request bị trình duyệt hủy giữa chừng (chuyển trang) bị ghi log mức Error mã 500 và đẩy sang SIEM; nay ghi mức Information mã 499.
 - Kiểm thử: chỉ ghi lại `docs/api/openapi.json` và mẫu `tools/import-templates/` khi đặt `BLUEMEAL_EXPORT_ARTIFACTS=1`; CSDL kiểm thử dùng `postgres:16-alpine`.
 
 ### Tài liệu

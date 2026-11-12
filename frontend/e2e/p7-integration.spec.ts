@@ -18,7 +18,7 @@ test.describe('P7 — VDD integration', () => {
     await page.getByTestId('tab-conflicts').click();
     const card = page.getByTestId('conflict-card').filter({ hasText: 'M-NC01' });
     if (await card.count()) {
-      await expect(card.first().getByText('Đang dùng (đã sửa tay)')).toBeVisible();
+      await expect(card.first().getByRole('columnheader', { name: 'Đang dùng (đã sửa tay)' })).toBeVisible();
       await shot(page, 'integration-conflicts');
       await card.first().getByTestId('conflict-keep-local').click();
       await expect(page.getByTestId('conflict-card').filter({ hasText: 'M-NC01' })).toHaveCount(0);
